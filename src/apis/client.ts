@@ -78,6 +78,13 @@ function createRequestOptions({
     if (json !== undefined && body === undefined) {
       throw new TypeError("JSON으로 변환할 수 없는 요청 본문입니다.");
     }
+    const requestMethod = (method ?? "GET").toUpperCase();
+    if (
+      body !== undefined &&
+      (requestMethod === "GET" || requestMethod === "HEAD")
+    ) {
+      throw new TypeError("GET 및 HEAD 요청에는 본문을 포함할 수 없습니다.");
+    }
     if (body !== undefined && !requestHeaders.has("Content-Type")) {
       requestHeaders.set("Content-Type", "application/json");
     }
