@@ -1,19 +1,32 @@
-import { useEffect, useState } from "react";
-import { mockGetCurrentUser, type MockAuthScenario } from "@/apis/auth.mock";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { AuthState, AuthUser } from "@/apis/auth.types";
 
-export function useAuth(scenario: MockAuthScenario) {
-  const [authState, setAuthState] = useState<AuthState>({
-    status: "checking",
-  });
+type RestoreUser = () => Promise<AuthUser | null>;
+type LogoutUser = () => Promise<void>;
+
+export function useAuth(
+  restoreUser: RestoreUser,
+  logoutUser: LogoutUser,
+  skipInitialRestore = false,
+) {
+  const [authState, setAuthState] = useState<AuthState>(
+    skipInitialRestore ? { status: "unauthenticated" } : { status: "checking" },
+  );
   const [retryCount, setRetryCount] = useState(0);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [logoutError, setLogoutError] = useState("");
+  const requestVersion = useRef(0);
+  const logoutInProgress = useRef(false);
 
   useEffect(() => {
-    let active = true;
+    if (skipInitialRestore && retryCount === 0) return;
 
-    mockGetCurrentUser(scenario).then(
+    let active = true;
+    const version = ++requestVersion.current;
+
+    restoreUser().then(
       (user) => {
-        if (!active) return;
+        if (!active || version !== requestVersion.current) return;
 
         setAuthState(
           user
@@ -22,7 +35,7 @@ export function useAuth(scenario: MockAuthScenario) {
         );
       },
       (error: unknown) => {
-        if (!active) return;
+        if (!active || version !== requestVersion.current) return;
 
         setAuthState({
           status: "error",
@@ -37,16 +50,58 @@ export function useAuth(scenario: MockAuthScenario) {
     return () => {
       active = false;
     };
-  }, [scenario, retryCount]);
+  }, [restoreUser, skipInitialRestore, retryCount]);
 
-  const retry = () => {
+  const clearSession = useCallback(() => {
+    requestVersion.current += 1;
+    setAuthState({ status: "unauthenticated" });
+  }, []);
+
+  const retry = useCallback(() => {
+    if (logoutInProgress.current) return;
+
+    requestVersion.current += 1;
+    setLogoutError("");
     setAuthState({ status: "checking" });
     setRetryCount((count) => count + 1);
-  };
+  }, []);
 
-  const completeLogin = (user: AuthUser) => {
+  const completeLogin = useCallback((user: AuthUser) => {
+    if (logoutInProgress.current) return;
+
+    requestVersion.current += 1;
+    setLogoutError("");
     setAuthState({ status: "authenticated", user });
-  };
+  }, []);
 
-  return { authState, retry, completeLogin };
+  const logout = useCallback(async () => {
+    if (logoutInProgress.current) return;
+
+    logoutInProgress.current = true;
+    requestVersion.current += 1;
+    setIsLoggingOut(true);
+    setLogoutError("");
+    setAuthState({ status: "unauthenticated" });
+
+    try {
+      await logoutUser();
+    } catch {
+      setLogoutError(
+        "서버 로그아웃에 실패했습니다. 이 기기의 로그인 정보는 초기화했습니다.",
+      );
+    } finally {
+      logoutInProgress.current = false;
+      setIsLoggingOut(false);
+    }
+  }, [logoutUser]);
+
+  return {
+    authState,
+    retry,
+    completeLogin,
+    logout,
+    isLoggingOut,
+    logoutError,
+    clearSession,
+  };
 }
