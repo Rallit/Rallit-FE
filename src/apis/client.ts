@@ -67,6 +67,7 @@ function createRequestOptions({
   method,
   headers,
   signal,
+  credentials,
   json,
 }: ApiRequestOptions): RequestInit {
   try {
@@ -89,7 +90,7 @@ function createRequestOptions({
       requestHeaders.set("Content-Type", "application/json");
     }
 
-    return { method, headers: requestHeaders, signal, body };
+    return { method, headers: requestHeaders, signal, credentials, body };
   } catch (cause) {
     throw new ApiError("request", "API 요청을 구성할 수 없습니다.", { cause });
   }
@@ -181,6 +182,10 @@ export function createApiClient({
       throw new ApiError("network", "API 서버에 연결할 수 없습니다.", {
         cause,
       });
+    }
+
+    if (response.status === 204 && options.expectResult === false) {
+      return;
     }
 
     const result = await parseResponse(response, options.signal);

@@ -21,7 +21,7 @@ export type ApiErrorDetails = {
 
 export type ApiRequestOptions = Pick<
   RequestInit,
-  "method" | "headers" | "signal"
+  "method" | "headers" | "signal" | "credentials"
 > & {
   json?: unknown;
   expectResult?: boolean;
