@@ -92,4 +92,56 @@
   --red-700: #ad2722;
   --red-800: #861e1a;
   --red-900: #661714;
+
+  /* Semantic: Appearance */
+  --radius-small: var(--unit-8);
+  --radius-medium: var(--unit-12);
+  --radius-large: var(--unit-16);
+  --radius-extra-large: var(--unit-32);
+  --radius-full: var(--unit-99);
+
+  --spacing-padding-micro: var(--unit-4);
+  --spacing-padding-small: var(--unit-8);
+  --spacing-padding-medium: var(--unit-12);
+  --spacing-padding-large: var(--unit-16);
+  --spacing-padding-extra-large: var(--unit-24);
+
+  --spacing-gap-micro: var(--unit-4);
+  --spacing-gap-small: var(--unit-8);
+  --spacing-gap-medium: var(--unit-12);
+  --spacing-gap-large: var(--unit-20);
+  --spacing-gap-extra-large: var(--unit-32);
+
+  /* Semantic: Color */
+  /* MVP 단계에서는 Light 모드만 사용합니다. (다크 모드 도입 시 Figma의 Dark 값을 추가할 예정) */
+  --fg-brand-strong: var(--lime-900);
+  --fg-brand-default: var(--lime-600);
+  --fg-neutral-strong: var(--gray-1000);
+  --fg-neutral-default: var(--gray-900);
+  --fg-neutral-secondary: var(--gray-600);
+  --fg-neutral-tertiary: var(--gray-400);
+  --fg-neutral-subtle: var(--gray-300);
+  --fg-neutral-inverse: var(--gray-00);
+  --fg-accent-default: var(--blue-500);
+  --fg-system-error: var(--red-500);
+
+  --bg-primary-default: var(--lime-500);
+  --bg-primary-strong: var(--lime-600);
+  --bg-primary-inverse: var(--lime-alpha-300);
+  --bg-secondary-default: var(--blue-500);
+  --bg-secondary-inverse: var(--blue-alpha-100);
+  --bg-neutral-default: var(--gray-00);
+  --bg-neutral-weak: var(--gray-50);
+  --bg-neutral-inverse: var(--gray-1000);
+  --bg-state-hover: var(--gray-alpha-100);
+  --bg-state-pressed: var(--gray-alpha-200);
+  --bg-state-disabled: var(--gray-200);
+  --bg-system-error: var(--red-50);
+  --bg-system-alert: var(--red-200);
+  --bg-layer-overlay: var(--gray-alpha-300);
+
+  --border-neutral-default: var(--gray-200);
+  --border-neutral-weak: var(--gray-100);
+  --border-system-error: var(--red-400);
+  --border-brand-focus: var(--lime-700);
 }
