@@ -4,8 +4,9 @@ import { mockStartLogin } from "@/apis/auth.mock";
 type SocialProvider = "kakao" | "google";
 
 export default function LoginPage() {
-  const [loadingProvider, setLoadingProvider] =
-    useState<SocialProvider | null>(null);
+  const [loadingProvider, setLoadingProvider] = useState<SocialProvider | null>(
+    null,
+  );
   const [errorMessage, setErrorMessage] = useState("");
 
   const isLoading = loadingProvider !== null;
