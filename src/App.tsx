@@ -1,5 +1,7 @@
+import { PageLayout } from "@/components/layout/PageLayout.tsx";
+
 function App() {
-  return <main />;
+  return <PageLayout />;
 }
 
 export default App;
