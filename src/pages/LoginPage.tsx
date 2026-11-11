@@ -37,7 +37,7 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
   };
 
   return (
-    <main aria-busy={isLoading}>
+    <section aria-busy={isLoading}>
       <h1>로그인</h1>
 
       <button
@@ -57,6 +57,6 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
       </button>
 
       {errorMessage && <p role="alert">{errorMessage}</p>}
-    </main>
+    </section>
   );
 }
