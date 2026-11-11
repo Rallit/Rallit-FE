@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { mockGetCurrentUser, type MockAuthScenario } from "@/apis/auth.mock";
-import type { AuthState } from "@/apis/auth.types";
+import type { AuthState, AuthUser } from "@/apis/auth.types";
 
 export function useAuth(scenario: MockAuthScenario) {
   const [authState, setAuthState] = useState<AuthState>({
@@ -44,5 +44,9 @@ export function useAuth(scenario: MockAuthScenario) {
     setRetryCount((count) => count + 1);
   };
 
-  return { authState, retry };
+  const completeLogin = (user: AuthUser) => {
+    setAuthState({ status: "authenticated", user });
+  };
+
+  return { authState, retry, completeLogin };
 }

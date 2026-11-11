@@ -1,9 +1,14 @@
 import { useState } from "react";
 import { mockStartLogin } from "@/apis/auth.mock";
+import type { AuthUser } from "@/apis/auth.types";
+
+type LoginPageProps = {
+  onLoginSuccess: (user: AuthUser) => void;
+};
 
 type SocialProvider = "kakao" | "google";
 
-export default function LoginPage() {
+export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
   const [loadingProvider, setLoadingProvider] = useState<SocialProvider | null>(
     null,
   );
@@ -18,7 +23,8 @@ export default function LoginPage() {
     setErrorMessage("");
 
     try {
-      await mockStartLogin();
+      const user = await mockStartLogin("new-user");
+      onLoginSuccess(user);
     } catch (error) {
       setErrorMessage(
         error instanceof Error

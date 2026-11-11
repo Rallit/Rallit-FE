@@ -2,7 +2,7 @@ import { useAuth } from "@/hooks/useAuth";
 import LoginPage from "@/pages/LoginPage";
 
 export default function App() {
-  const { authState, retry } = useAuth("guest");
+  const { authState, retry, completeLogin } = useAuth("new-user");
 
   if (authState.status === "checking") {
     return <p role="status">로그인 상태를 확인하고 있습니다…</p>;
@@ -20,7 +20,7 @@ export default function App() {
   }
 
   if (authState.status === "unauthenticated") {
-    return <LoginPage />;
+    return <LoginPage onLoginSuccess={completeLogin} />;
   }
 
   const { user } = authState;
