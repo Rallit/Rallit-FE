@@ -2,6 +2,7 @@
   color-scheme: light;
   color: var(--fg-neutral-default);
   background-color: var(--bg-neutral-default);
+  font-family: var(--family-ko-body), system-ui, sans-serif;
 }
 
 @media (width > 480px) {
@@ -12,4 +13,11 @@
 
 body {
   margin: 0;
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
 }
