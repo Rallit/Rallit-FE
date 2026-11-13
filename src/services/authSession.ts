@@ -6,7 +6,9 @@ import type { ApiRequestOptions } from "@/apis/types";
 import {
   clearAccessToken,
   getAccessToken,
+  hasPendingLogout,
   setAccessToken,
+  setPendingLogout,
 } from "@/platform/authStorage.web";
 
 const sessionVersions: Record<AuthTarget, number> = {
@@ -40,7 +42,9 @@ function loginRequiredError() {
 }
 
 function refreshAccessToken(target: AuthTarget): Promise<string | null> {
-  if (logoutTasks[target]) return Promise.resolve(null);
+  if (logoutTasks[target] || hasPendingLogout(target)) {
+    return Promise.resolve(null);
+  }
 
   const pending = refreshTasks[target];
   if (pending) return pending;
@@ -76,6 +80,11 @@ function refreshAccessToken(target: AuthTarget): Promise<string | null> {
 export async function restoreAuthSession(
   target: AuthTarget = "service",
 ): Promise<AuthUser | null> {
+  if (hasPendingLogout(target)) {
+    await logoutAuthSession(target);
+    return null;
+  }
+
   const version = sessionVersions[target];
 
   try {
@@ -107,18 +116,27 @@ export function logoutAuthSession(
   if (pending) return pending;
 
   const version = ++sessionVersions[target];
+  setPendingLogout(true, target);
   clearAccessToken(target);
 
   const pendingRefresh = refreshTasks[target];
 
   const task = (async () => {
-    // 진행 중인 RT 회전이 끝난 뒤 서버 세션을 폐기합니다.
-    if (pendingRefresh) {
-      await pendingRefresh.catch(() => undefined);
-    }
-
     try {
+      // 갱신 요청은 API 계층의 시간 제한 안에서 끝납니다.
+      if (pendingRefresh) {
+        await pendingRefresh.catch(() => undefined);
+      }
+
       await logoutSession(target);
+      setPendingLogout(false, target);
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 401) {
+        setPendingLogout(false, target);
+        return;
+      }
+
+      throw error;
     } finally {
       if (version === sessionVersions[target]) {
         clearAccessToken(target);
@@ -130,6 +148,14 @@ export function logoutAuthSession(
 
   logoutTasks[target] = task;
   return task;
+}
+
+export async function completePendingLogout(
+  target: AuthTarget = "service",
+): Promise<void> {
+  if (hasPendingLogout(target)) {
+    await logoutAuthSession(target);
+  }
 }
 
 export function requestWithAuth(
@@ -150,7 +176,11 @@ export async function requestWithAuth<TResult>(
   const version = sessionVersions[target];
 
   const assertCurrentSession = () => {
-    if (version !== sessionVersions[target] || logoutTasks[target]) {
+    if (
+      version !== sessionVersions[target] ||
+      logoutTasks[target] ||
+      hasPendingLogout(target)
+    ) {
       throw loginRequiredError();
     }
   };

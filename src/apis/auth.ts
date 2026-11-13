@@ -1,4 +1,5 @@
 import { apiClient } from "./index";
+import { ApiError } from "./client";
 import type { AuthTarget, AuthUser, RefreshResult } from "./auth.types";
 import type { ApiRequestOptions } from "./types";
 
@@ -25,6 +26,30 @@ const cookieRequestOptions = {
   json: {},
 } satisfies ApiRequestOptions;
 
+async function withAuthTimeout<TResult>(
+  request: (signal: AbortSignal) => Promise<TResult>,
+): Promise<TResult> {
+  const controller = new AbortController();
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
+  const timeout = new Promise<never>((_, reject) => {
+    timeoutId = setTimeout(() => {
+      const error = new ApiError(
+        "network",
+        "인증 요청 시간이 초과되었습니다. 다시 시도해주세요.",
+      );
+      controller.abort(error);
+      reject(error);
+    }, 10_000);
+  });
+
+  try {
+    return await Promise.race([request(controller.signal), timeout]);
+  } finally {
+    if (timeoutId !== undefined) clearTimeout(timeoutId);
+  }
+}
+
 const refreshRequests: Partial<Record<AuthTarget, Promise<RefreshResult>>> = {};
 
 export function refreshSession(
@@ -33,11 +58,14 @@ export function refreshSession(
   const pendingRequest = refreshRequests[target];
   if (pendingRequest) return pendingRequest;
 
-  const request = apiClient
-    .request<RefreshResult>(endpoints[target].refresh, cookieRequestOptions)
-    .finally(() => {
-      delete refreshRequests[target];
-    });
+  const request = withAuthTimeout((signal) =>
+    apiClient.request<RefreshResult>(endpoints[target].refresh, {
+      ...cookieRequestOptions,
+      signal,
+    }),
+  ).finally(() => {
+    delete refreshRequests[target];
+  });
 
   refreshRequests[target] = request;
   return request;
@@ -47,14 +75,20 @@ export function getCurrentUser(
   accessToken: string,
   target: AuthTarget = "service",
 ): Promise<AuthUser> {
-  return apiClient.request<AuthUser>(endpoints[target].me, {
-    headers: { Authorization: `Bearer ${accessToken}` },
-  });
+  return withAuthTimeout((signal) =>
+    apiClient.request<AuthUser>(endpoints[target].me, {
+      signal,
+      headers: { Authorization: `Bearer ${accessToken}` },
+    }),
+  );
 }
 
 export function logoutSession(target: AuthTarget = "service"): Promise<void> {
-  return apiClient.request(endpoints[target].logout, {
-    ...cookieRequestOptions,
-    expectResult: false,
-  });
+  return withAuthTimeout((signal) =>
+    apiClient.request(endpoints[target].logout, {
+      ...cookieRequestOptions,
+      signal,
+      expectResult: false,
+    }),
+  );
 }

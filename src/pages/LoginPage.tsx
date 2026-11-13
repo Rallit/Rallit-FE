@@ -7,6 +7,7 @@ import {
   type SocialProvider,
 } from "@/platform/authNavigation.web";
 import { useAuthContext } from "@/hooks/useAuthContext";
+import { completePendingLogout } from "@/services/authSession";
 
 type LoginPageProps = {
   onLoginSuccess: (user: AuthUser) => void;
@@ -28,10 +29,10 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
 
     try {
       if (authMode === "api") {
+        await completePendingLogout();
         startSocialLogin(provider);
         return;
       }
-
       const user = await mockStartLogin("new-user");
       onLoginSuccess(user);
       setLoadingProvider(null);

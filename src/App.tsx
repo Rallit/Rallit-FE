@@ -38,18 +38,18 @@ export default function App() {
       <Routes>
         <Route path="/auth/callback" element={<AuthCompletePage />} />
 
-        <Route element={<AuthStatusGate />}>
-          <Route
-            path="/login"
-            element={
-              authState.status === "authenticated" ? (
-                <Navigate to={loginDestination} replace />
-              ) : (
-                <LoginPage onLoginSuccess={completeLogin} />
-              )
-            }
-          />
+        <Route
+          path="/login"
+          element={
+            authState.status === "authenticated" ? (
+              <Navigate to={loginDestination} replace />
+            ) : (
+              <LoginPage onLoginSuccess={completeLogin} />
+            )
+          }
+        />
 
+        <Route element={<AuthStatusGate />}>
           <Route element={<ProtectedRoute onboarding="pending" />}>
             <Route
               path="/onboarding"
