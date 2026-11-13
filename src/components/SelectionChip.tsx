@@ -11,10 +11,9 @@ type ToggleChipProps = SelectionChipProps & {
   onRemove?: never;
 };
 
-type RemovableChipProps = Omit<SelectionChipProps, "onClick" | "disabled"> & {
+type RemovableChipProps = Omit<SelectionChipProps, "onClick"> & {
   onRemove: MouseEventHandler<HTMLButtonElement>;
   selected?: never;
-  disabled?: never;
   onClick?: never;
 };
 
@@ -39,7 +38,7 @@ export function SelectionChip({
   ...props
 }: ToggleChipProps | RemovableChipProps) {
   const styles = onRemove
-    ? "typography-label-l-bold cursor-pointer gap-(--spacing-gap-micro) bg-(--bg-neutral-weak) px-(--spacing-padding-medium) text-(color:--fg-accent-default)"
+    ? "typography-label-l-medium cursor-pointer gap-(--spacing-gap-micro) bg-(--bg-neutral-weak) px-(--spacing-padding-medium) text-(color:--fg-neutral-default) disabled:cursor-default"
     : [
         toggleStyles,
         selected && !disabled
@@ -57,7 +56,7 @@ export function SelectionChip({
       disabled={disabled}
       onClick={onRemove ?? onClick}
     >
-      {label}
+      <span className="min-w-0 truncate">{label}</span>
       {onRemove && <img src={closeIcon} alt="" className="shrink-0" />}
     </button>
   );
