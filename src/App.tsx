@@ -41,7 +41,9 @@ export default function App() {
         <Route
           path="/login"
           element={
-            authState.status === "authenticated" ? (
+            authState.status === "checking" ? (
+              <p role="status">로그인 상태를 확인하고 있습니다…</p>
+            ) : authState.status === "authenticated" ? (
               <Navigate to={loginDestination} replace />
             ) : (
               <LoginPage onLoginSuccess={completeLogin} />
