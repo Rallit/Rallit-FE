@@ -1,7 +1,7 @@
 import {
   ActionButton,
   type ActionButtonProps,
-} from "@/components/ActionButton/ActionButton";
+} from "@/components/ActionButton";
 
 type Action = Omit<ActionButtonProps, "variant" | "size" | "fullWidth">;
 

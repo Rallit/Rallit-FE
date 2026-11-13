@@ -1,5 +1,5 @@
 import type { ComponentProps, MouseEventHandler } from "react";
-import closeIcon from "../../../assets/icons/close.svg";
+import closeIcon from "../../assets/icons/close.svg";
 
 type SelectionChipProps = Omit<
   ComponentProps<"button">,
