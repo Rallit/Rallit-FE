@@ -55,14 +55,12 @@ export default function App() {
         element={
           authState.status === "authenticated" ? (
             <Navigate to={loginDestination} replace />
-          ) : (
+          ) : authState.status === "checking" ? (
             <PageLayout>
-              {authState.status === "checking" ? (
-                <p role="status">로그인 상태를 확인하고 있습니다…</p>
-              ) : (
-                <LoginPage onLoginSuccess={completeLogin} />
-              )}
+              <p role="status">로그인 상태를 확인하고 있습니다…</p>
             </PageLayout>
+          ) : (
+            <LoginPage onLoginSuccess={completeLogin} />
           )
         }
       />
