@@ -1,3 +1,13 @@
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+
+@layer components {
+  .page-grid {
+    @apply grid grid-cols-4 gap-x-(--unit-12);
+  }
+}
+
 :root {
   color-scheme: light;
   color: var(--fg-neutral-default);
