@@ -1,7 +1,18 @@
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+
+@layer components {
+  .page-grid {
+    @apply grid grid-cols-4 gap-x-(--unit-12);
+  }
+}
+
 :root {
   color-scheme: light;
   color: var(--fg-neutral-default);
   background-color: var(--bg-neutral-default);
+  font-family: var(--family-ko-body), system-ui, sans-serif;
 }
 
 @media (width > 480px) {
@@ -12,4 +23,29 @@
 
 body {
   margin: 0;
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+}
+
+@media (width <= 480px) {
+  :root {
+    scrollbar-width: none;
+  }
+
+  :root::-webkit-scrollbar:vertical {
+    display: none;
+  }
+}
+
+.page-layout {
+  scrollbar-width: none;
+}
+
+.page-layout::-webkit-scrollbar:vertical {
+  display: none;
 }
