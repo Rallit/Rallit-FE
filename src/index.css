@@ -31,3 +31,21 @@ select,
 textarea {
   font-family: inherit;
 }
+
+@media (width <= 480px) {
+  :root {
+    scrollbar-width: none;
+  }
+
+  :root::-webkit-scrollbar:vertical {
+    display: none;
+  }
+}
+
+.page-layout {
+  scrollbar-width: none;
+}
+
+.page-layout::-webkit-scrollbar:vertical {
+  display: none;
+}
