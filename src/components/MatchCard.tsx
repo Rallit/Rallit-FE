@@ -1,5 +1,6 @@
 import participantIcon from "../../assets/icons/match-participant.svg";
 import { Badge } from "./Badge";
+import { Divider } from "./Divider";
 import { Profile } from "./Profile";
 
 type MatchCardProps = {
@@ -44,10 +45,7 @@ export function MatchCard(props: MatchCardProps) {
       className={`typography-label-r-medium flex flex-wrap items-center gap-y-(--spacing-gap-micro) ${vertical ? "gap-x-(--spacing-gap-medium) text-(color:--fg-neutral-secondary)" : "gap-x-(--spacing-gap-micro) text-(color:--fg-neutral-tertiary)"}`}
     >
       <span>{matchType}</span>
-      <span
-        aria-hidden="true"
-        className="h-4 w-px shrink-0 bg-(--border-neutral-default)"
-      />
+      <Divider orientation="vertical" length={16} />
       <span>{skillLevel}</span>
     </div>
   );
