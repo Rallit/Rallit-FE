@@ -1,5 +1,6 @@
 import participantIcon from "../../assets/icons/match-participant.svg";
 import { Badge } from "./Badge";
+import { Profile } from "./Profile";
 
 type MatchCardProps = {
   href: string;
@@ -15,7 +16,7 @@ type MatchCardProps = {
   | {
       variant: "vertical";
       tags: readonly string[];
-      participants?: readonly { id: string; image: string }[];
+      participants?: readonly { id: string; image?: string | null }[];
     }
   | {
       variant: "list";
@@ -89,12 +90,7 @@ export function MatchCard(props: MatchCardProps) {
             )}
             <div className="relative flex shrink-0 -space-x-4">
               {props.participants?.slice(0, 3).map(({ id, image }) => (
-                <img
-                  key={id}
-                  src={image}
-                  alt=""
-                  className="box-border size-10 rounded-(--radius-full) border border-solid border-(--border-neutral-default) object-cover object-top"
-                />
+                <Profile key={id} src={image} size="S" />
               ))}
             </div>
             {price}
