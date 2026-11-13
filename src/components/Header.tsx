@@ -2,13 +2,25 @@ import type { MouseEventHandler } from "react";
 import logo from "../../assets/images/rallit-logo.svg";
 import backIcon from "../../assets/icons/back.svg";
 import notificationIcon from "../../assets/icons/notification.svg";
+import settingsIcon from "../../assets/icons/settings.svg";
+import sheetCloseIcon from "../../assets/icons/sheet-close.svg";
 
 type HeaderProps =
   | { variant: "logo"; onNotifications: MouseEventHandler<HTMLButtonElement> }
   | {
+      variant: "main";
+      title: string;
+      onSettings?: MouseEventHandler<HTMLButtonElement>;
+    }
+  | {
       variant: "subpage";
       title?: string;
       onBack: MouseEventHandler<HTMLButtonElement>;
+    }
+  | {
+      variant: "sheet";
+      title: string;
+      onClose: MouseEventHandler<HTMLButtonElement>;
     };
 
 const iconButton =
@@ -33,6 +45,42 @@ export function Header(props: HeaderProps) {
         >
           <img src={notificationIcon} alt="" className="block" />
         </button>
+      </header>
+    );
+  }
+
+  if (props.variant === "main" || props.variant === "sheet") {
+    const isSheet = props.variant === "sheet";
+    const action = isSheet ? props.onClose : props.onSettings;
+    const titleStyle = isSheet
+      ? "typography-heading-bold"
+      : "typography-title-bold font-bold!";
+    const height = isSheet ? "h-16" : "h-14";
+    const Title = isSheet ? "h2" : "h1";
+
+    return (
+      <header
+        className={`box-border flex w-full items-center justify-between gap-(--spacing-gap-micro) px-(--spacing-padding-large) ${height}`}
+      >
+        <Title
+          className={`m-0 min-w-0 truncate text-(color:--fg-neutral-default) ${titleStyle}`}
+        >
+          {props.title}
+        </Title>
+        {action && (
+          <button
+            type="button"
+            aria-label={isSheet ? "닫기" : "설정"}
+            onClick={action}
+            className={`-mr-2.5 ${iconButton}`}
+          >
+            <img
+              src={isSheet ? sheetCloseIcon : settingsIcon}
+              alt=""
+              className={isSheet ? "block" : "block translate-y-[0.25px]"}
+            />
+          </button>
+        )}
       </header>
     );
   }
