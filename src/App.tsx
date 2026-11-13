@@ -4,6 +4,7 @@ import { PageLayout } from "@/components/layout/PageLayout";
 import { useAuthContext } from "@/hooks/useAuthContext";
 import AuthCompletePage from "@/pages/AuthCompletePage";
 import LoginPage from "@/pages/LoginPage";
+import OnboardingPage from "@/pages/OnboardingPage";
 
 function AuthStatusGate() {
   const { authState, retry } = useAuthContext();
@@ -69,17 +70,7 @@ export default function App() {
 
       <Route element={<AuthStatusGate />}>
         <Route element={<ProtectedRoute onboarding="pending" />}>
-          <Route
-            path="/onboarding"
-            element={
-              <PageLayout>
-                <h1>온보딩</h1>
-                <button type="button" onClick={() => void logout()}>
-                  로그아웃
-                </button>
-              </PageLayout>
-            }
-          />
+          <Route path="/onboarding" element={<OnboardingPage />} />
         </Route>
 
         <Route element={<ProtectedRoute onboarding="completed" />}>
