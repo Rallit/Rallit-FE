@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useEffectEvent } from "react";
 import checkIcon from "../../assets/icons/toast-check-round.svg";
 
 type ToastProps = {
@@ -16,12 +16,14 @@ export function Toast({
   icon = checkIcon,
   className,
 }: ToastProps) {
+  const dismiss = useEffectEvent(onDismiss);
+
   useEffect(() => {
     if (!message) return;
 
-    const timeout = window.setTimeout(onDismiss, durationMs);
+    const timeout = window.setTimeout(() => dismiss(), durationMs);
     return () => window.clearTimeout(timeout);
-  }, [message, onDismiss, durationMs]);
+  }, [message, durationMs]);
 
   return (
     <div role="status" className={className}>

@@ -46,7 +46,8 @@ export function TextInputField({
       ariaInvalid === "true" ||
       ariaInvalid === "grammar" ||
       ariaInvalid === "spelling");
-  const message = invalid ? error : caption;
+  const errorMessage = invalid ? error : undefined;
+  const message = errorMessage || caption;
   const showCheck = !disabled && trailingIcon === "check";
   const descriptionIds = [
     describedBy,
@@ -110,7 +111,7 @@ export function TextInputField({
       {message && (
         <p
           id={`${id}-message`}
-          className={`typography-caption-r-regular m-0 ${invalid ? "text-(color:--fg-system-error)" : "text-(color:--fg-neutral-tertiary)"}`}
+          className={`typography-caption-r-regular m-0 ${errorMessage ? "text-(color:--fg-system-error)" : "text-(color:--fg-neutral-tertiary)"}`}
         >
           {message}
         </p>

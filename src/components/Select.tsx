@@ -1,3 +1,4 @@
+import { useLayoutEffect, useRef } from "react";
 import type { ComponentProps } from "react";
 import addIcon from "../../assets/icons/add.svg";
 import downIcon from "../../assets/icons/chevron-down.svg";
@@ -26,6 +27,27 @@ export function Select({
   disabled,
   ...props
 }: SelectProps) {
+  const selectRef = useRef<HTMLDivElement>(null);
+  const chipListRef = useRef<HTMLDivElement>(null);
+  const pendingRemoval = useRef<{ id: string; index: number } | null>(null);
+
+  useLayoutEffect(() => {
+    const removed = pendingRemoval.current;
+    if (!removed || chips?.some(({ id }) => id === removed.id)) return;
+
+    pendingRemoval.current = null;
+    if (disabled || document.activeElement !== document.body) return;
+
+    const buttons = chipListRef.current?.querySelectorAll("button");
+    const nextButton = buttons?.[removed.index] ?? buttons?.[removed.index - 1];
+    (
+      nextButton ??
+      selectRef.current?.querySelector<HTMLButtonElement>(
+        "[data-select-trigger]",
+      )
+    )?.focus();
+  }, [chips, disabled]);
+
   const hasChips = Boolean(chips?.length);
   const triggerStyle = hasChips
     ? "size-(--unit-24) shrink-0 items-center border-0 bg-transparent p-0"
@@ -40,6 +62,7 @@ export function Select({
   const trigger = (
     <button
       {...props}
+      data-select-trigger
       type="button"
       disabled={disabled}
       className={`flex cursor-pointer appearance-none disabled:cursor-default ${triggerStyle}`}
@@ -56,16 +79,27 @@ export function Select({
   );
 
   return (
-    <div className={["w-full min-w-0", className].filter(Boolean).join(" ")}>
+    <div
+      ref={selectRef}
+      className={["w-full min-w-0", className].filter(Boolean).join(" ")}
+    >
       {chips?.length ? (
         <div className="box-border flex min-h-[52px] items-center justify-between gap-(--spacing-gap-small) py-(--spacing-padding-micro)">
-          <div className="flex min-w-0 flex-wrap gap-(--spacing-gap-small)">
-            {chips.map(({ id, label }) => (
+          <div
+            ref={chipListRef}
+            className="flex min-w-0 flex-wrap gap-(--spacing-gap-small)"
+          >
+            {chips.map(({ id, label }, index) => (
               <SelectionChip
                 key={id}
                 label={label}
                 disabled={disabled}
-                onRemove={() => onRemove(id)}
+                onRemove={(event) => {
+                  if (document.activeElement === event.currentTarget) {
+                    pendingRemoval.current = { id, index };
+                  }
+                  onRemove(id);
+                }}
                 className="max-w-full"
               />
             ))}
