@@ -4,6 +4,7 @@ import backIcon from "../../assets/icons/back.svg";
 import notificationIcon from "../../assets/icons/notification.svg";
 import settingsIcon from "../../assets/icons/settings.svg";
 import sheetCloseIcon from "../../assets/icons/sheet-close.svg";
+import { IconButton } from "./IconButton";
 
 type HeaderProps =
   | { variant: "logo"; onNotifications: MouseEventHandler<HTMLButtonElement> }
@@ -23,9 +24,6 @@ type HeaderProps =
       onClose: MouseEventHandler<HTMLButtonElement>;
     };
 
-const iconButton =
-  "grid size-11 shrink-0 cursor-pointer appearance-none place-items-center border-0 bg-transparent p-0";
-
 export function Header(props: HeaderProps) {
   if (props.variant === "logo") {
     return (
@@ -37,14 +35,12 @@ export function Header(props: HeaderProps) {
             className="absolute top-[13.55px] left-[0.89px] block"
           />
         </div>
-        <button
-          type="button"
+        <IconButton
           aria-label="알림"
+          icon={notificationIcon}
           onClick={props.onNotifications}
-          className={`-mr-2.5 ${iconButton}`}
-        >
-          <img src={notificationIcon} alt="" className="block" />
-        </button>
+          className="-mr-2.5"
+        />
       </header>
     );
   }
@@ -68,18 +64,13 @@ export function Header(props: HeaderProps) {
           {props.title}
         </Title>
         {action && (
-          <button
-            type="button"
+          <IconButton
             aria-label={isSheet ? "닫기" : "설정"}
+            icon={isSheet ? sheetCloseIcon : settingsIcon}
+            iconClassName={isSheet ? undefined : "translate-y-[0.25px]"}
             onClick={action}
-            className={`-mr-2.5 ${iconButton}`}
-          >
-            <img
-              src={isSheet ? sheetCloseIcon : settingsIcon}
-              alt=""
-              className={isSheet ? "block" : "block translate-y-[0.25px]"}
-            />
-          </button>
+            className="-mr-2.5"
+          />
         )}
       </header>
     );
@@ -87,14 +78,12 @@ export function Header(props: HeaderProps) {
 
   return (
     <header className="box-border grid h-14 w-full grid-cols-[24px_minmax(0,1fr)_24px] items-center px-(--spacing-padding-large)">
-      <button
-        type="button"
+      <IconButton
         aria-label="뒤로 가기"
+        icon={backIcon}
         onClick={props.onBack}
-        className={`-ml-2.5 ${iconButton}`}
-      >
-        <img src={backIcon} alt="" className="block" />
-      </button>
+        className="-ml-2.5"
+      />
       {props.title && (
         <h1 className="typography-headline-bold m-0 truncate px-(--spacing-gap-medium) text-center text-(color:--fg-neutral-secondary)">
           {props.title}
