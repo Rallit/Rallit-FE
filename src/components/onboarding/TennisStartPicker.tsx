@@ -50,7 +50,14 @@ function DateWheel({
   const [initialOffset] = useState(() => (value - first) * wheelRowHeight);
 
   useLayoutEffect(() => {
-    if (wheel.current) wheel.current.scrollTop = initialOffset;
+    const list = wheel.current;
+    if (!list) return;
+
+    const frame = requestAnimationFrame(() => {
+      list.scrollTop = initialOffset;
+    });
+
+    return () => cancelAnimationFrame(frame);
   }, [initialOffset]);
 
   function select(option: number) {
