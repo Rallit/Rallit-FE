@@ -1,10 +1,14 @@
+import type { OnboardingProfile } from "./onboarding.types";
+
 export type AuthTarget = "service" | "admin";
 
 export type AuthUser = {
   id: number;
   nickname: string;
+  socialDisplayName?: string | null;
   role: "USER" | "ADMIN";
   onboardingCompleted: boolean;
+  profile?: OnboardingProfile | null;
 };
 
 export type RefreshResult = {

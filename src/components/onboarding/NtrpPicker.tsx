@@ -1,6 +1,13 @@
 import backIcon from "../../../assets/icons/back.svg";
-import closeIcon from "../../../assets/icons/close.svg";
-import { useId, useRef, useState, type PointerEvent } from "react";
+import infoIcon from "../../../assets/icons/info.svg";
+import {
+  useEffect,
+  useEffectEvent,
+  useId,
+  useRef,
+  useState,
+  type PointerEvent,
+} from "react";
 import { IconButton } from "@/components/IconButton";
 
 const levels = [
@@ -50,13 +57,13 @@ type NtrpPickerProps = {
 
 const swipeThreshold = 24;
 const directionThreshold = 8;
+const wheelThreshold = 40;
+const wheelStepInterval = 180;
 const sideSlotWidth = 59;
 const levelSpacing = 95;
 
 export function NtrpPicker({ value, onChange }: NtrpPickerProps) {
   const labelId = useId();
-  const descriptionId = useId();
-  const [showDescription, setShowDescription] = useState(true);
   const [dragOffset, setDragOffset] = useState(0);
   const swipeStart = useRef<{
     id: number;
@@ -64,10 +71,60 @@ export function NtrpPicker({ value, onChange }: NtrpPickerProps) {
     y: number;
     horizontal: boolean;
   } | null>(null);
+  const pickerRow = useRef<HTMLDivElement>(null);
+  const wheelInput = useRef({
+    distance: 0,
+    lastEvent: -Infinity,
+    lastStep: -Infinity,
+  });
   const numberTrack = useRef<HTMLDivElement>(null);
   const index = levels.findIndex((level) => level.value === value);
   const previous = levels[index - 1];
   const next = levels[index + 1];
+
+  const handleWheel = useEffectEvent((event: WheelEvent) => {
+    if (event.ctrlKey || event.defaultPrevented || swipeStart.current) return;
+
+    const { deltaMode, deltaX, deltaY, timeStamp } = event;
+    const delta = Math.abs(deltaX) > Math.abs(deltaY) ? deltaX : deltaY;
+    if (!delta) return;
+
+    const level = delta > 0 ? next : previous;
+    const input = wheelInput.current;
+    if (!level) {
+      input.distance = 0;
+      return;
+    }
+
+    event.preventDefault();
+    if (
+      timeStamp - input.lastEvent > wheelStepInterval ||
+      Math.sign(input.distance) !== Math.sign(delta)
+    ) {
+      input.distance = 0;
+    }
+    input.lastEvent = timeStamp;
+    if (timeStamp - input.lastStep < wheelStepInterval) return;
+
+    input.distance +=
+      deltaMode === WheelEvent.DOM_DELTA_PIXEL
+        ? delta
+        : Math.sign(delta) * wheelThreshold;
+    if (Math.abs(input.distance) < wheelThreshold) return;
+
+    input.distance = 0;
+    input.lastStep = timeStamp;
+    onChange(level.value);
+  });
+
+  useEffect(() => {
+    const row = pickerRow.current;
+    if (!row) return;
+
+    const listener = (event: WheelEvent) => handleWheel(event);
+    row.addEventListener("wheel", listener, { passive: false });
+    return () => row.removeEventListener("wheel", listener);
+  }, []);
 
   function startSwipe(event: PointerEvent<HTMLDivElement>) {
     if (!event.isPrimary || event.button !== 0) return;
@@ -132,19 +189,15 @@ export function NtrpPicker({ value, onChange }: NtrpPickerProps) {
         >
           NTRP
         </h2>
-        <button
-          type="button"
-          aria-label={showDescription ? "NTRP 설명 숨기기" : "NTRP 설명 보기"}
-          aria-expanded={showDescription}
-          aria-controls={descriptionId}
-          onClick={() => setShowDescription((visible) => !visible)}
-          className="typography-label-r-medium absolute top-1/2 -right-2 grid size-9 -translate-y-1/2 cursor-pointer place-items-center rounded-full border-0 bg-transparent p-0 text-(color:--fg-neutral-secondary)"
-        >
-          {showDescription ? <img src={closeIcon} alt="" /> : "?"}
-        </button>
+        <img
+          src={infoIcon}
+          alt=""
+          className="absolute top-1/2 right-0 block -translate-y-1/2"
+        />
       </div>
 
       <div
+        ref={pickerRow}
         onPointerDown={startSwipe}
         onPointerMove={moveSwipe}
         onPointerUp={finishSwipe}
@@ -213,11 +266,7 @@ export function NtrpPicker({ value, onChange }: NtrpPickerProps) {
           onClick={() => next && onChange(next.value)}
         />
       </div>
-      <p
-        id={descriptionId}
-        hidden={!showDescription}
-        className="typography-body-regular m-0 mt-(--spacing-gap-medium) rounded-(--radius-small) bg-(--bg-neutral-weak) px-(--spacing-padding-small) py-(--spacing-padding-medium) text-center text-(color:--fg-neutral-tertiary)"
-      >
+      <p className="typography-body-regular m-0 mt-(--spacing-gap-medium) rounded-(--radius-small) bg-(--bg-neutral-weak) px-(--spacing-padding-small) py-(--spacing-padding-medium) text-center text-(color:--fg-neutral-tertiary)">
         {levels[index].description}
       </p>
     </section>

@@ -1,8 +1,10 @@
-import { Navigate, Outlet, Route, Routes } from "react-router";
+import { Navigate, Outlet, Route, Routes, useNavigate } from "react-router";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import { ServiceIntro } from "@/components/intro/ServiceIntro";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { useAuthContext } from "@/hooks/useAuthContext";
 import AuthCompletePage from "@/pages/AuthCompletePage";
+import HomePage from "@/pages/HomePage";
 import LoginPage from "@/pages/LoginPage";
 import OnboardingPage from "@/pages/OnboardingPage";
 
@@ -33,12 +35,28 @@ function AuthStatusGate() {
   return <Outlet />;
 }
 
+function OnboardingIntroRoute() {
+  const { authState } = useAuthContext();
+  const navigate = useNavigate();
+
+  return (
+    <ServiceIntro
+      displayName={
+        authState.status === "authenticated"
+          ? (authState.user.socialDisplayName ?? null)
+          : null
+      }
+      onStart={() => void navigate("/onboarding")}
+    />
+  );
+}
+
 export default function App() {
-  const { authState, completeLogin, logout } = useAuthContext();
+  const { authState, completeLogin } = useAuthContext();
   const loginDestination =
     authState.status === "authenticated" && authState.user.onboardingCompleted
       ? "/"
-      : "/onboarding";
+      : "/onboarding/intro";
 
   return (
     <Routes>
@@ -68,21 +86,15 @@ export default function App() {
 
       <Route element={<AuthStatusGate />}>
         <Route element={<ProtectedRoute onboarding="pending" />}>
+          <Route path="/onboarding/intro" element={<OnboardingIntroRoute />} />
+        </Route>
+
+        <Route element={<ProtectedRoute />}>
           <Route path="/onboarding" element={<OnboardingPage />} />
         </Route>
 
         <Route element={<ProtectedRoute onboarding="completed" />}>
-          <Route
-            path="/"
-            element={
-              <PageLayout>
-                <h1>홈</h1>
-                <button type="button" onClick={() => void logout()}>
-                  로그아웃
-                </button>
-              </PageLayout>
-            }
-          />
+          <Route path="/" element={<HomePage />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />

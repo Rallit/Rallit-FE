@@ -1,3 +1,5 @@
+import type { AuthUser } from "@/apis/auth.types";
+import type { OnboardingRequest } from "@/apis/onboarding.types";
 import { ApiError } from "@/apis/client";
 import { mockActivityAreas } from "@/apis/onboarding.mock";
 import { authMode } from "@/platform/authConfig.web";
@@ -25,6 +27,35 @@ export async function checkNicknameAvailability(
     );
   }
   return result.available;
+}
+
+export async function submitOnboarding(
+  payload: OnboardingRequest,
+  user: AuthUser,
+  signal: AbortSignal,
+): Promise<AuthUser> {
+  if (authMode === "mock") {
+    signal.throwIfAborted();
+    const { nickname, ...profile } = payload;
+    return { ...user, nickname, profile, onboardingCompleted: true };
+  }
+
+  const saved = await requestWithAuth<AuthUser>("/api/v1/users/me/onboarding", {
+    method: "POST",
+    json: payload,
+    signal,
+  });
+
+  if (saved?.id !== user.id || saved.onboardingCompleted !== true) {
+    throw new ApiError("protocol", "온보딩 완료 응답을 확인하지 못했습니다.");
+  }
+  return saved;
+}
+
+export async function getOnboardingUser(
+  signal: AbortSignal,
+): Promise<AuthUser> {
+  return requestWithAuth<AuthUser>("/api/v1/users/me", { signal });
 }
 
 export type ActivityArea = { id: string; label: string };
