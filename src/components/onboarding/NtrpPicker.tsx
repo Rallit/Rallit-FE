@@ -1,6 +1,13 @@
 import backIcon from "../../../assets/icons/back.svg";
 import infoIcon from "../../../assets/icons/info.svg";
-import { useId, useRef, useState, type PointerEvent } from "react";
+import {
+  useEffect,
+  useEffectEvent,
+  useId,
+  useRef,
+  useState,
+  type PointerEvent,
+} from "react";
 import { IconButton } from "@/components/IconButton";
 
 const levels = [
@@ -50,6 +57,8 @@ type NtrpPickerProps = {
 
 const swipeThreshold = 24;
 const directionThreshold = 8;
+const wheelThreshold = 40;
+const wheelStepInterval = 180;
 const sideSlotWidth = 59;
 const levelSpacing = 95;
 
@@ -62,10 +71,60 @@ export function NtrpPicker({ value, onChange }: NtrpPickerProps) {
     y: number;
     horizontal: boolean;
   } | null>(null);
+  const pickerRow = useRef<HTMLDivElement>(null);
+  const wheelInput = useRef({
+    distance: 0,
+    lastEvent: -Infinity,
+    lastStep: -Infinity,
+  });
   const numberTrack = useRef<HTMLDivElement>(null);
   const index = levels.findIndex((level) => level.value === value);
   const previous = levels[index - 1];
   const next = levels[index + 1];
+
+  const handleWheel = useEffectEvent((event: WheelEvent) => {
+    if (event.ctrlKey || event.defaultPrevented || swipeStart.current) return;
+
+    const { deltaMode, deltaX, deltaY, timeStamp } = event;
+    const delta = Math.abs(deltaX) > Math.abs(deltaY) ? deltaX : deltaY;
+    if (!delta) return;
+
+    const level = delta > 0 ? next : previous;
+    const input = wheelInput.current;
+    if (!level) {
+      input.distance = 0;
+      return;
+    }
+
+    event.preventDefault();
+    if (
+      timeStamp - input.lastEvent > wheelStepInterval ||
+      Math.sign(input.distance) !== Math.sign(delta)
+    ) {
+      input.distance = 0;
+    }
+    input.lastEvent = timeStamp;
+    if (timeStamp - input.lastStep < wheelStepInterval) return;
+
+    input.distance +=
+      deltaMode === WheelEvent.DOM_DELTA_PIXEL
+        ? delta
+        : Math.sign(delta) * wheelThreshold;
+    if (Math.abs(input.distance) < wheelThreshold) return;
+
+    input.distance = 0;
+    input.lastStep = timeStamp;
+    onChange(level.value);
+  });
+
+  useEffect(() => {
+    const row = pickerRow.current;
+    if (!row) return;
+
+    const listener = (event: WheelEvent) => handleWheel(event);
+    row.addEventListener("wheel", listener, { passive: false });
+    return () => row.removeEventListener("wheel", listener);
+  }, []);
 
   function startSwipe(event: PointerEvent<HTMLDivElement>) {
     if (!event.isPrimary || event.button !== 0) return;
@@ -138,6 +197,7 @@ export function NtrpPicker({ value, onChange }: NtrpPickerProps) {
       </div>
 
       <div
+        ref={pickerRow}
         onPointerDown={startSwipe}
         onPointerMove={moveSwipe}
         onPointerUp={finishSwipe}
