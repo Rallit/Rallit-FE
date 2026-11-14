@@ -24,6 +24,7 @@ import {
 } from "@/components/onboarding/MatchPreferencesStep";
 import { SkillStep, type SkillDraft } from "@/components/onboarding/SkillStep";
 import { useAuthContext } from "@/hooks/useAuthContext";
+import { useOnboardingProfilePhoto } from "@/hooks/useOnboardingProfilePhoto";
 
 const steps = [
   {
@@ -113,7 +114,16 @@ export default function OnboardingPage() {
     message: string;
   } | null>(null);
   const submitRequest = useRef<AbortController | null>(null);
-  const [photoPreviewUrl, setPhotoPreviewUrl] = useState<string | null>(null);
+  const profilePhoto = useOnboardingProfilePhoto(
+    authState.status === "authenticated"
+      ? (authState.user.profileImageUrl ?? null)
+      : null,
+    (profileImageUrl) => {
+      if (authState.status === "authenticated") {
+        completeLogin({ ...authState.user, profileImageUrl });
+      }
+    },
+  );
   const [nicknameTouched, setNicknameTouched] = useState(false);
   const [nicknameCheck, setNicknameCheck] =
     useState<NicknameCheckStatus>("idle");
@@ -126,10 +136,6 @@ export default function OnboardingPage() {
     },
     [],
   );
-  useEffect(() => {
-    if (!photoPreviewUrl) return;
-    return () => URL.revokeObjectURL(photoPreviewUrl);
-  }, [photoPreviewUrl]);
 
   const step = steps[stepIndex];
   const isFirstStep = stepIndex === 0;
@@ -285,7 +291,7 @@ export default function OnboardingPage() {
     disabled:
       isSubmitting ||
       (isLastStep && !matchPreferencesReady) ||
-      (isFirstStep && !basicProfileReady) ||
+      (isFirstStep && (!basicProfileReady || profilePhoto.isUploading)) ||
       (isSkillStep && !skill.tennisStart),
     onClick: () => {
       if (isLastStep) {
@@ -354,10 +360,10 @@ export default function OnboardingPage() {
             onCheckNickname={canCheckNickname ? checkNickname : undefined}
             checkingNickname={nicknameCheck === "checking"}
             nicknameConfirmed={nicknameConfirmed}
-            photoPreviewUrl={photoPreviewUrl}
-            onSelectPhoto={(file) =>
-              setPhotoPreviewUrl(URL.createObjectURL(file))
-            }
+            photoUrl={profilePhoto.photoUrl}
+            uploadingPhoto={profilePhoto.isUploading}
+            photoUploadError={profilePhoto.uploadError}
+            onSelectPhoto={(file) => void profilePhoto.selectPhoto(file)}
             nicknameError={
               (nicknameTouched ? formatError : undefined) ??
               (nicknameCheck === "duplicate"
