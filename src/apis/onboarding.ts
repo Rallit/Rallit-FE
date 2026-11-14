@@ -1,7 +1,6 @@
 import type { AuthUser } from "@/apis/auth.types";
 import type { OnboardingRequest } from "@/apis/onboarding.types";
 import { ApiError } from "@/apis/client";
-import { mockActivityAreas } from "@/apis/onboarding.mock";
 import { authMode } from "@/platform/authConfig.web";
 import { requestWithAuth } from "@/services/authSession";
 
@@ -65,11 +64,6 @@ type Location = { code: string; name: string };
 export async function getOnboardingActivityAreas(
   signal: AbortSignal,
 ): Promise<ActivityArea[]> {
-  if (authMode === "mock") {
-    signal.throwIfAborted();
-    return mockActivityAreas;
-  }
-
   const cities = await requestWithAuth<Location[]>("/api/v1/cities", {
     signal,
   });
