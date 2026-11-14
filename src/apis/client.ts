@@ -68,14 +68,20 @@ function createRequestOptions({
   headers,
   signal,
   credentials,
+  cache,
   json,
+  formData,
 }: ApiRequestOptions): RequestInit {
   try {
     const requestHeaders = new Headers(headers);
     if (!requestHeaders.has("Accept"))
       requestHeaders.set("Accept", "application/json");
 
-    const body = json === undefined ? undefined : JSON.stringify(json);
+    if (json !== undefined && formData !== undefined) {
+      throw new TypeError("JSON과 multipart 본문을 함께 보낼 수 없습니다.");
+    }
+
+    const body = json === undefined ? formData : JSON.stringify(json);
     if (json !== undefined && body === undefined) {
       throw new TypeError("JSON으로 변환할 수 없는 요청 본문입니다.");
     }
@@ -86,11 +92,18 @@ function createRequestOptions({
     ) {
       throw new TypeError("GET 및 HEAD 요청에는 본문을 포함할 수 없습니다.");
     }
-    if (body !== undefined && !requestHeaders.has("Content-Type")) {
+    if (json !== undefined && !requestHeaders.has("Content-Type")) {
       requestHeaders.set("Content-Type", "application/json");
     }
 
-    return { method, headers: requestHeaders, signal, credentials, body };
+    return {
+      method,
+      headers: requestHeaders,
+      signal,
+      credentials,
+      cache,
+      body,
+    };
   } catch (cause) {
     throw new ApiError("request", "API 요청을 구성할 수 없습니다.", { cause });
   }
@@ -162,11 +175,15 @@ export function createApiClient({
 }: ApiClientOptions) {
   function request(
     path: string,
-    options: ApiRequestOptions & { expectResult: false },
+    options: ApiRequestOptions & { responseType: "blob"; expectResult?: never },
+  ): Promise<Blob>;
+  function request(
+    path: string,
+    options: ApiRequestOptions & { expectResult: false; responseType?: never },
   ): Promise<void>;
   function request<TResult>(
     path: string,
-    options?: ApiRequestOptions & { expectResult?: true },
+    options?: ApiRequestOptions & { expectResult?: true; responseType?: never },
   ): Promise<TResult>;
   async function request<TResult>(
     path: string,
@@ -186,6 +203,18 @@ export function createApiClient({
 
     if (response.status === 204 && options.expectResult === false) {
       return;
+    }
+
+    if (response.ok && options.responseType === "blob") {
+      try {
+        return await response.blob();
+      } catch (cause) {
+        if (isCancellation(cause, options.signal)) throw cause;
+        throw new ApiError("network", "API 응답 본문을 읽을 수 없습니다.", {
+          cause,
+          status: response.status,
+        });
+      }
     }
 
     const result = await parseResponse(response, options.signal);
