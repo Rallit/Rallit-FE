@@ -1,6 +1,7 @@
 type ProgressBarProps = {
   currentStep: number;
   totalSteps: number;
+  mode?: "cumulative" | "current";
   label?: string;
   className?: string;
 };
@@ -8,6 +9,7 @@ type ProgressBarProps = {
 export function ProgressBar({
   currentStep,
   totalSteps,
+  mode = "cumulative",
   label = "진행 단계",
   className,
 }: ProgressBarProps) {
@@ -37,7 +39,7 @@ export function ProgressBar({
         <span
           key={index}
           aria-hidden="true"
-          className={`h-(--unit-4) min-w-0 flex-1 rounded-(--radius-full) ${index < current ? "bg-(--bg-primary-strong)" : "bg-(--bg-neutral-weak)"}`}
+          className={`h-(--unit-4) min-w-0 flex-1 rounded-(--radius-full) ${(mode === "current" ? index === current - 1 : index < current) ? "bg-(--bg-primary-strong)" : "bg-(--bg-neutral-weak)"}`}
         />
       ))}
     </div>

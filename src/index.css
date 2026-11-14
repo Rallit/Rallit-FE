@@ -25,6 +25,15 @@ body {
   margin: 0;
 }
 
+:root:has(.page-layout) {
+  overscroll-behavior-y: none;
+}
+
+:root:has(dialog[data-bottom-sheet][open]),
+body:has(dialog[data-bottom-sheet][open]) {
+  overflow: hidden;
+}
+
 button,
 input,
 select,

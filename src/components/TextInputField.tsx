@@ -15,6 +15,7 @@ type TextInputFieldProps = Omit<
   type?: "text" | "email" | "password" | "search" | "tel" | "url";
   caption?: string;
   error?: string;
+  errorAppearance?: "default" | "outline";
 } & (
     | { trailingAction: TrailingAction; trailingIcon?: never }
     | { trailingAction?: never; trailingIcon?: "check" }
@@ -22,13 +23,15 @@ type TextInputFieldProps = Omit<
 
 const normalStyle =
   "bg-(--bg-neutral-default) inset-ring inset-ring-(--border-neutral-weak) has-[input:placeholder-shown:not(:focus)]:inset-ring-(--border-neutral-default) has-[input:focus]:inset-ring-(--border-brand-focus)";
-const errorStyle =
-  "bg-(--bg-neutral-default) inset-ring inset-ring-(--border-system-error) [&:not(:has(input:focus,input:placeholder-shown))]:bg-(--bg-system-error) [&:not(:has(input:focus,input:placeholder-shown))]:inset-ring-0";
+const outlinedErrorStyle =
+  "bg-(--bg-neutral-default) inset-ring inset-ring-(--border-system-error)";
+const errorStyle = `${outlinedErrorStyle} [&:not(:has(input:focus,input:placeholder-shown))]:bg-(--bg-system-error) [&:not(:has(input:focus,input:placeholder-shown))]:inset-ring-0`;
 
 export function TextInputField({
   type = "text",
   caption,
   error,
+  errorAppearance = "default",
   disabled,
   trailingAction,
   trailingIcon,
@@ -60,6 +63,8 @@ export function TextInputField({
   if (disabled) {
     fieldStyle =
       "bg-(--bg-neutral-weak) inset-ring inset-ring-(--border-neutral-weak)";
+  } else if (invalid && errorAppearance === "outline") {
+    fieldStyle = outlinedErrorStyle;
   } else if (invalid) {
     fieldStyle = [
       errorStyle,
