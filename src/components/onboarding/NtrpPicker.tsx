@@ -266,7 +266,7 @@ export function NtrpPicker({ value, onChange }: NtrpPickerProps) {
           onClick={() => next && onChange(next.value)}
         />
       </div>
-      <p className="typography-body-regular m-0 mt-(--spacing-gap-medium) rounded-(--radius-small) bg-(--bg-neutral-weak) px-(--spacing-padding-small) py-(--spacing-padding-medium) text-center text-(color:--fg-neutral-tertiary)">
+      <p className="typography-label-r-regular m-0 mt-(--spacing-gap-medium) rounded-(--radius-small) bg-(--bg-neutral-weak) px-(--spacing-padding-small) py-(--spacing-padding-medium) text-center break-keep text-(color:--fg-neutral-tertiary)">
         {levels[index].description}
       </p>
     </section>
