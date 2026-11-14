@@ -1,5 +1,5 @@
 import backIcon from "../../../assets/icons/back.svg";
-import closeIcon from "../../../assets/icons/close.svg";
+import infoIcon from "../../../assets/icons/info.svg";
 import { useId, useRef, useState, type PointerEvent } from "react";
 import { IconButton } from "@/components/IconButton";
 
@@ -55,8 +55,6 @@ const levelSpacing = 95;
 
 export function NtrpPicker({ value, onChange }: NtrpPickerProps) {
   const labelId = useId();
-  const descriptionId = useId();
-  const [showDescription, setShowDescription] = useState(true);
   const [dragOffset, setDragOffset] = useState(0);
   const swipeStart = useRef<{
     id: number;
@@ -132,16 +130,11 @@ export function NtrpPicker({ value, onChange }: NtrpPickerProps) {
         >
           NTRP
         </h2>
-        <button
-          type="button"
-          aria-label={showDescription ? "NTRP 설명 숨기기" : "NTRP 설명 보기"}
-          aria-expanded={showDescription}
-          aria-controls={descriptionId}
-          onClick={() => setShowDescription((visible) => !visible)}
-          className="typography-label-r-medium absolute top-1/2 -right-2 grid size-9 -translate-y-1/2 cursor-pointer place-items-center rounded-full border-0 bg-transparent p-0 text-(color:--fg-neutral-secondary)"
-        >
-          {showDescription ? <img src={closeIcon} alt="" /> : "?"}
-        </button>
+        <img
+          src={infoIcon}
+          alt=""
+          className="absolute top-1/2 right-0 block -translate-y-1/2"
+        />
       </div>
 
       <div
@@ -213,11 +206,7 @@ export function NtrpPicker({ value, onChange }: NtrpPickerProps) {
           onClick={() => next && onChange(next.value)}
         />
       </div>
-      <p
-        id={descriptionId}
-        hidden={!showDescription}
-        className="typography-body-regular m-0 mt-(--spacing-gap-medium) rounded-(--radius-small) bg-(--bg-neutral-weak) px-(--spacing-padding-small) py-(--spacing-padding-medium) text-center text-(color:--fg-neutral-tertiary)"
-      >
+      <p className="typography-body-regular m-0 mt-(--spacing-gap-medium) rounded-(--radius-small) bg-(--bg-neutral-weak) px-(--spacing-padding-small) py-(--spacing-padding-medium) text-center text-(color:--fg-neutral-tertiary)">
         {levels[index].description}
       </p>
     </section>
