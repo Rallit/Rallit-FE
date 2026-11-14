@@ -249,19 +249,17 @@ export default function OnboardingPage() {
       if (signal.aborted) return;
 
       if (error instanceof ApiError && error.status === 409) {
+        if (error.message === "이미 사용 중인 닉네임입니다.") {
+          setNicknameCheck("duplicate");
+          setStepIndex(0);
+          return;
+        }
+
         try {
           const current = await getOnboardingUser(signal);
           if (signal.aborted) return;
           if (current.id === user.id && current.onboardingCompleted) {
             finish(current);
-            return;
-          }
-          if (
-            current.id === user.id &&
-            error.message === "이미 사용 중인 닉네임입니다."
-          ) {
-            setNicknameCheck("duplicate");
-            setStepIndex(0);
             return;
           }
         } catch {
