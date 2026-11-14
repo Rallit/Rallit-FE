@@ -6,6 +6,7 @@ export type AuthUser = {
   id: number;
   nickname: string;
   socialDisplayName?: string | null;
+  profileImageUrl?: string | null;
   role: "USER" | "ADMIN";
   onboardingCompleted: boolean;
   profile?: OnboardingProfile | null;

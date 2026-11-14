@@ -34,7 +34,9 @@ type BasicProfileStepProps = {
   onCheckNickname?: () => void;
   checkingNickname: boolean;
   nicknameConfirmed: boolean;
-  photoPreviewUrl: string | null;
+  photoUrl: string | null;
+  uploadingPhoto: boolean;
+  photoUploadError: string;
   onSelectPhoto: (file: File) => void;
 };
 
@@ -46,7 +48,9 @@ export function BasicProfileStep({
   onCheckNickname,
   checkingNickname,
   nicknameConfirmed,
-  photoPreviewUrl,
+  photoUrl,
+  uploadingPhoto,
+  photoUploadError,
   onSelectPhoto,
 }: BasicProfileStepProps) {
   const photoInputRef = useRef<HTMLInputElement>(null);
@@ -55,9 +59,15 @@ export function BasicProfileStep({
   function handlePhotoChange(event: ChangeEvent<HTMLInputElement>) {
     const file = event.currentTarget.files?.[0];
     event.currentTarget.value = "";
-    if (!file) return;
+    if (!file || uploadingPhoto) return;
 
-    if (!["image/jpeg", "image/png"].includes(file.type) || file.size === 0) {
+    const jpeg = /\.jpe?g$/i.test(file.name);
+    const png = /\.png$/i.test(file.name);
+    const supportedPhoto = file.type
+      ? (jpeg && file.type === "image/jpeg") ||
+        (png && file.type === "image/png")
+      : jpeg || png;
+    if (!supportedPhoto || file.size === 0) {
       setPhotoError("JPEG 또는 PNG 사진을 선택해 주세요.");
       return;
     }
@@ -88,24 +98,34 @@ export function BasicProfileStep({
         <button
           type="button"
           aria-label="프로필 사진 선택"
-          className="cursor-pointer rounded-(--radius-full) border-0 bg-transparent p-0"
+          disabled={uploadingPhoto}
+          className="cursor-pointer rounded-(--radius-full) border-0 bg-transparent p-0 disabled:cursor-default"
           onClick={() => photoInputRef.current?.click()}
         >
-          <Profile src={photoPreviewUrl} />
+          <Profile src={photoUrl} />
         </button>
         <input
           ref={photoInputRef}
           type="file"
-          accept="image/jpeg,image/png"
+          accept="image/jpeg,image/png,.jpg,.jpeg,.png"
           hidden
+          disabled={uploadingPhoto}
           onChange={handlePhotoChange}
         />
-        {photoError && (
+        {uploadingPhoto && (
+          <p
+            role="status"
+            className="typography-caption-r-regular m-0 text-(color:--fg-neutral-tertiary)"
+          >
+            사진을 등록하고 있어요.
+          </p>
+        )}
+        {(photoError || photoUploadError) && (
           <p
             role="alert"
             className="typography-caption-r-regular m-0 text-(color:--fg-system-error)"
           >
-            {photoError}
+            {photoError || photoUploadError}
           </p>
         )}
       </div>

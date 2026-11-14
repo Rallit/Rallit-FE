@@ -160,19 +160,24 @@ export async function completePendingLogout(
 
 export function requestWithAuth(
   path: string,
-  options: ApiRequestOptions & { expectResult: false },
+  options: ApiRequestOptions & { responseType: "blob"; expectResult?: never },
+  target?: AuthTarget,
+): Promise<Blob>;
+export function requestWithAuth(
+  path: string,
+  options: ApiRequestOptions & { expectResult: false; responseType?: never },
   target?: AuthTarget,
 ): Promise<void>;
 export function requestWithAuth<TResult>(
   path: string,
-  options?: ApiRequestOptions & { expectResult?: true },
+  options?: ApiRequestOptions & { expectResult?: true; responseType?: never },
   target?: AuthTarget,
 ): Promise<TResult>;
 export async function requestWithAuth<TResult>(
   path: string,
   options: ApiRequestOptions = {},
   target: AuthTarget = "service",
-): Promise<TResult | void> {
+): Promise<TResult | Blob | void> {
   const version = sessionVersions[target];
 
   const assertCurrentSession = () => {
@@ -191,13 +196,17 @@ export async function requestWithAuth<TResult>(
     const headers = new Headers(options.headers);
     headers.set("Authorization", `Bearer ${token}`);
 
-    const requestOptions = {
+    const { responseType, expectResult, ...requestOptions } = {
       ...options,
       headers,
       credentials: "omit" as const,
     };
 
-    return options.expectResult === false
+    if (responseType === "blob") {
+      return apiClient.request(path, { ...requestOptions, responseType });
+    }
+
+    return expectResult === false
       ? apiClient.request(path, {
           ...requestOptions,
           expectResult: false,

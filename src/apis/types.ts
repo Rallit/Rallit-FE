@@ -21,9 +21,11 @@ export type ApiErrorDetails = {
 
 export type ApiRequestOptions = Pick<
   RequestInit,
-  "method" | "headers" | "signal" | "credentials"
+  "method" | "headers" | "signal" | "credentials" | "cache"
 > & {
   json?: unknown;
+  formData?: FormData;
+  responseType?: "blob";
   expectResult?: boolean;
 };
 
