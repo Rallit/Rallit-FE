@@ -53,12 +53,14 @@ export default function HomePage({
           <HomeBanner />
         </div>
       ) : (
-        <div className="flex flex-col pt-9.5 pb-6">
-          <HomeBanner />
-          <div className="mt-14">{heading}</div>
-          <p className="typography-body-regular m-0 mt-12.5 flex h-30 items-center justify-center text-center whitespace-pre-line text-(color:--fg-neutral-tertiary)">
+        <div className="flex flex-col pt-4 pb-6">
+          {heading}
+          <p className="typography-body-regular m-0 mt-5.5 flex h-30 items-center justify-center text-center whitespace-pre-line text-(color:--fg-neutral-tertiary)">
             {EMPTY_MESSAGE}
           </p>
+          <div className="mt-35.5">
+            <HomeBanner />
+          </div>
         </div>
       )}
     </PageLayout>
