@@ -39,12 +39,17 @@ export default function OnboardingPage() {
     gender: null,
     ageGroup: null,
   }));
+  const [photoPreviewUrl, setPhotoPreviewUrl] = useState<string | null>(null);
   const [nicknameTouched, setNicknameTouched] = useState(false);
   const [nicknameCheck, setNicknameCheck] =
     useState<NicknameCheckStatus>("idle");
   const nicknameRequest = useRef<AbortController | null>(null);
 
   useEffect(() => () => nicknameRequest.current?.abort(), []);
+  useEffect(() => {
+    if (!photoPreviewUrl) return;
+    return () => URL.revokeObjectURL(photoPreviewUrl);
+  }, [photoPreviewUrl]);
 
   const step = steps[stepIndex];
   const isFirstStep = stepIndex === 0;
@@ -143,6 +148,10 @@ export default function OnboardingPage() {
             onCheckNickname={canCheckNickname ? checkNickname : undefined}
             checkingNickname={nicknameCheck === "checking"}
             nicknameConfirmed={nicknameConfirmed}
+            photoPreviewUrl={photoPreviewUrl}
+            onSelectPhoto={(file) =>
+              setPhotoPreviewUrl(URL.createObjectURL(file))
+            }
             nicknameError={
               (nicknameTouched ? formatError : undefined) ??
               (nicknameCheck === "duplicate"

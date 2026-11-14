@@ -1,3 +1,4 @@
+import { useRef, useState, type ChangeEvent } from "react";
 import { Profile } from "@/components/Profile";
 import { SelectionChip } from "@/components/SelectionChip";
 import { TextInputField } from "@/components/TextInputField";
@@ -17,6 +18,7 @@ const ageGroups = [
 ] as const;
 
 const nicknameMaxLength = 12;
+const profilePhotoMaxBytes = 5 * 1024 * 1024;
 
 export type BasicProfileDraft = {
   nickname: string;
@@ -32,6 +34,8 @@ type BasicProfileStepProps = {
   onCheckNickname?: () => void;
   checkingNickname: boolean;
   nicknameConfirmed: boolean;
+  photoPreviewUrl: string | null;
+  onSelectPhoto: (file: File) => void;
 };
 
 export function BasicProfileStep({
@@ -42,7 +46,30 @@ export function BasicProfileStep({
   onCheckNickname,
   checkingNickname,
   nicknameConfirmed,
+  photoPreviewUrl,
+  onSelectPhoto,
 }: BasicProfileStepProps) {
+  const photoInputRef = useRef<HTMLInputElement>(null);
+  const [photoError, setPhotoError] = useState("");
+
+  function handlePhotoChange(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.currentTarget.files?.[0];
+    event.currentTarget.value = "";
+    if (!file) return;
+
+    if (!["image/jpeg", "image/png"].includes(file.type) || file.size === 0) {
+      setPhotoError("JPEG 또는 PNG 사진을 선택해 주세요.");
+      return;
+    }
+    if (file.size > profilePhotoMaxBytes) {
+      setPhotoError("5MB 이하의 사진을 선택해 주세요.");
+      return;
+    }
+
+    setPhotoError("");
+    onSelectPhoto(file);
+  }
+
   const nicknameAccessory = nicknameConfirmed
     ? { trailingIcon: "check" as const }
     : onCheckNickname
@@ -57,8 +84,30 @@ export function BasicProfileStep({
 
   return (
     <div className="mt-(--spacing-gap-extra-large)">
-      <div className="flex justify-center">
-        <Profile alt="기본 프로필 이미지" />
+      <div className="grid justify-items-center gap-(--spacing-gap-small)">
+        <button
+          type="button"
+          aria-label="프로필 사진 선택"
+          className="cursor-pointer rounded-(--radius-full) border-0 bg-transparent p-0"
+          onClick={() => photoInputRef.current?.click()}
+        >
+          <Profile src={photoPreviewUrl} />
+        </button>
+        <input
+          ref={photoInputRef}
+          type="file"
+          accept="image/jpeg,image/png"
+          hidden
+          onChange={handlePhotoChange}
+        />
+        {photoError && (
+          <p
+            role="alert"
+            className="typography-caption-r-regular m-0 text-(color:--fg-system-error)"
+          >
+            {photoError}
+          </p>
+        )}
       </div>
 
       <div className="mt-(--spacing-padding-extra-large) grid gap-(--spacing-gap-large)">
