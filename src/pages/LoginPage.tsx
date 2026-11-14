@@ -49,20 +49,21 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
   };
 
   return (
-    <main
-      aria-busy={isLoading}
-      className="box-border mx-auto flex min-h-dvh w-full max-w-[480px] flex-col bg-(--common-black) pt-[env(safe-area-inset-top,0px)] pr-[env(safe-area-inset-right,0px)] pb-[max(env(safe-area-inset-bottom,0px),34px)] pl-[env(safe-area-inset-left,0px)]"
-    >
+    <main className="box-border mx-auto flex min-h-dvh w-full max-w-[480px] flex-col bg-(--common-black) pt-[env(safe-area-inset-top,0px)] pr-[env(safe-area-inset-right,0px)] pb-[max(env(safe-area-inset-bottom,0px),34px)] pl-[env(safe-area-inset-left,0px)]">
+      <p role="status" className="sr-only">
+        {loadingProvider
+          ? "로그인 처리 중…"
+          : isLoggingOut
+            ? "로그아웃 처리 중…"
+            : ""}
+      </p>
       <h1 className="m-0 flex justify-center pt-[81px]">
         <img src={logoWhite} alt="Rallit" className="block" />
       </h1>
 
       <div className="mt-auto grid gap-(--spacing-gap-small) px-(--spacing-padding-large)">
         {isLoggingOut && (
-          <p
-            role="status"
-            className="typography-label-r-medium m-0 text-center text-(color:--fg-neutral-inverse)"
-          >
+          <p className="typography-label-r-medium m-0 text-center text-(color:--fg-neutral-inverse)">
             로그아웃 처리 중…
           </p>
         )}
