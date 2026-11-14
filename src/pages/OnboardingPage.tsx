@@ -7,6 +7,7 @@ import {
   BasicProfileStep,
   type BasicProfileDraft,
 } from "@/components/onboarding/BasicProfileStep";
+import { SkillStep, type SkillDraft } from "@/components/onboarding/SkillStep";
 import { useAuthContext } from "@/hooks/useAuthContext";
 
 const steps = [
@@ -14,7 +15,7 @@ const steps = [
     title: "기본프로필",
     description: "다른 플레이어들이 매칭시 확인할 정보예요",
   },
-  { title: "실력", description: "다른 플레이어들이 매칭시 확인할 정보예요" },
+  { title: "실력" },
   { title: "선호하는 매칭", description: "마이페이지에서 변경 가능" },
 ];
 
@@ -39,6 +40,10 @@ export default function OnboardingPage() {
     gender: null,
     ageGroup: null,
   }));
+  const [skill, setSkill] = useState<SkillDraft>({
+    tennisStart: null,
+    ntrp: "2.0",
+  });
   const [photoPreviewUrl, setPhotoPreviewUrl] = useState<string | null>(null);
   const [nicknameTouched, setNicknameTouched] = useState(false);
   const [nicknameCheck, setNicknameCheck] =
@@ -53,6 +58,7 @@ export default function OnboardingPage() {
 
   const step = steps[stepIndex];
   const isFirstStep = stepIndex === 0;
+  const isSkillStep = stepIndex === 1;
   const isLastStep = stepIndex === steps.length - 1;
 
   const formatError = getNicknameFormatError(basicProfile.nickname);
@@ -101,7 +107,10 @@ export default function OnboardingPage() {
 
   const nextAction = {
     children: isLastStep ? "완료" : "다음",
-    disabled: isLastStep || (isFirstStep && !basicProfileReady),
+    disabled:
+      isLastStep ||
+      (isFirstStep && !basicProfileReady) ||
+      (isSkillStep && !skill.tennisStart),
     onClick: () =>
       setStepIndex((index) => Math.min(index + 1, steps.length - 1)),
   };
@@ -137,7 +146,9 @@ export default function OnboardingPage() {
         <div role="status">
           <h1 className="typography-title-bold m-0">{step.title}</h1>
           <p className="typography-body-medium m-0 mt-(--spacing-gap-micro) text-(color:--fg-neutral-tertiary)">
-            {step.description}
+            {isSkillStep
+              ? `${basicProfile.nickname}께 맞는 매치를 추천해 드릴게요`
+              : step.description}
           </p>
         </div>
         {isFirstStep && (
@@ -162,6 +173,7 @@ export default function OnboardingPage() {
             }
           />
         )}
+        {isSkillStep && <SkillStep value={skill} onChange={setSkill} />}
       </section>
     </PageLayout>
   );
