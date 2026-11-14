@@ -1,29 +1,25 @@
 import { useEffect, useRef, useState } from "react";
 import { Navigate, useNavigate } from "react-router";
 import { ApiError } from "@/apis/client";
-import {
-  checkNicknameAvailability,
-  getOnboardingUser,
-  submitOnboarding,
-} from "@/apis/onboarding";
-import type {
-  ExperiencePeriod,
-  OnboardingRequest,
-} from "@/apis/onboarding.types";
+import { getOnboardingUser, submitOnboarding } from "@/apis/onboarding";
 import { BottomCTA } from "@/components/BottomCTA";
 import { ProgressBar } from "@/components/ProgressBar";
 import { OnboardingComplete } from "@/components/intro/OnboardingComplete";
 import { PageLayout } from "@/components/layout/PageLayout";
+import { BasicProfileStep } from "@/components/onboarding/BasicProfileStep";
+import { MatchPreferencesStep } from "@/components/onboarding/MatchPreferencesStep";
+import { SkillStep } from "@/components/onboarding/SkillStep";
 import {
-  BasicProfileStep,
+  buildOnboardingRequest,
+  getOnboardingFieldError,
+  isMatchPreferencesReady,
   type BasicProfileDraft,
-} from "@/components/onboarding/BasicProfileStep";
-import {
-  MatchPreferencesStep,
   type MatchPreferencesDraft,
-} from "@/components/onboarding/MatchPreferencesStep";
-import { SkillStep, type SkillDraft } from "@/components/onboarding/SkillStep";
+  type OnboardingFieldError,
+  type SkillDraft,
+} from "@/features/onboarding/form";
 import { useAuthContext } from "@/hooks/useAuthContext";
+import { useOnboardingNickname } from "@/hooks/useOnboardingNickname";
 import { useOnboardingProfilePhoto } from "@/hooks/useOnboardingProfilePhoto";
 
 const steps = [
@@ -34,55 +30,6 @@ const steps = [
   { title: "실력" },
   { title: "선호하는 매칭", description: "마이페이지에서 변경 가능" },
 ];
-
-type NicknameCheckStatus =
-  "idle" | "checking" | "available" | "duplicate" | "error";
-
-function getNicknameFormatError(nickname: string) {
-  if (nickname.length < 2) return "두 글자 이상 입력해 주세요";
-  if (!/^[가-힣A-Za-z0-9]{2,12}$/.test(nickname)) {
-    return "한글·영문·숫자로 2~12자 입력해 주세요";
-  }
-}
-
-function getExperiencePeriod(
-  start: NonNullable<SkillDraft["tennisStart"]>,
-): ExperiencePeriod {
-  const today = new Date();
-  const months =
-    (today.getFullYear() - start.year) * 12 +
-    today.getMonth() +
-    1 -
-    start.month;
-
-  if (months < 6) return "UNDER_SIX_MONTHS";
-  if (months < 12) return "SIX_MONTHS_TO_ONE_YEAR";
-  if (months < 36) return "ONE_TO_THREE_YEARS";
-  return "THREE_YEARS_OR_MORE";
-}
-
-function getFieldError(result: unknown) {
-  if (!result || typeof result !== "object") return;
-
-  const fieldGroups: (keyof OnboardingRequest)[][] = [
-    ["nickname", "gender", "ageGroup"],
-    ["experiencePeriod", "ntrp"],
-    [
-      "preferredMatchTypes",
-      "sameGenderOnly",
-      "activityAreaCodes",
-      "preferredTimeSlots",
-    ],
-  ];
-
-  for (const [step, fields] of fieldGroups.entries()) {
-    for (const field of fields) {
-      const message = (result as Record<string, unknown>)[field];
-      if (typeof message === "string" && message.trim())
-        return { step, message };
-    }
-  }
-}
 
 export default function OnboardingPage() {
   const { authState, completeLogin } = useAuthContext();
@@ -109,10 +56,9 @@ export default function OnboardingPage() {
     });
   const [completedUserId, setCompletedUserId] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState<{
-    step: number;
-    message: string;
-  } | null>(null);
+  const [submitError, setSubmitError] = useState<OnboardingFieldError | null>(
+    null,
+  );
   const submitRequest = useRef<AbortController | null>(null);
   const profilePhoto = useOnboardingProfilePhoto(
     authState.status === "authenticated"
@@ -124,95 +70,42 @@ export default function OnboardingPage() {
       }
     },
   );
-  const [nicknameTouched, setNicknameTouched] = useState(false);
-  const [nicknameCheck, setNicknameCheck] =
-    useState<NicknameCheckStatus>("idle");
-  const nicknameRequest = useRef<AbortController | null>(null);
-
-  useEffect(
-    () => () => {
-      nicknameRequest.current?.abort();
-      submitRequest.current?.abort();
-    },
-    [],
+  const nickname = useOnboardingNickname(
+    basicProfile.nickname,
+    defaultNickname,
   );
+
+  useEffect(() => () => submitRequest.current?.abort(), []);
 
   const step = steps[stepIndex];
   const isFirstStep = stepIndex === 0;
   const isSkillStep = stepIndex === 1;
   const isLastStep = stepIndex === steps.length - 1;
 
-  const formatError = getNicknameFormatError(basicProfile.nickname);
-  const nicknameChanged = basicProfile.nickname !== defaultNickname;
-  const nicknameConfirmed = nicknameCheck === "available";
-  const canCheckNickname =
-    (nicknameChanged || nicknameCheck === "duplicate") &&
-    !formatError &&
-    !nicknameConfirmed;
-  const basicProfileReady = Boolean(
-    !formatError &&
-    nicknameCheck !== "duplicate" &&
-    (!nicknameChanged || nicknameConfirmed) &&
-    basicProfile.gender &&
-    basicProfile.ageGroup,
-  );
-
-  const matchPreferencesReady =
-    matchPreferences.preferredMatchTypes.length > 0 &&
-    matchPreferences.activityAreas.length > 0 &&
-    matchPreferences.activityAreas.length <= 3 &&
-    !(
-      matchPreferences.sameGenderOnly &&
-      matchPreferences.preferredMatchTypes.includes("MIXED_DOUBLES")
-    ) &&
-    matchPreferences.preferredTimeSlots.length > 0;
+  const basicProfileReady =
+    nickname.ready && Boolean(basicProfile.gender && basicProfile.ageGroup);
+  const matchPreferencesReady = isMatchPreferencesReady(matchPreferences);
 
   function updateBasicProfile(value: BasicProfileDraft) {
     setSubmitError(null);
-    if (value.nickname !== basicProfile.nickname) {
-      nicknameRequest.current?.abort();
-      nicknameRequest.current = null;
-      setNicknameCheck("idle");
-    }
+    if (value.nickname !== basicProfile.nickname) nickname.resetCheck();
     setBasicProfile(value);
   }
 
-  async function checkNickname() {
-    if (!canCheckNickname || nicknameRequest.current) return;
-
-    const controller = new AbortController();
-    nicknameRequest.current = controller;
-    setNicknameCheck("checking");
-
-    try {
-      const available = await checkNicknameAvailability(
-        basicProfile.nickname,
-        controller.signal,
-      );
-      if (!controller.signal.aborted) {
-        setNicknameCheck(available ? "available" : "duplicate");
-      }
-    } catch {
-      if (!controller.signal.aborted) setNicknameCheck("error");
-    } finally {
-      if (nicknameRequest.current === controller)
-        nicknameRequest.current = null;
-    }
-  }
-
   async function submit() {
-    const { nickname, gender, ageGroup } = basicProfile;
-    const { tennisStart, ntrp } = skill;
     if (
       authState.status !== "authenticated" ||
       submitRequest.current ||
-      !basicProfileReady ||
-      !gender ||
-      !ageGroup ||
-      !tennisStart ||
-      !matchPreferencesReady
+      !nickname.ready
     )
       return;
+
+    const payload = buildOnboardingRequest(
+      basicProfile,
+      skill,
+      matchPreferences,
+    );
+    if (!payload) return;
 
     const user = authState.user;
     const controller = new AbortController();
@@ -227,30 +120,14 @@ export default function OnboardingPage() {
     }
 
     try {
-      const saved = await submitOnboarding(
-        {
-          nickname,
-          gender,
-          ageGroup,
-          experiencePeriod: getExperiencePeriod(tennisStart),
-          ntrp,
-          sameGenderOnly: matchPreferences.sameGenderOnly,
-          preferredMatchTypes: matchPreferences.preferredMatchTypes,
-          activityAreaCodes: matchPreferences.activityAreas.map(
-            (area) => area.id,
-          ),
-          preferredTimeSlots: matchPreferences.preferredTimeSlots,
-        },
-        user,
-        signal,
-      );
+      const saved = await submitOnboarding(payload, user, signal);
       if (!signal.aborted) finish(saved);
     } catch (error) {
       if (signal.aborted) return;
 
       if (error instanceof ApiError && error.status === 409) {
         if (error.message === "이미 사용 중인 닉네임입니다.") {
-          setNicknameCheck("duplicate");
+          nickname.markDuplicate();
           setStepIndex(0);
           return;
         }
@@ -269,7 +146,7 @@ export default function OnboardingPage() {
 
       const fieldError =
         error instanceof ApiError && error.status === 400
-          ? getFieldError(error.result)
+          ? getOnboardingFieldError(error.result)
           : undefined;
       if (fieldError) setStepIndex(fieldError.step);
       setSubmitError(
@@ -354,22 +231,15 @@ export default function OnboardingPage() {
           <BasicProfileStep
             value={basicProfile}
             onChange={updateBasicProfile}
-            onNicknameBlur={() => setNicknameTouched(true)}
-            onCheckNickname={canCheckNickname ? checkNickname : undefined}
-            checkingNickname={nicknameCheck === "checking"}
-            nicknameConfirmed={nicknameConfirmed}
+            onNicknameBlur={nickname.touch}
+            onCheckNickname={nickname.check}
+            checkingNickname={nickname.checking}
+            nicknameConfirmed={nickname.confirmed}
             photoUrl={profilePhoto.photoUrl}
             uploadingPhoto={profilePhoto.isUploading}
             photoUploadError={profilePhoto.uploadError}
             onSelectPhoto={(file) => void profilePhoto.selectPhoto(file)}
-            nicknameError={
-              (nicknameTouched ? formatError : undefined) ??
-              (nicknameCheck === "duplicate"
-                ? "이미 있는 닉네임이에요."
-                : nicknameCheck === "error"
-                  ? "닉네임을 확인하지 못했어요. 다시 시도해 주세요."
-                  : undefined)
-            }
+            nicknameError={nickname.error}
           />
         )}
         {isSkillStep && (

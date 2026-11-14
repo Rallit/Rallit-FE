@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
-import type { ActivityArea } from "@/apis/onboarding";
 import { Checkbox } from "@/components/Checkbox";
 import { SelectionChip } from "@/components/SelectionChip";
+import type { MatchPreferencesDraft } from "@/features/onboarding/form";
 import { ActivityAreaPicker } from "./ActivityAreaPicker";
 
 const matchTypes = [
@@ -17,13 +17,6 @@ const timeSlots = [
   { value: "WEEKEND_MORNING", label: "주말 오전" },
   { value: "WEEKEND_AFTERNOON", label: "주말 오후" },
 ] as const;
-
-export type MatchPreferencesDraft = {
-  activityAreas: ActivityArea[];
-  sameGenderOnly: boolean;
-  preferredMatchTypes: (typeof matchTypes)[number]["value"][];
-  preferredTimeSlots: (typeof timeSlots)[number]["value"][];
-};
 
 type MatchPreferencesStepProps = {
   value: MatchPreferencesDraft;

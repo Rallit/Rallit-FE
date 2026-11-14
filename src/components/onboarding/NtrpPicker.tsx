@@ -15,6 +15,7 @@ import {
   useState,
   type PointerEvent,
 } from "react";
+import type { OnboardingProfile } from "@/apis/onboarding.types";
 import { IconButton } from "@/components/IconButton";
 
 const levels = [
@@ -62,7 +63,7 @@ const levels = [
   },
 ] as const;
 
-export type NtrpLevel = (typeof levels)[number]["value"];
+type NtrpLevel = OnboardingProfile["ntrp"];
 
 type NtrpPickerProps = {
   value: NtrpLevel;

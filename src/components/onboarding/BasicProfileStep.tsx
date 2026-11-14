@@ -2,6 +2,10 @@ import { useRef, useState, type ChangeEvent } from "react";
 import { Profile } from "@/components/Profile";
 import { SelectionChip } from "@/components/SelectionChip";
 import { TextInputField } from "@/components/TextInputField";
+import {
+  nicknameMaxLength,
+  type BasicProfileDraft,
+} from "@/features/onboarding/form";
 
 const genders = [
   { value: "MALE", label: "남성" },
@@ -17,14 +21,7 @@ const ageGroups = [
   { value: "SIXTIES_OR_OLDER", label: "60대 이상" },
 ] as const;
 
-const nicknameMaxLength = 12;
 const profilePhotoMaxBytes = 5 * 1024 * 1024;
-
-export type BasicProfileDraft = {
-  nickname: string;
-  gender: (typeof genders)[number]["value"] | null;
-  ageGroup: (typeof ageGroups)[number]["value"] | null;
-};
 
 type BasicProfileStepProps = {
   value: BasicProfileDraft;
