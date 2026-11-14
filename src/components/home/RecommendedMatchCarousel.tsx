@@ -2,6 +2,7 @@ import { useState, type UIEvent } from "react";
 import { CarouselIndicator } from "@/components/CarouselIndicator";
 import { MatchCard } from "@/components/MatchCard";
 import type { RecommendedMatch } from "./recommendedMatches.mock";
+import { useDragScroll } from "@/hooks/useDragScroll";
 
 const CARD_WIDTH = 288;
 const CARD_GAP = 12;
@@ -14,6 +15,7 @@ export function RecommendedMatchCarousel({
   matches,
 }: RecommendedMatchCarouselProps) {
   const [activeIndex, setActiveIndex] = useState(0);
+  const dragScrollHandlers = useDragScroll<HTMLUListElement>();
 
   const handleScroll = (event: UIEvent<HTMLUListElement>) => {
     const index = Math.round(
@@ -28,8 +30,9 @@ export function RecommendedMatchCarousel({
       className="-mx-4 flex flex-col items-center gap-3"
     >
       <ul
+        {...dragScrollHandlers}
         onScroll={handleScroll}
-        className="box-border m-0 flex w-full list-none snap-x snap-mandatory gap-3 overflow-x-auto px-[calc(50%-144px)] py-0 scrollbar-none"
+        className="relative box-border m-0 flex w-full list-none snap-x snap-mandatory gap-3 overflow-x-auto px-[calc(50%-144px)] py-0 scrollbar-none select-none"
       >
         {matches.map(({ id, ...card }, index) => {
           const active = index === activeIndex;
