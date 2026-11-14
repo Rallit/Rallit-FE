@@ -13,7 +13,7 @@ export async function mockStartLogin(
 
   return {
     id: 1,
-    nickname: "테스트 사용자",
+    nickname: "테니스곰123",
     role: "USER",
     onboardingCompleted: scenario === "existing-user",
   };
@@ -34,7 +34,7 @@ export async function mockGetCurrentUser(
 
   return {
     id: 1,
-    nickname: "테스트 사용자",
+    nickname: "테니스곰123",
     role: "USER",
     onboardingCompleted: scenario === "existing-user",
   };

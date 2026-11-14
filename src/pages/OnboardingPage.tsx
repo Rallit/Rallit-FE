@@ -1,7 +1,13 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { checkNicknameAvailability } from "@/apis/onboarding";
 import { BottomCTA } from "@/components/BottomCTA";
 import { ProgressBar } from "@/components/ProgressBar";
 import { PageLayout } from "@/components/layout/PageLayout";
+import {
+  BasicProfileStep,
+  type BasicProfileDraft,
+} from "@/components/onboarding/BasicProfileStep";
+import { useAuthContext } from "@/hooks/useAuthContext";
 
 const steps = [
   {
@@ -12,15 +18,85 @@ const steps = [
   { title: "선호하는 매칭", description: "마이페이지에서 변경 가능" },
 ];
 
+type NicknameCheckStatus =
+  "idle" | "checking" | "available" | "duplicate" | "error";
+
+function getNicknameFormatError(nickname: string) {
+  if (nickname.length < 2) return "두 글자 이상 입력해 주세요";
+  if (!/^[가-힣A-Za-z0-9]{2,12}$/.test(nickname)) {
+    return "한글·영문·숫자로 2~12자 입력해 주세요";
+  }
+}
+
 export default function OnboardingPage() {
+  const { authState } = useAuthContext();
   const [stepIndex, setStepIndex] = useState(0);
+  const [defaultNickname] = useState(() =>
+    authState.status === "authenticated" ? authState.user.nickname : "",
+  );
+  const [basicProfile, setBasicProfile] = useState<BasicProfileDraft>(() => ({
+    nickname: defaultNickname,
+    gender: null,
+    ageGroup: null,
+  }));
+  const [nicknameTouched, setNicknameTouched] = useState(false);
+  const [nicknameCheck, setNicknameCheck] =
+    useState<NicknameCheckStatus>("idle");
+  const nicknameRequest = useRef<AbortController | null>(null);
+
+  useEffect(() => () => nicknameRequest.current?.abort(), []);
+
   const step = steps[stepIndex];
   const isFirstStep = stepIndex === 0;
   const isLastStep = stepIndex === steps.length - 1;
 
+  const formatError = getNicknameFormatError(basicProfile.nickname);
+  const nicknameChanged = basicProfile.nickname !== defaultNickname;
+  const nicknameConfirmed = nicknameCheck === "available";
+  const canCheckNickname =
+    nicknameChanged && !formatError && !nicknameConfirmed;
+  const basicProfileReady = Boolean(
+    !formatError &&
+    (!nicknameChanged || nicknameConfirmed) &&
+    basicProfile.gender &&
+    basicProfile.ageGroup,
+  );
+
+  function updateBasicProfile(value: BasicProfileDraft) {
+    if (value.nickname !== basicProfile.nickname) {
+      nicknameRequest.current?.abort();
+      nicknameRequest.current = null;
+      setNicknameCheck("idle");
+    }
+    setBasicProfile(value);
+  }
+
+  async function checkNickname() {
+    if (!canCheckNickname || nicknameRequest.current) return;
+
+    const controller = new AbortController();
+    nicknameRequest.current = controller;
+    setNicknameCheck("checking");
+
+    try {
+      const available = await checkNicknameAvailability(
+        basicProfile.nickname,
+        controller.signal,
+      );
+      if (!controller.signal.aborted) {
+        setNicknameCheck(available ? "available" : "duplicate");
+      }
+    } catch {
+      if (!controller.signal.aborted) setNicknameCheck("error");
+    } finally {
+      if (nicknameRequest.current === controller)
+        nicknameRequest.current = null;
+    }
+  }
+
   const nextAction = {
     children: isLastStep ? "완료" : "다음",
-    disabled: isLastStep,
+    disabled: isLastStep || (isFirstStep && !basicProfileReady),
     onClick: () =>
       setStepIndex((index) => Math.min(index + 1, steps.length - 1)),
   };
@@ -59,6 +135,24 @@ export default function OnboardingPage() {
             {step.description}
           </p>
         </div>
+        {isFirstStep && (
+          <BasicProfileStep
+            value={basicProfile}
+            onChange={updateBasicProfile}
+            onNicknameBlur={() => setNicknameTouched(true)}
+            onCheckNickname={canCheckNickname ? checkNickname : undefined}
+            checkingNickname={nicknameCheck === "checking"}
+            nicknameConfirmed={nicknameConfirmed}
+            nicknameError={
+              (nicknameTouched ? formatError : undefined) ??
+              (nicknameCheck === "duplicate"
+                ? "이미 있는 닉네임이에요."
+                : nicknameCheck === "error"
+                  ? "닉네임을 확인하지 못했어요. 다시 시도해 주세요."
+                  : undefined)
+            }
+          />
+        )}
       </section>
     </PageLayout>
   );
