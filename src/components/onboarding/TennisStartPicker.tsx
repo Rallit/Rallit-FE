@@ -8,7 +8,7 @@ import {
   type PointerEvent,
 } from "react";
 import { BottomCTA } from "@/components/BottomCTA";
-import { Header } from "@/components/Header";
+import { BottomSheet } from "@/components/BottomSheet";
 import { Select } from "@/components/Select";
 
 export type TennisStartMonth = { year: number; month: number };
@@ -178,24 +178,9 @@ function DateWheel({
   );
 }
 
-function isBackdropPress(event: MouseEvent<HTMLDialogElement>) {
-  if (event.target !== event.currentTarget) return false;
-
-  const { left, top, right, bottom } =
-    event.currentTarget.getBoundingClientRect();
-  return (
-    event.clientX < left ||
-    event.clientX >= right ||
-    event.clientY < top ||
-    event.clientY >= bottom
-  );
-}
-
 export function TennisStartPicker({ value, onChange }: TennisStartPickerProps) {
   const labelId = useId();
   const dialogId = useId();
-  const dialog = useRef<HTMLDialogElement>(null);
-  const startedOnBackdrop = useRef(false);
   const [draft, setDraft] = useState<TennisStartMonth | null>(null);
   const [openedAt, setOpenedAt] = useState(() => new Date());
   const currentYear = openedAt.getFullYear();
@@ -204,15 +189,12 @@ export function TennisStartPicker({ value, onChange }: TennisStartPickerProps) {
 
   function open(event: MouseEvent<HTMLButtonElement>) {
     event.currentTarget.focus();
-    dialog.current?.showModal();
     const now = new Date();
     setOpenedAt(now);
     setDraft(value ?? { year: now.getFullYear(), month: now.getMonth() + 1 });
   }
 
   function close() {
-    startedOnBackdrop.current = false;
-    dialog.current?.close();
     setDraft(null);
   }
 
@@ -233,25 +215,12 @@ export function TennisStartPicker({ value, onChange }: TennisStartPickerProps) {
         value={value ? value.year + "년 " + value.month + "월" : undefined}
         onClick={open}
       />
-      <dialog
-        ref={dialog}
+      <BottomSheet
         id={dialogId}
-        aria-labelledby={labelId}
-        onPointerDown={(event) => {
-          startedOnBackdrop.current =
-            event.isPrimary && event.button === 0 && isBackdropPress(event);
-        }}
-        onClick={(event) => {
-          if (startedOnBackdrop.current && isBackdropPress(event)) close();
-          startedOnBackdrop.current = false;
-        }}
-        onCancel={(event) => {
-          event.preventDefault();
-          close();
-        }}
-        className="fixed inset-x-0 top-auto bottom-0 m-auto box-border max-h-[calc(100dvh_-_env(safe-area-inset-top,0px))] w-full max-w-[480px] overflow-y-auto rounded-t-(--radius-large) border-0 bg-(--bg-neutral-default) p-0 pb-[max(var(--spacing-padding-large),env(safe-area-inset-bottom,0px))] pl-[env(safe-area-inset-left,0px)] pr-[env(safe-area-inset-right,0px)] text-(color:--fg-neutral-default) backdrop:bg-[linear-gradient(#232323b3,#232323b3)] backdrop:bg-size-[min(100%,480px)_100%] backdrop:bg-center backdrop:bg-no-repeat"
+        title="테니스 시작 시기"
+        open={draft !== null}
+        onDismiss={close}
       >
-        <Header variant="sheet" title="테니스 시작 시기" onClose={close} />
         {draft && (
           <>
             <div className="flex gap-(--spacing-gap-small) px-(--spacing-padding-large) py-(--spacing-padding-extra-large)">
@@ -305,7 +274,7 @@ export function TennisStartPicker({ value, onChange }: TennisStartPickerProps) {
             />
           </>
         )}
-      </dialog>
+      </BottomSheet>
     </div>
   );
 }

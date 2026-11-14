@@ -21,6 +21,7 @@ type HeaderProps =
   | {
       variant: "sheet";
       title: string;
+      titleId?: string;
       onClose: MouseEventHandler<HTMLButtonElement>;
     };
 
@@ -59,6 +60,7 @@ export function Header(props: HeaderProps) {
         className={`box-border flex w-full items-center justify-between gap-(--spacing-gap-micro) px-(--spacing-padding-large) ${height}`}
       >
         <Title
+          id={props.variant === "sheet" ? props.titleId : undefined}
           className={`m-0 min-w-0 truncate text-(color:--fg-neutral-default) ${titleStyle}`}
         >
           {props.title}
