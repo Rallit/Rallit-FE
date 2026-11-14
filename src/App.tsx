@@ -4,6 +4,7 @@ import { ServiceIntro } from "@/components/intro/ServiceIntro";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { useAuthContext } from "@/hooks/useAuthContext";
 import AuthCompletePage from "@/pages/AuthCompletePage";
+import HomePage from "@/pages/HomePage";
 import LoginPage from "@/pages/LoginPage";
 import OnboardingPage from "@/pages/OnboardingPage";
 
@@ -51,7 +52,7 @@ function OnboardingIntroRoute() {
 }
 
 export default function App() {
-  const { authState, completeLogin, logout } = useAuthContext();
+  const { authState, completeLogin } = useAuthContext();
   const loginDestination =
     authState.status === "authenticated" && authState.user.onboardingCompleted
       ? "/"
@@ -93,17 +94,7 @@ export default function App() {
         </Route>
 
         <Route element={<ProtectedRoute onboarding="completed" />}>
-          <Route
-            path="/"
-            element={
-              <PageLayout>
-                <h1>홈</h1>
-                <button type="button" onClick={() => void logout()}>
-                  로그아웃
-                </button>
-              </PageLayout>
-            }
-          />
+          <Route path="/" element={<HomePage />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />
