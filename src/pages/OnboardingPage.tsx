@@ -1,7 +1,18 @@
 import { useEffect, useRef, useState } from "react";
-import { checkNicknameAvailability } from "@/apis/onboarding";
+import { Navigate, useNavigate } from "react-router";
+import { ApiError } from "@/apis/client";
+import {
+  checkNicknameAvailability,
+  getOnboardingUser,
+  submitOnboarding,
+} from "@/apis/onboarding";
+import type {
+  ExperiencePeriod,
+  OnboardingRequest,
+} from "@/apis/onboarding.types";
 import { BottomCTA } from "@/components/BottomCTA";
 import { ProgressBar } from "@/components/ProgressBar";
+import { OnboardingComplete } from "@/components/intro/OnboardingComplete";
 import { PageLayout } from "@/components/layout/PageLayout";
 import {
   BasicProfileStep,
@@ -33,8 +44,48 @@ function getNicknameFormatError(nickname: string) {
   }
 }
 
+function getExperiencePeriod(
+  start: NonNullable<SkillDraft["tennisStart"]>,
+): ExperiencePeriod {
+  const today = new Date();
+  const months =
+    (today.getFullYear() - start.year) * 12 +
+    today.getMonth() +
+    1 -
+    start.month;
+
+  if (months < 6) return "UNDER_SIX_MONTHS";
+  if (months < 12) return "SIX_MONTHS_TO_ONE_YEAR";
+  if (months < 36) return "ONE_TO_THREE_YEARS";
+  return "THREE_YEARS_OR_MORE";
+}
+
+function getFieldError(result: unknown) {
+  if (!result || typeof result !== "object") return;
+
+  const fieldGroups: (keyof OnboardingRequest)[][] = [
+    ["nickname", "gender", "ageGroup"],
+    ["experiencePeriod", "ntrp"],
+    [
+      "preferredMatchTypes",
+      "sameGenderOnly",
+      "activityAreaCodes",
+      "preferredTimeSlots",
+    ],
+  ];
+
+  for (const [step, fields] of fieldGroups.entries()) {
+    for (const field of fields) {
+      const message = (result as Record<string, unknown>)[field];
+      if (typeof message === "string" && message.trim())
+        return { step, message };
+    }
+  }
+}
+
 export default function OnboardingPage() {
-  const { authState } = useAuthContext();
+  const { authState, completeLogin } = useAuthContext();
+  const navigate = useNavigate();
   const [stepIndex, setStepIndex] = useState(0);
   const [defaultNickname] = useState(() =>
     authState.status === "authenticated" ? authState.user.nickname : "",
@@ -55,14 +106,26 @@ export default function OnboardingPage() {
       preferredMatchTypes: [],
       preferredTimeSlots: [],
     });
-  const [showSubmitStatus, setShowSubmitStatus] = useState(false);
+  const [completedUserId, setCompletedUserId] = useState<number | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<{
+    step: number;
+    message: string;
+  } | null>(null);
+  const submitRequest = useRef<AbortController | null>(null);
   const [photoPreviewUrl, setPhotoPreviewUrl] = useState<string | null>(null);
   const [nicknameTouched, setNicknameTouched] = useState(false);
   const [nicknameCheck, setNicknameCheck] =
     useState<NicknameCheckStatus>("idle");
   const nicknameRequest = useRef<AbortController | null>(null);
 
-  useEffect(() => () => nicknameRequest.current?.abort(), []);
+  useEffect(
+    () => () => {
+      nicknameRequest.current?.abort();
+      submitRequest.current?.abort();
+    },
+    [],
+  );
   useEffect(() => {
     if (!photoPreviewUrl) return;
     return () => URL.revokeObjectURL(photoPreviewUrl);
@@ -77,9 +140,12 @@ export default function OnboardingPage() {
   const nicknameChanged = basicProfile.nickname !== defaultNickname;
   const nicknameConfirmed = nicknameCheck === "available";
   const canCheckNickname =
-    nicknameChanged && !formatError && !nicknameConfirmed;
+    (nicknameChanged || nicknameCheck === "duplicate") &&
+    !formatError &&
+    !nicknameConfirmed;
   const basicProfileReady = Boolean(
     !formatError &&
+    nicknameCheck !== "duplicate" &&
     (!nicknameChanged || nicknameConfirmed) &&
     basicProfile.gender &&
     basicProfile.ageGroup,
@@ -88,9 +154,15 @@ export default function OnboardingPage() {
   const matchPreferencesReady =
     matchPreferences.preferredMatchTypes.length > 0 &&
     matchPreferences.activityAreas.length > 0 &&
+    matchPreferences.activityAreas.length <= 3 &&
+    !(
+      matchPreferences.sameGenderOnly &&
+      matchPreferences.preferredMatchTypes.includes("MIXED_DOUBLES")
+    ) &&
     matchPreferences.preferredTimeSlots.length > 0;
 
   function updateBasicProfile(value: BasicProfileDraft) {
+    setSubmitError(null);
     if (value.nickname !== basicProfile.nickname) {
       nicknameRequest.current?.abort();
       nicknameRequest.current = null;
@@ -122,20 +194,120 @@ export default function OnboardingPage() {
     }
   }
 
+  async function submit() {
+    const { nickname, gender, ageGroup } = basicProfile;
+    const { tennisStart, ntrp } = skill;
+    if (
+      authState.status !== "authenticated" ||
+      submitRequest.current ||
+      !basicProfileReady ||
+      !gender ||
+      !ageGroup ||
+      !tennisStart ||
+      !matchPreferencesReady
+    )
+      return;
+
+    const user = authState.user;
+    const controller = new AbortController();
+    const { signal } = controller;
+    submitRequest.current = controller;
+    setIsSubmitting(true);
+    setSubmitError(null);
+
+    function finish(saved: typeof user) {
+      setCompletedUserId(saved.id);
+      completeLogin(saved);
+    }
+
+    try {
+      const saved = await submitOnboarding(
+        {
+          nickname,
+          gender,
+          ageGroup,
+          experiencePeriod: getExperiencePeriod(tennisStart),
+          ntrp,
+          sameGenderOnly: matchPreferences.sameGenderOnly,
+          preferredMatchTypes: matchPreferences.preferredMatchTypes,
+          activityAreaCodes: matchPreferences.activityAreas.map(
+            (area) => area.id,
+          ),
+          preferredTimeSlots: matchPreferences.preferredTimeSlots,
+        },
+        user,
+        signal,
+      );
+      if (!signal.aborted) finish(saved);
+    } catch (error) {
+      if (signal.aborted) return;
+
+      if (error instanceof ApiError && error.status === 409) {
+        try {
+          const current = await getOnboardingUser(signal);
+          if (signal.aborted) return;
+          if (current.id === user.id && current.onboardingCompleted) {
+            finish(current);
+            return;
+          }
+          if (
+            current.id === user.id &&
+            error.message === "이미 사용 중인 닉네임입니다."
+          ) {
+            setNicknameCheck("duplicate");
+            setStepIndex(0);
+            return;
+          }
+        } catch {
+          if (signal.aborted) return;
+        }
+      }
+
+      const fieldError =
+        error instanceof ApiError && error.status === 400
+          ? getFieldError(error.result)
+          : undefined;
+      if (fieldError) setStepIndex(fieldError.step);
+      setSubmitError(
+        fieldError ?? {
+          step: steps.length - 1,
+          message: "온보딩을 저장하지 못했어요. 다시 시도해 주세요.",
+        },
+      );
+    } finally {
+      if (submitRequest.current === controller) submitRequest.current = null;
+      if (!signal.aborted) setIsSubmitting(false);
+    }
+  }
+
   const nextAction = {
-    children: isLastStep ? "완료" : "다음",
+    children: isLastStep ? (isSubmitting ? "저장 중" : "완료") : "다음",
     disabled:
+      isSubmitting ||
       (isLastStep && !matchPreferencesReady) ||
       (isFirstStep && !basicProfileReady) ||
       (isSkillStep && !skill.tennisStart),
     onClick: () => {
       if (isLastStep) {
-        setShowSubmitStatus(true);
+        void submit();
         return;
       }
       setStepIndex((index) => Math.min(index + 1, steps.length - 1));
     },
   };
+
+  if (
+    authState.status === "authenticated" &&
+    authState.user.onboardingCompleted
+  ) {
+    return completedUserId === authState.user.id ? (
+      <OnboardingComplete
+        onDone={() => void navigate("/", { replace: true })}
+      />
+    ) : (
+      <Navigate to="/" replace />
+    );
+  }
 
   return (
     <PageLayout
@@ -150,6 +322,7 @@ export default function OnboardingPage() {
               secondaryAction={{
                 variant: "tertiary",
                 children: "이전",
+                disabled: isSubmitting,
                 onClick: () => setStepIndex((index) => Math.max(index - 1, 0)),
               }}
             />
@@ -195,22 +368,36 @@ export default function OnboardingPage() {
             }
           />
         )}
-        {isSkillStep && <SkillStep value={skill} onChange={setSkill} />}
-        {isLastStep && (
-          <MatchPreferencesStep
-            value={matchPreferences}
+        {isSkillStep && (
+          <SkillStep
+            value={skill}
             onChange={(value) => {
-              setShowSubmitStatus(false);
-              setMatchPreferences(value);
+              setSubmitError(null);
+              setSkill(value);
             }}
           />
         )}
-        {isLastStep && showSubmitStatus && (
-          <p
-            role="status"
-            className="typography-body-regular m-0 mb-(--spacing-padding-large) text-(color:--fg-neutral-secondary)"
+        {isLastStep && (
+          <fieldset
+            disabled={isSubmitting}
+            aria-busy={isSubmitting}
+            className="m-0 min-w-0 border-0 p-0"
           >
-            입력한 조건을 확인했어요. 온보딩 저장은 아직 연결되지 않았어요.
+            <MatchPreferencesStep
+              value={matchPreferences}
+              onChange={(value) => {
+                setSubmitError(null);
+                setMatchPreferences(value);
+              }}
+            />
+          </fieldset>
+        )}
+        {submitError?.step === stepIndex && (
+          <p
+            role="alert"
+            className="typography-body-regular m-0 mb-(--spacing-padding-large) text-(color:--fg-system-error)"
+          >
+            {submitError.message}
           </p>
         )}
       </section>

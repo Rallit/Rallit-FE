@@ -86,6 +86,9 @@ export default function App() {
       <Route element={<AuthStatusGate />}>
         <Route element={<ProtectedRoute onboarding="pending" />}>
           <Route path="/onboarding/intro" element={<OnboardingIntroRoute />} />
+        </Route>
+
+        <Route element={<ProtectedRoute />}>
           <Route path="/onboarding" element={<OnboardingPage />} />
         </Route>
 
