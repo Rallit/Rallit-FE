@@ -10,9 +10,10 @@ type SelectProps = Omit<
 > & {
   placeholder?: string;
 } & (
-    | { value?: string; chips?: never; onRemove?: never }
+    | { value?: string; chips?: never; onRemove?: never; chipTrigger?: never }
     | {
         value?: never;
+        chipTrigger?: "add" | "dropdown";
         chips: readonly { id: string; label: string }[];
         onRemove: (id: string) => void;
       }
@@ -21,6 +22,7 @@ type SelectProps = Omit<
 export function Select({
   value,
   chips,
+  chipTrigger = "add",
   onRemove,
   placeholder = "선택해주세요",
   className,
@@ -49,6 +51,7 @@ export function Select({
   }, [chips, disabled]);
 
   const hasChips = Boolean(chips?.length);
+  const chipsWithDropdown = hasChips && chipTrigger === "dropdown";
   const triggerStyle = hasChips
     ? "size-(--unit-24) shrink-0 items-center border-0 bg-transparent p-0"
     : [
@@ -71,8 +74,8 @@ export function Select({
         <span className="min-w-0 truncate">{value || placeholder}</span>
       )}
       <img
-        src={hasChips ? addIcon : downIcon}
-        alt={hasChips ? "선택 항목 추가" : ""}
+        src={hasChips && !chipsWithDropdown ? addIcon : downIcon}
+        alt={hasChips && !chipsWithDropdown ? "선택 항목 추가" : ""}
         className="block shrink-0"
       />
     </button>
@@ -84,10 +87,18 @@ export function Select({
       className={["w-full min-w-0", className].filter(Boolean).join(" ")}
     >
       {chips?.length ? (
-        <div className="box-border flex min-h-[52px] items-center justify-between gap-(--spacing-gap-small) py-(--spacing-padding-micro)">
+        <div
+          className={[
+            "box-border flex min-h-[52px] items-center justify-between gap-(--spacing-gap-small) py-(--spacing-padding-micro)",
+            chipsWithDropdown &&
+              "rounded-(--radius-small) border border-solid border-(--border-neutral-default) px-(--spacing-padding-small) focus-within:border-(--border-brand-focus)",
+          ]
+            .filter(Boolean)
+            .join(" ")}
+        >
           <div
             ref={chipListRef}
-            className="flex min-w-0 flex-wrap gap-(--spacing-gap-small)"
+            className={`flex min-w-0 flex-wrap ${chipsWithDropdown ? "gap-(--spacing-gap-micro)" : "gap-(--spacing-gap-small)"}`}
           >
             {chips.map(({ id, label }, index) => (
               <SelectionChip

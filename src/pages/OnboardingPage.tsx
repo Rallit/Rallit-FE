@@ -7,6 +7,10 @@ import {
   BasicProfileStep,
   type BasicProfileDraft,
 } from "@/components/onboarding/BasicProfileStep";
+import {
+  MatchPreferencesStep,
+  type MatchPreferencesDraft,
+} from "@/components/onboarding/MatchPreferencesStep";
 import { SkillStep, type SkillDraft } from "@/components/onboarding/SkillStep";
 import { useAuthContext } from "@/hooks/useAuthContext";
 
@@ -44,6 +48,14 @@ export default function OnboardingPage() {
     tennisStart: null,
     ntrp: "2.0",
   });
+  const [matchPreferences, setMatchPreferences] =
+    useState<MatchPreferencesDraft>({
+      activityAreas: [],
+      sameGenderOnly: false,
+      preferredMatchTypes: [],
+      preferredTimeSlots: [],
+    });
+  const [showSubmitStatus, setShowSubmitStatus] = useState(false);
   const [photoPreviewUrl, setPhotoPreviewUrl] = useState<string | null>(null);
   const [nicknameTouched, setNicknameTouched] = useState(false);
   const [nicknameCheck, setNicknameCheck] =
@@ -72,6 +84,11 @@ export default function OnboardingPage() {
     basicProfile.gender &&
     basicProfile.ageGroup,
   );
+
+  const matchPreferencesReady =
+    matchPreferences.preferredMatchTypes.length > 0 &&
+    matchPreferences.activityAreas.length > 0 &&
+    matchPreferences.preferredTimeSlots.length > 0;
 
   function updateBasicProfile(value: BasicProfileDraft) {
     if (value.nickname !== basicProfile.nickname) {
@@ -108,11 +125,16 @@ export default function OnboardingPage() {
   const nextAction = {
     children: isLastStep ? "완료" : "다음",
     disabled:
-      isLastStep ||
+      (isLastStep && !matchPreferencesReady) ||
       (isFirstStep && !basicProfileReady) ||
       (isSkillStep && !skill.tennisStart),
-    onClick: () =>
-      setStepIndex((index) => Math.min(index + 1, steps.length - 1)),
+    onClick: () => {
+      if (isLastStep) {
+        setShowSubmitStatus(true);
+        return;
+      }
+      setStepIndex((index) => Math.min(index + 1, steps.length - 1));
+    },
   };
 
   return (
@@ -174,6 +196,23 @@ export default function OnboardingPage() {
           />
         )}
         {isSkillStep && <SkillStep value={skill} onChange={setSkill} />}
+        {isLastStep && (
+          <MatchPreferencesStep
+            value={matchPreferences}
+            onChange={(value) => {
+              setShowSubmitStatus(false);
+              setMatchPreferences(value);
+            }}
+          />
+        )}
+        {isLastStep && showSubmitStatus && (
+          <p
+            role="status"
+            className="typography-body-regular m-0 mb-(--spacing-padding-large) text-(color:--fg-neutral-secondary)"
+          >
+            입력한 조건을 확인했어요. 온보딩 저장은 아직 연결되지 않았어요.
+          </p>
+        )}
       </section>
     </PageLayout>
   );
