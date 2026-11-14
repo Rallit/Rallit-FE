@@ -77,8 +77,8 @@
   --gray-800: #32333d;
   --gray-900: #1b1c26;
   --gray-1000: #141417;
-  --gray-alpha-100: rgb(27 28 38 / 10%);
-  --gray-alpha-200: rgb(27 28 38 / 20%);
+  --gray-alpha-100: rgb(27 28 38 / 8%);
+  --gray-alpha-200: rgb(27 28 38 / 12%);
   --gray-alpha-300: rgb(27 28 38 / 40%);
   --gray-alpha-400: rgb(27 28 38 / 60%);
 
@@ -104,6 +104,7 @@
   --spacing-padding-small: var(--unit-8);
   --spacing-padding-medium: var(--unit-12);
   --spacing-padding-large: var(--unit-16);
+  --spacing-padding-large-plus: var(--unit-20);
   --spacing-padding-extra-large: var(--unit-24);
 
   --spacing-gap-micro: var(--unit-4);
