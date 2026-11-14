@@ -95,6 +95,16 @@ export function useDragScroll<T extends HTMLElement>() {
   const onPointerMove = (event: PointerEvent<T>) => {
     const state = dragRef.current;
     if (!state || state.pointerId !== event.pointerId) return;
+    if ((event.buttons & 1) === 0) {
+      dragRef.current = null;
+      if (state.dragging) {
+        if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+          event.currentTarget.releasePointerCapture(event.pointerId);
+        }
+        finishDrag(event.currentTarget, state);
+      }
+      return;
+    }
 
     const distance = event.clientX - state.startX;
     if (!state.dragging) {
