@@ -64,6 +64,13 @@ type Location = { code: string; name: string };
 export async function getOnboardingActivityAreas(
   signal: AbortSignal,
 ): Promise<ActivityArea[]> {
+  if (import.meta.env.DEV && authMode === "mock") {
+    const { mockActivityAreas } =
+      await import("@/mocks/onboardingActivityAreas");
+    signal.throwIfAborted();
+    return mockActivityAreas;
+  }
+
   const cities = await requestWithAuth<Location[]>("/api/v1/cities", {
     signal,
   });
