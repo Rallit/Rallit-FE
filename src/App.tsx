@@ -6,7 +6,10 @@ import { useAuthContext } from "@/hooks/useAuthContext";
 import AuthCompletePage from "@/pages/AuthCompletePage";
 import HomePage from "@/pages/HomePage";
 import LoginPage from "@/pages/LoginPage";
+import MatchRequestPage from "@/pages/MatchRequestPage";
 import OnboardingPage from "@/pages/OnboardingPage";
+
+const MATCH_REQUEST_PATH = "/match-requests/new";
 
 function AuthStatusGate() {
   const { authState, retry } = useAuthContext();
@@ -52,6 +55,7 @@ function OnboardingIntroRoute() {
 }
 
 export default function App() {
+  const navigate = useNavigate();
   const { authState, completeLogin } = useAuthContext();
   const loginDestination =
     authState.status === "authenticated" && authState.user.onboardingCompleted
@@ -94,7 +98,21 @@ export default function App() {
         </Route>
 
         <Route element={<ProtectedRoute onboarding="completed" />}>
-          <Route path="/" element={<HomePage />} />
+          <Route
+            path="/"
+            element={
+              <HomePage
+                onRequestMatch={
+                  import.meta.env.DEV
+                    ? () => void navigate(MATCH_REQUEST_PATH)
+                    : undefined
+                }
+              />
+            }
+          />
+          {import.meta.env.DEV && (
+            <Route path={MATCH_REQUEST_PATH} element={<MatchRequestPage />} />
+          )}
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />

@@ -17,10 +17,12 @@ const NAV_HREFS = { home: "/", schedule: "/schedule", my: "/my" } as const;
 
 type HomePageProps = {
   matches?: readonly RecommendedMatch[];
+  onRequestMatch?: () => void;
 };
 
 export default function HomePage({
   matches = RECOMMENDED_MATCHES_MOCK,
+  onRequestMatch,
 }: HomePageProps) {
   const heading = (
     <div className="flex items-center justify-between">
@@ -57,6 +59,7 @@ export default function HomePage({
             <ActionButton
               variant="tertiary"
               size="S"
+              onClick={onRequestMatch}
               className="shrink-0 whitespace-nowrap"
             >
               요청하기
@@ -70,7 +73,7 @@ export default function HomePage({
             {EMPTY_MESSAGE}
           </p>
           <div className="mt-35.5">
-            <HomeBanner />
+            <HomeBanner onClick={onRequestMatch} />
           </div>
         </div>
       )}
