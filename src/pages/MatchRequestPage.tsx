@@ -151,6 +151,7 @@ export default function MatchRequestPage() {
 
         <ActivityAreaPicker
           label="희망 지역"
+          title="희망 지역"
           maxAreas={MAX_REQUEST_AREAS}
           backdrop="overlay"
           value={activityAreas}

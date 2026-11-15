@@ -16,6 +16,7 @@ import { SelectionChip } from "@/components/SelectionChip";
 
 type ActivityAreaPickerProps = {
   label: string;
+  title: string;
   maxAreas: number;
   backdrop?: ComponentProps<typeof BottomSheet>["backdrop"];
   value: ActivityArea[];
@@ -28,6 +29,7 @@ type AreaList =
 
 export function ActivityAreaPicker({
   label,
+  title,
   maxAreas,
   backdrop,
   value,
@@ -114,7 +116,7 @@ export function ActivityAreaPicker({
       />
       <BottomSheet
         id={dialogId}
-        title="주 활동지역"
+        title={title}
         open={draft !== null}
         onDismiss={close}
         backdrop={backdrop}

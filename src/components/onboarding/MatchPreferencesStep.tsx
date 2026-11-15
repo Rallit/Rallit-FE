@@ -95,6 +95,7 @@ export function MatchPreferencesStep({
 
       <ActivityAreaPicker
         label="주 활동 지역"
+        title="주 활동지역"
         maxAreas={maxActivityAreas}
         value={value.activityAreas}
         onChange={(activityAreas) => onChange({ ...value, activityAreas })}
