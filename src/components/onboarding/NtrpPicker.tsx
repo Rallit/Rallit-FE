@@ -13,10 +13,11 @@ import {
   useId,
   useRef,
   useState,
-  type PointerEvent,
+  type PointerEvent as ReactPointerEvent,
 } from "react";
 import type { OnboardingProfile } from "@/apis/onboarding.types";
 import { IconButton } from "@/components/IconButton";
+import { Tooltip } from "@/components/Tooltip";
 
 const levels = [
   {
@@ -79,6 +80,10 @@ const levelSpacing = 95;
 
 export function NtrpPicker({ value, onChange }: NtrpPickerProps) {
   const labelId = useId();
+  const tooltipId = useId();
+  const [tooltipOpen, setTooltipOpen] = useState(false);
+  const tooltipTrigger = useRef<HTMLButtonElement>(null);
+  const tooltip = useRef<HTMLDivElement>(null);
   const [dragOffset, setDragOffset] = useState(0);
   const swipeStart = useRef<{
     id: number;
@@ -141,7 +146,37 @@ export function NtrpPicker({ value, onChange }: NtrpPickerProps) {
     return () => row.removeEventListener("wheel", listener);
   }, []);
 
-  function startSwipe(event: PointerEvent<HTMLDivElement>) {
+  useEffect(() => {
+    if (!tooltipOpen) return;
+
+    function dismissOnOutsidePointer(event: PointerEvent) {
+      const target = event.target;
+      if (
+        target instanceof Node &&
+        !tooltipTrigger.current?.contains(target) &&
+        !tooltip.current?.contains(target)
+      ) {
+        setTooltipOpen(false);
+      }
+    }
+
+    function dismissOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") setTooltipOpen(false);
+    }
+
+    document.addEventListener("pointerdown", dismissOnOutsidePointer, true);
+    document.addEventListener("keydown", dismissOnEscape);
+    return () => {
+      document.removeEventListener(
+        "pointerdown",
+        dismissOnOutsidePointer,
+        true,
+      );
+      document.removeEventListener("keydown", dismissOnEscape);
+    };
+  }, [tooltipOpen]);
+
+  function startSwipe(event: ReactPointerEvent<HTMLDivElement>) {
     if (!event.isPrimary || event.button !== 0) return;
 
     swipeStart.current = {
@@ -152,7 +187,7 @@ export function NtrpPicker({ value, onChange }: NtrpPickerProps) {
     };
   }
 
-  function moveSwipe(event: PointerEvent<HTMLDivElement>) {
+  function moveSwipe(event: ReactPointerEvent<HTMLDivElement>) {
     const start = swipeStart.current;
     if (!start || start.id !== event.pointerId) return;
 
@@ -177,7 +212,7 @@ export function NtrpPicker({ value, onChange }: NtrpPickerProps) {
     );
   }
 
-  function finishSwipe(event: PointerEvent<HTMLDivElement>) {
+  function finishSwipe(event: ReactPointerEvent<HTMLDivElement>) {
     const start = swipeStart.current;
     if (!start || start.id !== event.pointerId) return;
 
@@ -189,7 +224,7 @@ export function NtrpPicker({ value, onChange }: NtrpPickerProps) {
     if (level) onChange(level.value);
   }
 
-  function resetSwipe(event: PointerEvent<HTMLDivElement>) {
+  function resetSwipe(event: ReactPointerEvent<HTMLDivElement>) {
     if (swipeStart.current?.id !== event.pointerId) return;
     swipeStart.current = null;
     setDragOffset(0);
@@ -204,11 +239,24 @@ export function NtrpPicker({ value, onChange }: NtrpPickerProps) {
         >
           NTRP
         </h2>
-        <img
-          src={infoIcon}
-          alt=""
-          className="absolute top-1/2 right-0 block -translate-y-1/2"
+        <IconButton
+          ref={tooltipTrigger}
+          aria-label="NTRP 설명"
+          aria-expanded={tooltipOpen}
+          aria-describedby={tooltipOpen ? tooltipId : undefined}
+          icon={infoIcon}
+          className="absolute top-1/2 -right-2.5 -translate-y-1/2"
+          onClick={() => setTooltipOpen((open) => !open)}
         />
+        {tooltipOpen && (
+          <div className="pointer-events-none absolute right-0 bottom-full z-10 mb-(--spacing-gap-small) flex w-full justify-end">
+            <Tooltip id={tooltipId} ref={tooltip}>
+              {
+                "NTRP는 테니스 실력을 나타내는 등급으로,\n높은 숫자일수록 좋은 실력을 뜻합니다"
+              }
+            </Tooltip>
+          </div>
+        )}
       </div>
 
       <div
