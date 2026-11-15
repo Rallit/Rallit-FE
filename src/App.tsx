@@ -4,6 +4,7 @@ import { ServiceIntro } from "@/components/intro/ServiceIntro";
 import { PageLayout } from "@/components/layout/PageLayout";
 import {
   MATCH_REQUEST_COMPLETE_PATH,
+  MATCH_REQUEST_RESULTS_PATH,
   MATCH_REQUEST_PATH,
 } from "@/features/match-request/form";
 import { useAuthContext } from "@/hooks/useAuthContext";
@@ -12,6 +13,7 @@ import HomePage from "@/pages/HomePage";
 import LoginPage from "@/pages/LoginPage";
 import MatchRequestCompletePage from "@/pages/MatchRequestCompletePage";
 import MatchRequestPage from "@/pages/MatchRequestPage";
+import MatchRequestResultsPage from "@/pages/MatchRequestResultsPage";
 import OnboardingPage from "@/pages/OnboardingPage";
 
 function AuthStatusGate() {
@@ -119,6 +121,10 @@ export default function App() {
               <Route
                 path={MATCH_REQUEST_COMPLETE_PATH}
                 element={<MatchRequestCompletePage />}
+              />
+              <Route
+                path={MATCH_REQUEST_RESULTS_PATH}
+                element={<MatchRequestResultsPage />}
               />
             </>
           )}

@@ -1,24 +1,19 @@
 import { Navigate, useLocation, useNavigate } from "react-router";
 import closeIcon from "../../assets/icons/close.svg";
-import completionImage from "../../assets/images/match-request-complete.png";
+import forwardIcon from "../../assets/icons/forward.svg";
+import completionImage from "../../assets/images/match-request-placeholder.png";
 import { IconButton } from "@/components/IconButton";
 import { PageLayout } from "@/components/layout/PageLayout";
 import {
   MATCH_REQUEST_PATH,
+  MATCH_REQUEST_RESULTS_PATH,
   matchFormats,
   type MatchRequest,
 } from "@/features/match-request/form";
-
-const weekdayFormat = new Intl.DateTimeFormat("ko-KR", { weekday: "short" });
-
-function formatDate(date: string) {
-  const selected = new Date(date + "T00:00:00");
-  return `${selected.getMonth() + 1}.${selected.getDate()}(${weekdayFormat.format(selected)})`;
-}
-
-function formatHour(hour: number) {
-  return String(hour).padStart(2, "0") + ":00";
-}
+import {
+  formatMatchDate,
+  formatMatchTimeRange,
+} from "@/features/match-request/summary";
 
 export default function MatchRequestCompletePage() {
   const navigate = useNavigate();
@@ -28,11 +23,8 @@ export default function MatchRequestCompletePage() {
   if (!request) return <Navigate to={MATCH_REQUEST_PATH} replace />;
 
   const summary = [
-    ["날짜", request.dates.map(formatDate).join(", ")],
-    [
-      "시간",
-      `${formatHour(request.startHour)} - ${formatHour(request.endHour)}`,
-    ],
+    ["날짜", request.dates.map((date) => formatMatchDate(date)).join(", ")],
+    ["시간", formatMatchTimeRange(request)],
     ["지역", request.activityAreas.map(({ label }) => label).join(", ")],
     [
       "유형",
@@ -85,6 +77,16 @@ export default function MatchRequestCompletePage() {
             </div>
           ))}
         </dl>
+        <button
+          type="button"
+          className="typography-body-bold mt-[23px] inline-flex cursor-pointer appearance-none items-center gap-[19px] border-0 bg-(--bg-primary-default) px-(--spacing-padding-medium) py-(--spacing-padding-small) text-(color:--fg-neutral-default)"
+          onClick={() =>
+            void navigate(MATCH_REQUEST_RESULTS_PATH, { state: request })
+          }
+        >
+          목록 확인하기
+          <img src={forwardIcon} alt="" className="block shrink-0" />
+        </button>
       </div>
     </PageLayout>
   );

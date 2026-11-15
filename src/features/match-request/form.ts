@@ -2,6 +2,7 @@ import type { ActivityArea } from "@/apis/locations";
 
 export const MATCH_REQUEST_PATH = "/match-requests/new";
 export const MATCH_REQUEST_COMPLETE_PATH = "/match-requests/complete";
+export const MATCH_REQUEST_RESULTS_PATH = "/match-requests/results";
 export const MAX_REQUEST_AREAS = 3;
 export const MIN_NTRP = 1;
 export const MAX_NTRP = 4.5;
