@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Navigate, useNavigate, useParams } from "react-router";
 import clockIcon from "../../assets/icons/clock.svg";
 import participantIcon from "../../assets/icons/match-participant.svg";
@@ -55,14 +55,14 @@ export default function MatchDetailPage() {
     return () => controller.abort();
   }, [id, validId, requestKey]);
 
-  const imageRef = useRef<HTMLDivElement>(null);
+  const [image, setImage] = useState<HTMLDivElement | null>(null);
   const [headerFilled, setHeaderFilled] = useState(false);
   const [applyOpen, setApplyOpen] = useState(false);
-  const [applied, setApplied] = useState(false);
+  const [appliedMatchId, setAppliedMatchId] = useState<number>();
+  const applied = appliedMatchId === id;
   const [toast, setToast] = useState<string | null>(null);
 
   useEffect(() => {
-    const image = imageRef.current;
     if (!image) return;
     const observer = new IntersectionObserver(
       ([entry]) => setHeaderFilled(!entry.isIntersecting),
@@ -70,7 +70,7 @@ export default function MatchDetailPage() {
     );
     observer.observe(image);
     return () => observer.disconnect();
-  }, []);
+  }, [image]);
 
   if (!validId) return <Navigate to="/" replace />;
 
@@ -120,7 +120,7 @@ export default function MatchDetailPage() {
 
       {/* 임시: API에 코트 이미지가 없어 자리만 표시합니다. */}
       <div
-        ref={imageRef}
+        ref={setImage}
         aria-hidden="true"
         className="-mx-(--unit-16) -mt-14 h-[230px] bg-(--bg-neutral-weak)"
       />
@@ -249,7 +249,7 @@ export default function MatchDetailPage() {
           match={match}
           onClose={() => setApplyOpen(false)}
           onApplied={() => {
-            setApplied(true);
+            setAppliedMatchId(match.matchId);
             setToast(APPLIED_TOAST);
           }}
         />

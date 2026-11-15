@@ -61,6 +61,7 @@ type BottomSheetProps = {
   children: (dismiss: DismissSheet) => ReactNode;
   className?: string;
   backdrop?: keyof typeof backdropStyles;
+  dismissible?: boolean;
 };
 
 export function BottomSheet({
@@ -71,6 +72,7 @@ export function BottomSheet({
   children,
   className = "overflow-y-auto",
   backdrop = "strong",
+  dismissible = true,
 }: BottomSheetProps) {
   const titleId = useId();
   const dialogRef = useRef<HTMLDialogElement>(null);
@@ -143,6 +145,10 @@ export function BottomSheet({
     ).then(finish, () => {});
   };
 
+  const dismissByUser = () => {
+    if (dismissible) dismiss();
+  };
+
   return (
     <dialog
       ref={dialogRef}
@@ -157,12 +163,12 @@ export function BottomSheet({
       }}
       onClick={(event) => {
         if (startedOnBackdrop.current && event.target === event.currentTarget)
-          dismiss();
+          dismissByUser();
         startedOnBackdrop.current = false;
       }}
       onCancel={(event) => {
         event.preventDefault();
-        dismiss();
+        dismissByUser();
       }}
       className="fixed inset-x-0 top-[var(--sheet-viewport-top,0px)] bottom-auto mx-auto my-0 box-border h-[var(--sheet-viewport-height,100dvh)] max-h-none w-full max-w-[480px] flex-col justify-end overflow-hidden overscroll-y-none border-0 bg-transparent p-0 pt-[env(safe-area-inset-top,0px)] text-(color:--fg-neutral-default) open:flex backdrop:bg-transparent"
     >
@@ -184,7 +190,7 @@ export function BottomSheet({
               variant="sheet"
               title={title}
               titleId={titleId}
-              onClose={() => dismiss()}
+              onClose={dismissByUser}
             />
           </div>
           <SheetContent dismiss={dismiss}>{children}</SheetContent>

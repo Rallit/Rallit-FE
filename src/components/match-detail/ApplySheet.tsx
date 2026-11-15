@@ -39,7 +39,8 @@ export function ApplySheet({ match, onClose, onApplied }: ApplySheetProps) {
     request.current = controller;
     try {
       await applyToMatch(match.matchId, controller.signal);
-      dismiss(onApplied);
+      onApplied();
+      dismiss();
     } catch (cause) {
       if (controller.signal.aborted) return;
       setError(
@@ -58,6 +59,7 @@ export function ApplySheet({ match, onClose, onApplied }: ApplySheetProps) {
       id="match-apply-sheet"
       title="참가 신청"
       open
+      dismissible={!submitting}
       onDismiss={onClose}
     >
       {(dismiss) => (
