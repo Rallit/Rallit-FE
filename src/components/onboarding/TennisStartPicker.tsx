@@ -10,8 +10,7 @@ import {
 import { BottomCTA } from "@/components/BottomCTA";
 import { BottomSheet } from "@/components/BottomSheet";
 import { Select } from "@/components/Select";
-
-export type TennisStartMonth = { year: number; month: number };
+import type { TennisStartMonth } from "@/features/onboarding/form";
 
 type TennisStartPickerProps = {
   value: TennisStartMonth | null;

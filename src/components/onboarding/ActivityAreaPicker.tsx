@@ -15,8 +15,7 @@ import { CascadingMenu } from "@/components/CascadingMenu";
 import { BottomSheet } from "@/components/BottomSheet";
 import { Select } from "@/components/Select";
 import { SelectionChip } from "@/components/SelectionChip";
-
-const maxAreas = 3;
+import { maxActivityAreas } from "@/features/onboarding/form";
 
 type ActivityAreaPickerProps = {
   value: ActivityArea[];
@@ -31,7 +30,6 @@ export function ActivityAreaPicker({
   value,
   onChange,
 }: ActivityAreaPickerProps) {
-  const labelId = useId();
   const dialogId = useId();
   const draftChips = useRef<HTMLDivElement>(null);
   const resetButton = useRef<HTMLButtonElement>(null);
@@ -90,7 +88,7 @@ export function ActivityAreaPicker({
       removeArea(id);
       return;
     }
-    if (draft.length >= maxAreas) return;
+    if (draft.length >= maxActivityAreas) return;
 
     const area = list.areas.find((item) => item.id === id);
     if (area) setDraft([...draft, area]);
@@ -98,10 +96,7 @@ export function ActivityAreaPicker({
 
   return (
     <div className="grid gap-(--spacing-gap-medium)">
-      <p
-        id={labelId}
-        className="typography-label-r-medium m-0 text-(color:--fg-neutral-secondary)"
-      >
+      <p className="typography-label-r-medium m-0 text-(color:--fg-neutral-secondary)">
         주 활동 지역
       </p>
       <Select
@@ -156,7 +151,7 @@ export function ActivityAreaPicker({
                   role="status"
                   className="typography-caption-r-regular m-0 text-(color:--fg-neutral-tertiary)"
                 >
-                  {draft.length}/{maxAreas}
+                  {draft.length}/{maxActivityAreas}
                 </p>
                 {draft.length > 0 && (
                   <div

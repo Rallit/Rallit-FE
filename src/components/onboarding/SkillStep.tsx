@@ -1,10 +1,6 @@
-import { NtrpPicker, type NtrpLevel } from "./NtrpPicker";
-import { TennisStartPicker, type TennisStartMonth } from "./TennisStartPicker";
-
-export type SkillDraft = {
-  tennisStart: TennisStartMonth | null;
-  ntrp: NtrpLevel;
-};
+import type { SkillDraft } from "@/features/onboarding/form";
+import { NtrpPicker } from "./NtrpPicker";
+import { TennisStartPicker } from "./TennisStartPicker";
 
 type SkillStepProps = {
   value: SkillDraft;
