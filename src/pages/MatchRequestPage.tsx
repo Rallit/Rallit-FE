@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
+import type { ActivityArea } from "@/apis/locations";
 import { ActionButton } from "@/components/ActionButton";
+import { ActivityAreaPicker } from "@/components/ActivityAreaPicker";
 import { Checkbox } from "@/components/Checkbox";
 import { DaySelector } from "@/components/DaySelector";
 import { Header } from "@/components/Header";
@@ -10,7 +12,6 @@ import {
   type MatchRequestTimeRange,
 } from "@/components/match-request/MatchRequestTimePicker";
 import { RangeSlider, type RangeSliderValue } from "@/components/RangeSlider";
-import { Select } from "@/components/Select";
 import { SelectionChip } from "@/components/SelectionChip";
 
 const matchFormats = [
@@ -79,6 +80,7 @@ export default function MatchRequestPage() {
     startHour: null,
     endHour: null,
   });
+  const [activityAreas, setActivityAreas] = useState<ActivityArea[]>([]);
   const [selectedFormats, setSelectedFormats] = useState<MatchFormat[]>([]);
   const [sameGenderOnly, setSameGenderOnly] = useState(false);
   const [ntrp, setNtrp] = useState<RangeSliderValue>([1, 2]);
@@ -123,14 +125,13 @@ export default function MatchRequestPage() {
           </div>
         </fieldset>
 
-        <fieldset className="m-0 min-w-0 border-0 p-0">
-          <legend className={fieldLabel}>희망 지역</legend>
-          <Select
-            className="mt-(--spacing-gap-medium)"
-            aria-label="희망 지역"
-            disabled
-          />
-        </fieldset>
+        <ActivityAreaPicker
+          label="희망 지역"
+          maxAreas={3}
+          backdrop="overlay"
+          value={activityAreas}
+          onChange={setActivityAreas}
+        />
 
         <fieldset className="m-0 min-w-0 border-0 p-0">
           <legend className={fieldLabel}>희망 방식</legend>
