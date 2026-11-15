@@ -22,6 +22,9 @@ import { useAuthContext } from "@/hooks/useAuthContext";
 import { useOnboardingNickname } from "@/hooks/useOnboardingNickname";
 import { useOnboardingProfilePhoto } from "@/hooks/useOnboardingProfilePhoto";
 
+// 닉네임 중복과 온보딩 완료 응답에 같은 오류 코드(COMMON409)가 내려옵니다.
+const nicknameConflictMessage = "이미 사용 중인 닉네임입니다.";
+
 const steps = [
   {
     title: "기본프로필",
@@ -126,7 +129,7 @@ export default function OnboardingPage() {
       if (signal.aborted) return;
 
       if (error instanceof ApiError && error.status === 409) {
-        if (error.message === "이미 사용 중인 닉네임입니다.") {
+        if (error.message === nicknameConflictMessage) {
           nickname.markDuplicate();
           setStepIndex(0);
           return;
