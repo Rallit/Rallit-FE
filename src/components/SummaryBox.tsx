@@ -3,13 +3,20 @@ type SummaryBoxProps = {
   time: string;
   region: string;
   matchType: string;
+  regionLabel?: string;
 };
 
-export function SummaryBox({ date, time, region, matchType }: SummaryBoxProps) {
+export function SummaryBox({
+  date,
+  time,
+  region,
+  matchType,
+  regionLabel = "지역",
+}: SummaryBoxProps) {
   const rows = [
     { label: "날짜", value: date },
     { label: "시간", value: time },
-    { label: "지역", value: region },
+    { label: regionLabel, value: region },
     { label: "유형", value: matchType },
   ];
 

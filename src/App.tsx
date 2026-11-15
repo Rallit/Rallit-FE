@@ -16,6 +16,7 @@ import MatchRequestCompletePage from "@/pages/MatchRequestCompletePage";
 import MatchRequestPage from "@/pages/MatchRequestPage";
 import MatchRequestResultsPage from "@/pages/MatchRequestResultsPage";
 import OnboardingPage from "@/pages/OnboardingPage";
+import MatchDetailPage from "@/pages/MatchDetailPage";
 
 function AuthStatusGate() {
   const { authState, retry } = useAuthContext();
@@ -120,6 +121,7 @@ export default function App() {
               />
             }
           />
+          <Route path="/matches/:matchId" element={<MatchDetailPage />} />
           <Route path={MATCH_REQUEST_PATH} element={<MatchRequestPage />} />
           <Route
             path={MATCH_REQUEST_COMPLETE_PATH}
