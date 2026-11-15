@@ -24,7 +24,7 @@ export default function MatchRequestResultsPage() {
   const [area, ...otherAreas] = request.activityAreas;
   const summary = [
     formatMatchDate(firstDate) +
-      (otherDates.length ? ` 외 ${otherDates.length}일` : ""),
+      (otherDates.length ? ` 외 ${otherDates.length}` : ""),
     formatMatchTimeRange(request),
     area.label + (otherAreas.length ? ` 외 ${otherAreas.length}` : ""),
   ];

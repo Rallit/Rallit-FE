@@ -75,7 +75,7 @@ export function getStoredMatchRequests(userId: number): StoredMatchRequest[] {
       if (entry) requests.set(entry.id, entry);
     }
   } catch {
-    // Storage can be unavailable in some browsers.
+    // 브라우저 저장소에 접근할 수 없으면 메모리에 보관한 요청을 읽는다.
   }
 
   for (const [key, entry] of memoryRequests) {
