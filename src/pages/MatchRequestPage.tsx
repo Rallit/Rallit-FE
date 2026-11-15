@@ -23,6 +23,8 @@ import {
   matchFormats,
   type MatchFormat,
 } from "@/features/match-request/form";
+import { storeMatchRequest } from "@/features/match-request/storage.web";
+import { useAuthContext } from "@/hooks/useAuthContext";
 
 const DATE_WINDOW_DAYS = 14;
 
@@ -72,6 +74,7 @@ function toggleSelection<T>(selected: readonly T[], value: T) {
 
 export default function MatchRequestPage() {
   const navigate = useNavigate();
+  const { authState } = useAuthContext();
   const [{ days, monthLabel }] = useState(() => getCalendar(new Date()));
   const [selectedDates, setSelectedDates] = useState(() =>
     days.filter((day) => day.today).map((day) => day.id),
@@ -109,11 +112,13 @@ export default function MatchRequestPage() {
             fullWidth
             disabled={request === null}
             onClick={() => {
-              if (request)
-                void navigate(MATCH_REQUEST_COMPLETE_PATH, {
-                  state: request,
-                  replace: true,
-                });
+              if (!request || authState.status !== "authenticated") return;
+
+              storeMatchRequest(authState.user.id, request);
+              void navigate(MATCH_REQUEST_COMPLETE_PATH, {
+                state: request,
+                replace: true,
+              });
             }}
           >
             매칭 신청하기
