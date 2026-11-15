@@ -15,7 +15,8 @@ export function PageLayout({
   const hasFooter = Boolean(footer);
   const hasSlots = Boolean(header) || hasFooter;
   const classes = [
-    "page-layout box-border mx-auto min-h-dvh w-full max-w-[480px] pt-[env(safe-area-inset-top,0px)]",
+    "page-layout box-border mx-auto min-h-dvh w-full max-w-[480px]",
+    !header && "pt-[env(safe-area-inset-top,0px)]",
     background === "weak"
       ? "bg-(--bg-neutral-weak)"
       : "bg-(--bg-neutral-default)",
@@ -32,7 +33,11 @@ export function PageLayout({
     <main className={classes} tabIndex={0}>
       {hasSlots ? (
         <>
-          {header && <div className="shrink-0">{header}</div>}
+          {header && (
+            <div className="sticky top-0 z-10 shrink-0 bg-inherit pt-[env(safe-area-inset-top,0px)]">
+              {header}
+            </div>
+          )}
           <div className="page-layout__content flex-[1_0_auto] px-(--unit-16)">
             {children}
           </div>
