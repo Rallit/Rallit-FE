@@ -5,6 +5,10 @@ import { Checkbox } from "@/components/Checkbox";
 import { DaySelector } from "@/components/DaySelector";
 import { Header } from "@/components/Header";
 import { PageLayout } from "@/components/layout/PageLayout";
+import {
+  MatchRequestTimePicker,
+  type MatchRequestTimeRange,
+} from "@/components/match-request/MatchRequestTimePicker";
 import { RangeSlider, type RangeSliderValue } from "@/components/RangeSlider";
 import { Select } from "@/components/Select";
 import { SelectionChip } from "@/components/SelectionChip";
@@ -71,6 +75,10 @@ export default function MatchRequestPage() {
   const [selectedDates, setSelectedDates] = useState(() =>
     days.filter((day) => day.today).map((day) => day.id),
   );
+  const [timeRange, setTimeRange] = useState<MatchRequestTimeRange>({
+    startHour: null,
+    endHour: null,
+  });
   const [selectedFormats, setSelectedFormats] = useState<MatchFormat[]>([]);
   const [sameGenderOnly, setSameGenderOnly] = useState(false);
   const [ntrp, setNtrp] = useState<RangeSliderValue>([1, 2]);
@@ -111,10 +119,7 @@ export default function MatchRequestPage() {
                 setSelectedDates((selected) => toggleSelection(selected, date))
               }
             />
-            <div className="grid grid-cols-2 gap-(--spacing-gap-medium)">
-              <Select placeholder="부터" aria-label="시작 시간" disabled />
-              <Select placeholder="까지" aria-label="종료 시간" disabled />
-            </div>
+            <MatchRequestTimePicker value={timeRange} onChange={setTimeRange} />
           </div>
         </fieldset>
 
