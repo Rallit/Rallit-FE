@@ -1,3 +1,4 @@
+import { ActionButton } from "@/components/ActionButton";
 import { BottomNav } from "@/components/BottomNav";
 import { FAB } from "@/components/FAB";
 import { Header } from "@/components/Header";
@@ -10,9 +11,8 @@ import {
 } from "@/components/home/recommendedMatches.mock";
 import { PageLayout } from "@/components/layout/PageLayout";
 
-// 임시 문구: Figma 빈 상태 문구 확정 전
 const EMPTY_MESSAGE =
-  "추천할 매치가 아직 없어요.\n조건을 바꾸거나 직접 매치를 찾아보세요.";
+  "도착한 알림이 없어요.\n새로운 알림이 도착하면 알려드릴게요!";
 const NAV_HREFS = { home: "/", schedule: "/schedule", my: "/my" } as const;
 
 type HomePageProps = {
@@ -50,7 +50,18 @@ export default function HomePage({
         <div className="flex flex-col gap-4 pt-4 pb-6">
           {heading}
           <RecommendedMatchCarousel matches={matches} />
-          <HomeBanner />
+          <div className="mt-(--spacing-gap-small) flex items-center justify-between gap-(--spacing-gap-medium) rounded-(--radius-large) bg-(--bg-neutral-default) p-(--spacing-padding-medium)">
+            <p className="typography-body-bold m-0 text-(color:--fg-neutral-default)">
+              내 일정에 딱 맞는 매치
+            </p>
+            <ActionButton
+              variant="tertiary"
+              size="S"
+              className="shrink-0 whitespace-nowrap"
+            >
+              요청하기
+            </ActionButton>
+          </div>
         </div>
       ) : (
         <div className="flex flex-col pt-4 pb-6">
