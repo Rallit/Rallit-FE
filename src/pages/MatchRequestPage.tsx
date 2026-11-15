@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import type { ActivityArea } from "@/apis/locations";
 import { ActionButton } from "@/components/ActionButton";
@@ -75,7 +75,9 @@ function toggleSelection<T>(selected: readonly T[], value: T) {
 export default function MatchRequestPage() {
   const navigate = useNavigate();
   const { authState } = useAuthContext();
-  const [{ days, monthLabel }] = useState(() => getCalendar(new Date()));
+  const [{ days, monthLabel }, setCalendar] = useState(() =>
+    getCalendar(new Date()),
+  );
   const [selectedDates, setSelectedDates] = useState(() =>
     days.filter((day) => day.today).map((day) => day.id),
   );
@@ -87,6 +89,55 @@ export default function MatchRequestPage() {
   const [selectedFormats, setSelectedFormats] = useState<MatchFormat[]>([]);
   const [sameGenderOnly, setSameGenderOnly] = useState(false);
   const [ntrp, setNtrp] = useState<RangeSliderValue>([1, 2]);
+  const refreshCalendar = useCallback((now: Date) => {
+    const calendar = getCalendar(now);
+    const availableDates = new Set(calendar.days.map(({ id }) => id));
+
+    setCalendar((previous) =>
+      previous.days[0].id === calendar.days[0].id ? previous : calendar,
+    );
+    setSelectedDates((previous) =>
+      previous.every((date) => availableDates.has(date))
+        ? previous
+        : previous.filter((date) => availableDates.has(date)),
+    );
+
+    return availableDates;
+  }, []);
+
+  useEffect(() => {
+    let timer: number;
+
+    function syncCalendar() {
+      window.clearTimeout(timer);
+      const now = new Date();
+      refreshCalendar(now);
+      const nextMidnight = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate() + 1,
+      );
+      timer = window.setTimeout(
+        syncCalendar,
+        nextMidnight.getTime() - now.getTime(),
+      );
+    }
+
+    function handleVisibilityChange() {
+      if (document.visibilityState === "visible") syncCalendar();
+    }
+
+    syncCalendar();
+    window.addEventListener("focus", syncCalendar);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      window.clearTimeout(timer);
+      window.removeEventListener("focus", syncCalendar);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [refreshCalendar]);
+
   const request = getMatchRequest({
     dates: selectedDates,
     ...timeRange,
@@ -113,6 +164,10 @@ export default function MatchRequestPage() {
             disabled={request === null}
             onClick={() => {
               if (!request || authState.status !== "authenticated") return;
+
+              const availableDates = refreshCalendar(new Date());
+              if (request.dates.some((date) => !availableDates.has(date)))
+                return;
 
               storeMatchRequest(authState.user.id, request);
               void navigate(MATCH_REQUEST_COMPLETE_PATH, {
