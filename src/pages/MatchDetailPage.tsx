@@ -20,9 +20,14 @@ import {
   formatNtrpRange,
   formatPrice,
 } from "@/features/match-detail/format";
+import { Toast } from "@/components/Toast";
+import { ApplySheet } from "@/components/match-detail/ApplySheet";
+import {
+  APPLIED_TOAST,
+  REFUND_POLICY,
+  applicationBlockLabels,
+} from "@/features/match-detail/copy";
 
-// 임시 문구: API에 환불 규정이 없어 시안 문구를 사용합니다.
-const REFUND_POLICY = ["경기 3일 전까지: 전액 환불", "3일 전 ~ 당일: 50% 환불"];
 const HEADER_HEIGHT = 56;
 
 type DetailResult = { key: string; match?: MatchDetail; failed?: boolean };
@@ -52,6 +57,9 @@ export default function MatchDetailPage() {
 
   const imageRef = useRef<HTMLDivElement>(null);
   const [headerFilled, setHeaderFilled] = useState(false);
+  const [applyOpen, setApplyOpen] = useState(false);
+  const [applied, setApplied] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
 
   useEffect(() => {
     const image = imageRef.current;
@@ -91,9 +99,14 @@ export default function MatchDetailPage() {
             <ActionButton
               size="M"
               className="flex-1"
-              disabled={!match.canApply}
+              disabled={applied || !match.canApply}
+              onClick={() => setApplyOpen(true)}
             >
-              신청하기
+              {applied
+                ? "수락 대기중"
+                : match.applicationBlockReason
+                  ? applicationBlockLabels[match.applicationBlockReason]
+                  : "신청하기"}
             </ActionButton>
           </div>
         )
@@ -231,6 +244,21 @@ export default function MatchDetailPage() {
           </section>
         </div>
       )}
+      {match && applyOpen && (
+        <ApplySheet
+          match={match}
+          onClose={() => setApplyOpen(false)}
+          onApplied={() => {
+            setApplied(true);
+            setToast(APPLIED_TOAST);
+          }}
+        />
+      )}
+      <Toast
+        message={toast}
+        onDismiss={() => setToast(null)}
+        className="pointer-events-none fixed inset-x-0 bottom-[calc(93px+env(safe-area-inset-bottom,0px))] z-20 mx-auto flex max-w-[480px] justify-center px-(--unit-16)"
+      />
     </PageLayout>
   );
 }

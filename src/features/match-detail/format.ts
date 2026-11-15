@@ -62,3 +62,18 @@ export function formatPrice(fee: number) {
 export function formatExperience(period: ExperiencePeriod | null) {
   return period ? experienceLabels[period] : "-";
 }
+
+function pad(value: number) {
+  return String(value).padStart(2, "0");
+}
+
+export function formatMatchDate(iso: string) {
+  const time = toKst(iso);
+  return `${time.month}.${time.day}(${time.weekday})`;
+}
+
+export function formatTimeRange(startIso: string, endIso: string) {
+  const start = toKst(startIso);
+  const end = toKst(endIso);
+  return `${pad(start.hour)}:${pad(start.minute)} - ${pad(end.hour)}:${pad(end.minute)}`;
+}
