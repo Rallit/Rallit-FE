@@ -7,6 +7,7 @@ import {
   MATCH_REQUEST_RESULTS_PATH,
   MATCH_REQUEST_PATH,
 } from "@/features/match-request/form";
+import { getStoredMatchRequests } from "@/features/match-request/storage.web";
 import { useAuthContext } from "@/hooks/useAuthContext";
 import AuthCompletePage from "@/pages/AuthCompletePage";
 import HomePage from "@/pages/HomePage";
@@ -107,6 +108,19 @@ export default function App() {
             path="/"
             element={
               <HomePage
+                requests={
+                  import.meta.env.DEV && authState.status === "authenticated"
+                    ? getStoredMatchRequests(authState.user.id)
+                    : undefined
+                }
+                onOpenRequest={
+                  import.meta.env.DEV
+                    ? (request) =>
+                        void navigate(MATCH_REQUEST_RESULTS_PATH, {
+                          state: request,
+                        })
+                    : undefined
+                }
                 onRequestMatch={
                   import.meta.env.DEV
                     ? () => void navigate(MATCH_REQUEST_PATH)
