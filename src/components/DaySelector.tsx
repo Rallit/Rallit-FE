@@ -15,6 +15,7 @@ type DaySelectorProps = {
   monthLabel: string;
   days: readonly DayOption[];
   selectedId?: string;
+  selectedIds?: readonly string[];
   onSelect: (id: string) => void;
 };
 
@@ -22,6 +23,7 @@ export function DaySelector({
   monthLabel,
   days,
   selectedId,
+  selectedIds,
   onSelect,
 }: DaySelectorProps) {
   const monthId = useId();
@@ -30,21 +32,21 @@ export function DaySelector({
     <div
       role="group"
       aria-labelledby={monthId}
-      className="box-border flex w-full min-w-0 flex-col gap-(--spacing-gap-medium) rounded-(--radius-large) border border-solid border-(--border-neutral-weak) bg-(--bg-neutral-default) py-(--spacing-padding-medium)"
+      className="box-border flex w-full min-w-0 flex-col gap-(--spacing-gap-medium) rounded-(--radius-large) border border-solid border-(--border-neutral-weak) bg-(--bg-neutral-default) p-(--spacing-padding-medium)"
     >
       <p
         id={monthId}
-        className="typography-label-r-medium m-0 px-(--spacing-padding-medium) text-(color:--fg-neutral-secondary)"
+        className="typography-label-r-medium m-0 px-(--spacing-padding-small) text-(color:--fg-neutral-secondary)"
       >
         {monthLabel}
       </p>
-      <div className="w-full overflow-x-auto">
-        <div className="mx-auto flex w-max">
+      <div className="w-full overflow-x-auto scrollbar-none">
+        <div className="mx-auto flex w-max gap-(--spacing-gap-micro)">
           {days.map(({ id, accessibleLabel, ...dayProps }) => (
             <DayButton
               {...dayProps}
               key={id}
-              selected={selectedId === id}
+              selected={selectedIds?.includes(id) ?? selectedId === id}
               aria-label={
                 dayProps.hasEvent
                   ? `${accessibleLabel}, 일정 있음`

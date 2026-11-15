@@ -2,10 +2,19 @@ import { Navigate, Outlet, Route, Routes, useNavigate } from "react-router";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { ServiceIntro } from "@/components/intro/ServiceIntro";
 import { PageLayout } from "@/components/layout/PageLayout";
+import {
+  MATCH_REQUEST_COMPLETE_PATH,
+  MATCH_REQUEST_RESULTS_PATH,
+  MATCH_REQUEST_PATH,
+} from "@/features/match-request/form";
+import { getStoredMatchRequests } from "@/features/match-request/storage.web";
 import { useAuthContext } from "@/hooks/useAuthContext";
 import AuthCompletePage from "@/pages/AuthCompletePage";
 import HomePage from "@/pages/HomePage";
 import LoginPage from "@/pages/LoginPage";
+import MatchRequestCompletePage from "@/pages/MatchRequestCompletePage";
+import MatchRequestPage from "@/pages/MatchRequestPage";
+import MatchRequestResultsPage from "@/pages/MatchRequestResultsPage";
 import OnboardingPage from "@/pages/OnboardingPage";
 
 function AuthStatusGate() {
@@ -52,6 +61,7 @@ function OnboardingIntroRoute() {
 }
 
 export default function App() {
+  const navigate = useNavigate();
   const { authState, completeLogin } = useAuthContext();
   const loginDestination =
     authState.status === "authenticated" && authState.user.onboardingCompleted
@@ -94,7 +104,44 @@ export default function App() {
         </Route>
 
         <Route element={<ProtectedRoute onboarding="completed" />}>
-          <Route path="/" element={<HomePage />} />
+          <Route
+            path="/"
+            element={
+              <HomePage
+                requests={
+                  import.meta.env.DEV && authState.status === "authenticated"
+                    ? getStoredMatchRequests(authState.user.id)
+                    : undefined
+                }
+                onOpenRequest={
+                  import.meta.env.DEV
+                    ? (request) =>
+                        void navigate(MATCH_REQUEST_RESULTS_PATH, {
+                          state: request,
+                        })
+                    : undefined
+                }
+                onRequestMatch={
+                  import.meta.env.DEV
+                    ? () => void navigate(MATCH_REQUEST_PATH)
+                    : undefined
+                }
+              />
+            }
+          />
+          {import.meta.env.DEV && (
+            <>
+              <Route path={MATCH_REQUEST_PATH} element={<MatchRequestPage />} />
+              <Route
+                path={MATCH_REQUEST_COMPLETE_PATH}
+                element={<MatchRequestCompletePage />}
+              />
+              <Route
+                path={MATCH_REQUEST_RESULTS_PATH}
+                element={<MatchRequestResultsPage />}
+              />
+            </>
+          )}
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />

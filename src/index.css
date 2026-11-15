@@ -17,7 +17,7 @@
 
 @media (width > 480px) {
   :root {
-    background-color: var(--bg-neutral-weak);
+    background-color: var(--gray-100);
   }
 }
 

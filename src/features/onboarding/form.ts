@@ -1,4 +1,4 @@
-import type { ActivityArea } from "@/apis/onboarding";
+import type { ActivityArea } from "@/apis/locations";
 import type {
   ExperiencePeriod,
   OnboardingRequest,
