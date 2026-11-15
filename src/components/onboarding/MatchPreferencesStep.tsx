@@ -1,8 +1,11 @@
 import type { ReactNode } from "react";
 import { Checkbox } from "@/components/Checkbox";
 import { SelectionChip } from "@/components/SelectionChip";
-import type { MatchPreferencesDraft } from "@/features/onboarding/form";
-import { ActivityAreaPicker } from "./ActivityAreaPicker";
+import {
+  maxActivityAreas,
+  type MatchPreferencesDraft,
+} from "@/features/onboarding/form";
+import { ActivityAreaPicker } from "@/components/ActivityAreaPicker";
 
 const matchTypes = [
   { value: "SINGLES", label: "단식" },
@@ -91,6 +94,8 @@ export function MatchPreferencesStep({
       </PreferenceGroup>
 
       <ActivityAreaPicker
+        label="주 활동 지역"
+        maxAreas={maxActivityAreas}
         value={value.activityAreas}
         onChange={(activityAreas) => onChange({ ...value, activityAreas })}
       />

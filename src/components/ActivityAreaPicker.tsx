@@ -4,20 +4,20 @@ import {
   useLayoutEffect,
   useRef,
   useState,
+  type ComponentProps,
   type MouseEvent,
 } from "react";
-import {
-  getOnboardingActivityAreas,
-  type ActivityArea,
-} from "@/apis/onboarding";
+import { getActivityAreas, type ActivityArea } from "@/apis/locations";
 import { BottomCTA } from "@/components/BottomCTA";
 import { CascadingMenu } from "@/components/CascadingMenu";
 import { BottomSheet } from "@/components/BottomSheet";
 import { Select } from "@/components/Select";
 import { SelectionChip } from "@/components/SelectionChip";
-import { maxActivityAreas } from "@/features/onboarding/form";
 
 type ActivityAreaPickerProps = {
+  label: string;
+  maxAreas: number;
+  backdrop?: ComponentProps<typeof BottomSheet>["backdrop"];
   value: ActivityArea[];
   onChange: (value: ActivityArea[]) => void;
 };
@@ -27,6 +27,9 @@ type AreaList =
   | { status: "ready"; areas: ActivityArea[] };
 
 export function ActivityAreaPicker({
+  label,
+  maxAreas,
+  backdrop,
   value,
   onChange,
 }: ActivityAreaPickerProps) {
@@ -57,7 +60,7 @@ export function ActivityAreaPicker({
     request.current = controller;
     setList({ status: "loading" });
     try {
-      const areas = await getOnboardingActivityAreas(controller.signal);
+      const areas = await getActivityAreas(controller.signal);
       if (!controller.signal.aborted) setList({ status: "ready", areas });
     } catch {
       if (!controller.signal.aborted) setList({ status: "error" });
@@ -88,7 +91,7 @@ export function ActivityAreaPicker({
       removeArea(id);
       return;
     }
-    if (draft.length >= maxActivityAreas) return;
+    if (draft.length >= maxAreas) return;
 
     const area = list.areas.find((item) => item.id === id);
     if (area) setDraft([...draft, area]);
@@ -97,13 +100,13 @@ export function ActivityAreaPicker({
   return (
     <div className="grid gap-(--spacing-gap-medium)">
       <p className="typography-label-r-medium m-0 text-(color:--fg-neutral-secondary)">
-        주 활동 지역
+        {label}
       </p>
       <Select
         chips={value}
         chipTrigger="dropdown"
         onRemove={(id) => onChange(value.filter((area) => area.id !== id))}
-        aria-label="주 활동 지역 선택"
+        aria-label={`${label} 선택`}
         aria-haspopup="dialog"
         aria-controls={dialogId}
         aria-expanded={draft !== null}
@@ -114,6 +117,7 @@ export function ActivityAreaPicker({
         title="주 활동지역"
         open={draft !== null}
         onDismiss={close}
+        backdrop={backdrop}
         className="h-[639px] overflow-hidden"
       >
         {(dismiss) =>
@@ -147,12 +151,12 @@ export function ActivityAreaPicker({
                 )}
               </div>
               <div className="shrink-0 border-x-0 border-t border-b-0 border-solid border-(--border-neutral-weak)">
-                <div className="grid gap-(--spacing-gap-micro) px-(--spacing-padding-large) pt-(--spacing-padding-small) pb-(--spacing-padding-large)">
+                <div className="grid gap-(--spacing-gap-micro) px-(--spacing-padding-large) py-(--spacing-padding-small)">
                   <p
                     role="status"
-                    className="typography-caption-r-regular m-0 text-(color:--fg-neutral-tertiary)"
+                    className="typography-caption-r-medium m-0 text-(color:--fg-neutral-tertiary)"
                   >
-                    {draft.length}/{maxActivityAreas}
+                    {draft.length}/{maxAreas}
                   </p>
                   {draft.length > 0 && (
                     <div
@@ -176,22 +180,24 @@ export function ActivityAreaPicker({
                     </div>
                   )}
                 </div>
-                <BottomCTA
-                  layout="horizontal"
-                  primaryAction={{
-                    children: "등록",
-                    disabled: list.status !== "ready" || draft.length === 0,
-                    onClick: () => dismiss(() => onChange(draft)),
-                  }}
-                  secondaryAction={{
-                    variant: "tertiary",
-                    children: "초기화",
-                    ref: resetButton,
-                    onClick: () => {
-                      setDraft([]);
-                    },
-                  }}
-                />
+                <div className="py-(--spacing-padding-small)">
+                  <BottomCTA
+                    layout="horizontal"
+                    primaryAction={{
+                      children: "등록",
+                      disabled: list.status !== "ready" || draft.length === 0,
+                      onClick: () => dismiss(() => onChange(draft)),
+                    }}
+                    secondaryAction={{
+                      variant: "tertiary",
+                      children: "초기화",
+                      ref: resetButton,
+                      onClick: () => {
+                        setDraft([]);
+                      },
+                    }}
+                  />
+                </div>
               </div>
             </>
           )
