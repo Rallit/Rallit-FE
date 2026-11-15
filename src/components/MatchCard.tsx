@@ -4,7 +4,6 @@ import { Divider } from "./Divider";
 import { Profile } from "./Profile";
 
 type MatchCardProps = {
-  href: string;
   dateLabel: string;
   courtName: string;
   matchType: string;
@@ -16,11 +15,13 @@ type MatchCardProps = {
 } & (
   | {
       variant: "vertical";
+      href: string;
       tags: readonly string[];
       participants?: readonly { id: string; image?: string | null }[];
     }
   | {
       variant: "list";
+      href?: string;
       recruitmentLabel: string;
       region: string;
       regionMatches?: boolean;
@@ -32,6 +33,7 @@ const priceFormat = new Intl.NumberFormat("ko-KR");
 export function MatchCard(props: MatchCardProps) {
   const { variant, href, dateLabel, courtName, matchType, skillLevel } = props;
   const vertical = variant === "vertical";
+  const Container = href ? "a" : "article";
   const participantCount = `${props.participantCount}/${props.capacity}`;
   const price = (
     <span
@@ -51,7 +53,7 @@ export function MatchCard(props: MatchCardProps) {
   );
 
   return (
-    <a
+    <Container
       href={href}
       className={`box-border grid w-full min-w-0 overflow-hidden rounded-(--radius-large) bg-(--bg-neutral-default) text-(color:--fg-neutral-default) no-underline ${vertical ? "max-w-72 shadow-[0_2px_30px_var(--gray-alpha-100)]" : "grid-cols-[min(148px,48%)_minmax(0,1fr)] gap-(--spacing-gap-medium) p-(--spacing-padding-large)"}`}
     >
@@ -125,6 +127,6 @@ export function MatchCard(props: MatchCardProps) {
           </div>
         </>
       )}
-    </a>
+    </Container>
   );
 }
