@@ -23,43 +23,43 @@ const levels = [
     value: "1.0",
     graphic: ntrp10,
     description:
-      "테니스를 처음 시작한 단계로, 라켓 잡는 법과 기본 자세를 배우며 공을 맞히는 연습을 해요.",
+      "테니스를 처음 시작한 단계로, \n라켓 잡는 법과 기본 자세를 배우며 공을 맞히는 연습을 해요.",
   },
   {
     value: "1.5",
     graphic: ntrp15,
     description:
-      "기본적인 포핸드와 백핸드를 배우고 있지만, 공을 정확히 맞히거나 랠리를 이어가기 어려워요.",
+      "기본적인 포핸드와 백핸드를 배우고 있지만, \n공을 정확히 맞히거나 랠리를 이어가기 어려워요.",
   },
   {
     value: "2.0",
     graphic: ntrp20,
     description:
-      "기본 스트로크로 공을 넘길 수 있지만, 방향 조절이 어렵고 서브와 발리 성공률이 낮아요.",
+      "기본 스트로크로 공을 넘길 수 있지만, \n방향 조절이 어렵고 서브와 발리 성공률이 낮아요.",
   },
   {
     value: "2.5",
     graphic: ntrp25,
     description:
-      "느린 공으로 랠리를 이어가고 기본 서브와 발리가 가능하지만, 방향과 깊이 조절은 어려워요.",
+      "느린 공으로 랠리를 이어가고 기본 서브와 발리가 가능하지만, \n방향과 깊이 조절은 어려워요.",
   },
   {
     value: "3.0",
     graphic: ntrp30,
     description:
-      "안정적인 랠리와 기본 발리, 세컨드 서브가 가능하지만 빠른 공이나 공격적인 샷에는 약해요.",
+      "안정적인 랠리와 기본 발리, 세컨드 서브가 가능하지만, \n빠른 공이나 공격적인 샷에는 약해요.",
   },
   {
     value: "3.5",
     graphic: ntrp35,
     description:
-      "스핀과 방향 조절이 가능하고, 공격적인 스트로크와 발리, 스핀 서브를 구사할 수 있어요.",
+      "스핀과 방향 조절이 가능하고, \n공격적인 스트로크와 발리, 스핀 서브를 구사할 수 있어요.",
   },
   {
     value: "4.0+",
     graphic: ntrp40Plus,
     description:
-      "강한 공에도 안정적으로 대응하며, 정교한 코스 조절과 다양한 샷으로 경기를 주도할 수 있어요.",
+      "강한 공에도 안정적으로 대응하며, \n정교한 코스 조절과 다양한 샷으로 경기를 주도할 수 있어요.",
   },
 ] as const;
 
@@ -282,7 +282,7 @@ export function NtrpPicker({ value, onChange }: NtrpPickerProps) {
           onClick={() => next && onChange(next.value)}
         />
       </div>
-      <p className="typography-label-r-regular m-0 mt-(--spacing-gap-medium) rounded-(--radius-small) bg-(--bg-neutral-weak) px-(--spacing-padding-small) py-(--spacing-padding-medium) text-center break-keep text-(color:--fg-neutral-tertiary)">
+      <p className="typography-label-r-regular m-0 mt-(--spacing-gap-medium) rounded-(--radius-small) bg-(--bg-neutral-weak) px-(--spacing-padding-small) py-(--spacing-padding-medium) text-center break-keep whitespace-pre-line text-(color:--fg-neutral-tertiary)">
         {levels[index].description}
       </p>
     </section>
