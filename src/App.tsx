@@ -109,39 +109,26 @@ export default function App() {
             element={
               <HomePage
                 requests={
-                  import.meta.env.DEV && authState.status === "authenticated"
+                  authState.status === "authenticated"
                     ? getStoredMatchRequests(authState.user.id)
                     : undefined
                 }
-                onOpenRequest={
-                  import.meta.env.DEV
-                    ? (request) =>
-                        void navigate(MATCH_REQUEST_RESULTS_PATH, {
-                          state: request,
-                        })
-                    : undefined
+                onOpenRequest={(request) =>
+                  void navigate(MATCH_REQUEST_RESULTS_PATH, { state: request })
                 }
-                onRequestMatch={
-                  import.meta.env.DEV
-                    ? () => void navigate(MATCH_REQUEST_PATH)
-                    : undefined
-                }
+                onRequestMatch={() => void navigate(MATCH_REQUEST_PATH)}
               />
             }
           />
-          {import.meta.env.DEV && (
-            <>
-              <Route path={MATCH_REQUEST_PATH} element={<MatchRequestPage />} />
-              <Route
-                path={MATCH_REQUEST_COMPLETE_PATH}
-                element={<MatchRequestCompletePage />}
-              />
-              <Route
-                path={MATCH_REQUEST_RESULTS_PATH}
-                element={<MatchRequestResultsPage />}
-              />
-            </>
-          )}
+          <Route path={MATCH_REQUEST_PATH} element={<MatchRequestPage />} />
+          <Route
+            path={MATCH_REQUEST_COMPLETE_PATH}
+            element={<MatchRequestCompletePage />}
+          />
+          <Route
+            path={MATCH_REQUEST_RESULTS_PATH}
+            element={<MatchRequestResultsPage />}
+          />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />
