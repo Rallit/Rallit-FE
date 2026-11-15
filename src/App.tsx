@@ -2,14 +2,17 @@ import { Navigate, Outlet, Route, Routes, useNavigate } from "react-router";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { ServiceIntro } from "@/components/intro/ServiceIntro";
 import { PageLayout } from "@/components/layout/PageLayout";
+import {
+  MATCH_REQUEST_COMPLETE_PATH,
+  MATCH_REQUEST_PATH,
+} from "@/features/match-request/form";
 import { useAuthContext } from "@/hooks/useAuthContext";
 import AuthCompletePage from "@/pages/AuthCompletePage";
 import HomePage from "@/pages/HomePage";
 import LoginPage from "@/pages/LoginPage";
+import MatchRequestCompletePage from "@/pages/MatchRequestCompletePage";
 import MatchRequestPage from "@/pages/MatchRequestPage";
 import OnboardingPage from "@/pages/OnboardingPage";
-
-const MATCH_REQUEST_PATH = "/match-requests/new";
 
 function AuthStatusGate() {
   const { authState, retry } = useAuthContext();
@@ -111,7 +114,13 @@ export default function App() {
             }
           />
           {import.meta.env.DEV && (
-            <Route path={MATCH_REQUEST_PATH} element={<MatchRequestPage />} />
+            <>
+              <Route path={MATCH_REQUEST_PATH} element={<MatchRequestPage />} />
+              <Route
+                path={MATCH_REQUEST_COMPLETE_PATH}
+                element={<MatchRequestCompletePage />}
+              />
+            </>
           )}
         </Route>
 

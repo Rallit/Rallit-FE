@@ -13,18 +13,18 @@ import {
 } from "@/components/match-request/MatchRequestTimePicker";
 import { RangeSlider, type RangeSliderValue } from "@/components/RangeSlider";
 import { SelectionChip } from "@/components/SelectionChip";
-
-const matchFormats = [
-  { value: "SINGLES", label: "단식" },
-  { value: "RALLY", label: "랠리" },
-  { value: "DOUBLES", label: "복식" },
-  { value: "MIXED_DOUBLES", label: "혼합복식" },
-] as const;
-
-type MatchFormat = (typeof matchFormats)[number]["value"];
+import {
+  MATCH_REQUEST_COMPLETE_PATH,
+  MAX_NTRP,
+  MAX_REQUEST_AREAS,
+  MIN_NTRP,
+  NTRP_STEP,
+  getMatchRequest,
+  matchFormats,
+  type MatchFormat,
+} from "@/features/match-request/form";
 
 const DATE_WINDOW_DAYS = 14;
-const MAX_NTRP = 4.5;
 
 const monthFormat = new Intl.DateTimeFormat("ko-KR", {
   year: "numeric",
@@ -84,6 +84,14 @@ export default function MatchRequestPage() {
   const [selectedFormats, setSelectedFormats] = useState<MatchFormat[]>([]);
   const [sameGenderOnly, setSameGenderOnly] = useState(false);
   const [ntrp, setNtrp] = useState<RangeSliderValue>([1, 2]);
+  const request = getMatchRequest({
+    dates: selectedDates,
+    ...timeRange,
+    activityAreas,
+    matchFormats: selectedFormats,
+    sameGenderOnly,
+    ntrp,
+  });
 
   return (
     <PageLayout
@@ -96,7 +104,18 @@ export default function MatchRequestPage() {
       }
       footer={
         <div className="px-(--spacing-padding-large) py-(--spacing-padding-medium)">
-          <ActionButton size="M" fullWidth disabled>
+          <ActionButton
+            size="M"
+            fullWidth
+            disabled={request === null}
+            onClick={() => {
+              if (request)
+                void navigate(MATCH_REQUEST_COMPLETE_PATH, {
+                  state: request,
+                  replace: true,
+                });
+            }}
+          >
             매칭 신청하기
           </ActionButton>
         </div>
@@ -127,7 +146,7 @@ export default function MatchRequestPage() {
 
         <ActivityAreaPicker
           label="희망 지역"
-          maxAreas={3}
+          maxAreas={MAX_REQUEST_AREAS}
           backdrop="overlay"
           value={activityAreas}
           onChange={setActivityAreas}
@@ -166,9 +185,9 @@ export default function MatchRequestPage() {
           <legend className={fieldLabel}>희망 플레이어 실력</legend>
           <div className="mt-(--spacing-gap-medium)">
             <RangeSlider
-              min={1}
+              min={MIN_NTRP}
               max={MAX_NTRP}
-              step={0.5}
+              step={NTRP_STEP}
               value={ntrp}
               onChange={setNtrp}
               minLabel="최소 NTRP"
