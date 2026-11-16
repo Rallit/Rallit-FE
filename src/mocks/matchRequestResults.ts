@@ -1,9 +1,6 @@
 import requestPlaceholder from "../../assets/images/match-request-placeholder.png";
-import {
-  MAX_NTRP,
-  matchFormats,
-  type MatchRequest,
-} from "@/features/match-request/form";
+import { matchFormats, type MatchRequest } from "@/features/match-request/form";
+import { formatRequestedNtrp } from "@/features/match-request/summary";
 import { formatMatchDate } from "@/features/match-request/summary";
 
 const nearbyDistricts = ["용산구", "서초구", "강남구", "성동구"];
@@ -24,7 +21,7 @@ export function getMockMatchRequestResults(request: MatchRequest) {
   const card = {
     dateLabel: dateLabel(firstDate),
     matchType: format?.label ?? "테니스",
-    skillLevel: `NTRP ${minimumNtrp === MAX_NTRP ? "4.5+" : minimumNtrp.toFixed(1)} 이상`,
+    skillLevel: `NTRP ${formatRequestedNtrp(minimumNtrp)} 이상`,
     price: 20000,
     participantCount: 2,
     capacity: 4,

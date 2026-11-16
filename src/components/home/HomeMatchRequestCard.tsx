@@ -1,10 +1,7 @@
 import { Badge } from "@/components/Badge";
 import { Divider } from "@/components/Divider";
-import {
-  MAX_NTRP,
-  matchFormats,
-  type MatchRequest,
-} from "@/features/match-request/form";
+import { matchFormats, type MatchRequest } from "@/features/match-request/form";
+import { formatRequestedNtrp } from "@/features/match-request/summary";
 
 type HomeMatchRequestCardProps = {
   request: MatchRequest;
@@ -25,10 +22,6 @@ function formatDates(dates: string[]) {
     .join(", ");
 }
 
-function formatNtrp(value: number) {
-  return value === MAX_NTRP ? "4.5+" : value.toFixed(1);
-}
-
 export function HomeMatchRequestCard({
   request,
   hasNewMatches,
@@ -36,7 +29,7 @@ export function HomeMatchRequestCard({
 }: HomeMatchRequestCardProps) {
   const requirements = [
     request.activityAreas.map(({ label }) => label).join(", "),
-    `NTRP ${request.ntrp.map(formatNtrp).join("-")}`,
+    `NTRP ${request.ntrp.map(formatRequestedNtrp).join("-")}`,
     matchFormats
       .filter(({ value }) => request.matchFormats.includes(value))
       .map(({ label }) => label)
