@@ -8,10 +8,7 @@ import {
   MATCH_REQUEST_PATH,
   type MatchRequest,
 } from "@/features/match-request/form";
-import {
-  formatMatchDate,
-  formatMatchTimeRange,
-} from "@/features/match-request/summary";
+import { formatRequestSummary } from "@/features/match-request/summary";
 import { getMockMatchRequestResults } from "@/mocks/matchRequestResults";
 
 export default function MatchRequestResultsPage() {
@@ -21,14 +18,7 @@ export default function MatchRequestResultsPage() {
 
   if (!request) return <Navigate to={MATCH_REQUEST_PATH} replace />;
 
-  const [firstDate, ...otherDates] = request.dates;
-  const [area, ...otherAreas] = request.activityAreas;
-  const summary = [
-    formatMatchDate(firstDate) +
-      (otherDates.length ? ` 외 ${otherDates.length}` : ""),
-    formatMatchTimeRange(request),
-    area.label + (otherAreas.length ? ` 외 ${otherAreas.length}` : ""),
-  ];
+  const summary = formatRequestSummary(request);
   const sections = getMockMatchRequestResults(request);
 
   return (

@@ -18,3 +18,15 @@ function formatHour(hour: number) {
 export function formatMatchTimeRange({ startHour, endHour }: MatchRequest) {
   return `${formatHour(startHour)} - ${formatHour(endHour)}`;
 }
+
+export function formatRequestSummary(request: MatchRequest) {
+  const [firstDate, ...otherDates] = request.dates;
+  const [firstArea, ...otherAreas] = request.activityAreas;
+
+  return [
+    formatMatchDate(firstDate) +
+      (otherDates.length ? ` 외 ${otherDates.length}` : ""),
+    formatMatchTimeRange(request),
+    firstArea.label + (otherAreas.length ? ` 외 ${otherAreas.length}` : ""),
+  ];
+}
