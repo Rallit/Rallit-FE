@@ -194,7 +194,7 @@ export default function MatchDetailPage() {
                 details={[
                   {
                     label: "구력",
-                    value: formatExperience(match.host.experiencePeriod),
+                    value: formatExperience(match.host.experienceYears),
                   },
                 ]}
               />

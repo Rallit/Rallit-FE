@@ -33,7 +33,7 @@ export function createMockMatchDetail(matchId: number): MatchDetail {
     host: {
       userId: 7,
       nickname: "은구",
-      experiencePeriod: "THREE_YEARS_OR_MORE",
+      experienceYears: 3,
       profileImageUrl: null,
     },
   };
