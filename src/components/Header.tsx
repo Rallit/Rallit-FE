@@ -101,7 +101,7 @@ export function Header(props: HeaderProps) {
           aria-label={props.action.label}
           icon={props.action.icon}
           onClick={props.action.onClick}
-          className="col-start-3 -mr-2.5"
+          className="col-start-3 -ml-2.5"
         />
       )}
     </header>
