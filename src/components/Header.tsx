@@ -17,6 +17,11 @@ type HeaderProps =
       variant: "subpage";
       title?: string;
       onBack: MouseEventHandler<HTMLButtonElement>;
+      action?: {
+        icon: string;
+        label: string;
+        onClick: MouseEventHandler<HTMLButtonElement>;
+      };
     }
   | {
       variant: "sheet";
@@ -90,6 +95,14 @@ export function Header(props: HeaderProps) {
         <h1 className="typography-headline-bold m-0 truncate px-(--spacing-gap-medium) text-center text-(color:--fg-neutral-secondary)">
           {props.title}
         </h1>
+      )}
+      {props.action && (
+        <IconButton
+          aria-label={props.action.label}
+          icon={props.action.icon}
+          onClick={props.action.onClick}
+          className="col-start-3 -mr-2.5"
+        />
       )}
     </header>
   );

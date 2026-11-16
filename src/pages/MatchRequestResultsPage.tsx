@@ -1,3 +1,4 @@
+import trashIcon from "../../assets/icons/trash.svg";
 import { Navigate, useLocation, useNavigate } from "react-router";
 import { Divider } from "@/components/Divider";
 import { Header } from "@/components/Header";
@@ -36,8 +37,13 @@ export default function MatchRequestResultsPage() {
       header={
         <Header
           variant="subpage"
-          title="이미 열린 매치 목록"
+          title="열린 매치"
           onBack={() => void navigate(-1)}
+          action={{
+            icon: trashIcon,
+            label: "매칭 요청 삭제",
+            onClick: () => {},
+          }}
         />
       }
     >
