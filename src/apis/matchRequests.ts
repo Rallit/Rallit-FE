@@ -49,3 +49,19 @@ export async function createMatchRequest(
 
   return result;
 }
+
+export async function getSavedMatchRequests(
+  signal: AbortSignal,
+): Promise<SavedMatchRequest[]> {
+  const requests = await requestWithAuth<SavedMatchRequest[]>(
+    "/api/v1/match-requests",
+    { signal },
+  );
+  if (!Array.isArray(requests)) {
+    throw new ApiError(
+      "protocol",
+      "매칭 요청 목록 응답 형식이 올바르지 않습니다.",
+    );
+  }
+  return requests;
+}

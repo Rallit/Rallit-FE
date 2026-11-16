@@ -1,12 +1,14 @@
 import { Badge } from "@/components/Badge";
 import { Divider } from "@/components/Divider";
-import type { MatchRequest } from "@/features/match-request/form";
-import { formatRequestSummary } from "@/features/match-request/summary";
+import {
+  formatRequestSummary,
+  type MatchRequestSummary,
+} from "@/features/match-request/summary";
 
 type HomeMatchRequestCardProps = {
-  request: MatchRequest;
-  hasNewMatches: boolean;
-  onClick: () => void;
+  request: MatchRequestSummary;
+  hasNewMatches?: boolean;
+  onClick?: () => void;
 };
 
 function formatDates(dates: string[]) {
@@ -28,12 +30,12 @@ export function HomeMatchRequestCard({
   onClick,
 }: HomeMatchRequestCardProps) {
   const requirements = formatRequestSummary(request);
+  const Container = onClick ? "button" : "article";
 
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="box-border flex w-full cursor-pointer appearance-none flex-col items-start gap-(--spacing-gap-micro) rounded-(--radius-large) border-0 bg-(--bg-neutral-default) px-(--spacing-padding-large) py-(--spacing-padding-medium) text-left text-(color:--fg-neutral-default)"
+    <Container
+      {...(onClick && { type: "button", onClick })}
+      className={`box-border flex w-full flex-col items-start gap-(--spacing-gap-micro) rounded-(--radius-large) border-0 bg-(--bg-neutral-default) px-(--spacing-padding-large) py-(--spacing-padding-medium) text-left text-(color:--fg-neutral-default) ${onClick ? "cursor-pointer appearance-none" : ""}`}
     >
       {hasNewMatches && <Badge variant="blue-inverse">새 매치가 있어요</Badge>}
       <span className="typography-body-bold">{formatDates(request.dates)}</span>
@@ -45,6 +47,6 @@ export function HomeMatchRequestCard({
           </span>
         ))}
       </span>
-    </button>
+    </Container>
   );
 }

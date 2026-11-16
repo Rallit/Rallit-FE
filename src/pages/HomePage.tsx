@@ -5,7 +5,7 @@ import { BottomNav } from "@/components/BottomNav";
 import { FAB } from "@/components/FAB";
 import { Header } from "@/components/Header";
 import { TextButton } from "@/components/TextButton";
-import { HomeMatchRequestCard } from "@/components/home/HomeMatchRequestCard";
+import { HomeMatchRequestList } from "@/components/home/HomeMatchRequestList";
 import { RecommendedMatchCarousel } from "@/components/home/RecommendedMatchCarousel";
 import { RECOMMENDED_MATCHES_MOCK } from "@/components/home/recommendedMatches.mock";
 import { PageLayout } from "@/components/layout/PageLayout";
@@ -14,8 +14,6 @@ import {
   type RecommendedMatch,
 } from "@/features/home/recommendations";
 import { authMode } from "@/platform/authConfig.web";
-import type { MatchRequest } from "@/features/match-request/form";
-import type { StoredMatchRequest } from "@/features/match-request/storage.web";
 
 const EMPTY_MESSAGE =
   "조건에 맞는 매치가 없어요\n유사한 매치가 나오면 알려드릴게요";
@@ -24,15 +22,13 @@ const NAV_HREFS = { home: "/", schedule: "/schedule", my: "/my" } as const;
 type HomePageProps = {
   matches?: readonly RecommendedMatch[];
   onRequestMatch?: () => void;
-  requests?: readonly StoredMatchRequest[];
-  onOpenRequest?: (request: MatchRequest) => void;
+  userId: number;
 };
 
 export default function HomePage({
   matches: suppliedMatches,
   onRequestMatch,
-  requests = [],
-  onOpenRequest,
+  userId,
 }: HomePageProps) {
   const [attempt, setAttempt] = useState(0);
   const [result, setResult] = useState<{
@@ -145,22 +141,7 @@ export default function HomePage({
             <div className="mt-4">{requestPrompt}</div>
           </div>
         )}
-        {requests.length > 0 && onOpenRequest && (
-          <ul
-            aria-label="매칭 요청 목록"
-            className="m-0 grid min-w-0 list-none gap-(--spacing-gap-small) p-0"
-          >
-            {requests.map(({ id, request }) => (
-              <li key={id}>
-                <HomeMatchRequestCard
-                  request={request}
-                  hasNewMatches={import.meta.env.DEV}
-                  onClick={() => onOpenRequest(request)}
-                />
-              </li>
-            ))}
-          </ul>
-        )}
+        <HomeMatchRequestList key={userId} userId={userId} />
       </div>
     </PageLayout>
   );
