@@ -1,7 +1,31 @@
-import type { MatchApplication, MatchDetail } from "@/apis/matches.types";
+import type {
+  MatchApplication,
+  MatchDetail,
+  RecommendedMatchesPage,
+} from "@/apis/matches.types";
 import { ApiError } from "@/apis/client";
 import { authMode } from "@/platform/authConfig.web";
 import { requestWithAuth } from "@/services/authSession";
+
+export async function getRecommendedMatches(
+  { page, size }: { page: number; size: number },
+  signal: AbortSignal,
+): Promise<RecommendedMatchesPage> {
+  const query = new URLSearchParams({
+    page: String(page),
+    size: String(size),
+  });
+  const result = await requestWithAuth<RecommendedMatchesPage>(
+    `/api/v1/matches/recommendations?${query}`,
+    { signal },
+  );
+
+  if (!Array.isArray(result?.items)) {
+    throw new ApiError("protocol", "추천 매치 응답 형식이 올바르지 않습니다.");
+  }
+
+  return result;
+}
 
 export async function getMatchDetail(
   matchId: number,

@@ -65,6 +65,32 @@ export type MatchDetail = {
   host: MatchHost;
 };
 
+export type RecommendedMatchItem = {
+  match: Pick<
+    MatchDetail,
+    | "matchId"
+    | "matchStatus"
+    | "matchTypes"
+    | "startsAt"
+    | "endsAt"
+    | "participationFee"
+    | "minNtrp"
+    | "maxNtrp"
+    | "currentParticipantCount"
+    | "capacity"
+  > & { courtName: string };
+  areaCode: string;
+  areaName: string;
+};
+
+export type RecommendedMatchesPage = {
+  items: RecommendedMatchItem[];
+  page: number;
+  size: number;
+  hasNext: boolean;
+  totalElements: number;
+};
+
 export type MatchApplication = {
   applicationId: number;
   matchId: number;
