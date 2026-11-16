@@ -1,3 +1,4 @@
+import trashIcon from "../../assets/icons/trash.svg";
 import { Navigate, useLocation, useNavigate } from "react-router";
 import { Divider } from "@/components/Divider";
 import { Header } from "@/components/Header";
@@ -7,10 +8,7 @@ import {
   MATCH_REQUEST_PATH,
   type MatchRequest,
 } from "@/features/match-request/form";
-import {
-  formatMatchDate,
-  formatMatchTimeRange,
-} from "@/features/match-request/summary";
+import { formatRequestSummary } from "@/features/match-request/summary";
 import { getMockMatchRequestResults } from "@/mocks/matchRequestResults";
 
 export default function MatchRequestResultsPage() {
@@ -20,14 +18,7 @@ export default function MatchRequestResultsPage() {
 
   if (!request) return <Navigate to={MATCH_REQUEST_PATH} replace />;
 
-  const [firstDate, ...otherDates] = request.dates;
-  const [area, ...otherAreas] = request.activityAreas;
-  const summary = [
-    formatMatchDate(firstDate) +
-      (otherDates.length ? ` 외 ${otherDates.length}` : ""),
-    formatMatchTimeRange(request),
-    area.label + (otherAreas.length ? ` 외 ${otherAreas.length}` : ""),
-  ];
+  const summary = formatRequestSummary(request);
   const sections = getMockMatchRequestResults(request);
 
   return (
@@ -36,8 +27,13 @@ export default function MatchRequestResultsPage() {
       header={
         <Header
           variant="subpage"
-          title="이미 열린 매치 목록"
+          title="열린 매치"
           onBack={() => void navigate(-1)}
+          action={{
+            icon: trashIcon,
+            label: "매칭 요청 삭제",
+            onClick: () => {},
+          }}
         />
       }
     >

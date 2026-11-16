@@ -1,6 +1,6 @@
 import { Navigate, useLocation, useNavigate } from "react-router";
 import closeIcon from "../../assets/icons/close.svg";
-import forwardIcon from "../../assets/icons/forward.svg";
+import { ActionButton } from "@/components/ActionButton";
 import completionImage from "../../assets/images/match-request-placeholder.png";
 import { IconButton } from "@/components/IconButton";
 import { PageLayout } from "@/components/layout/PageLayout";
@@ -48,18 +48,18 @@ export default function MatchRequestCompletePage() {
         </header>
       }
     >
-      <div className="pt-[68px] pb-(--spacing-padding-large)">
+      <div className="pt-[54px] pb-(--spacing-padding-large)">
         <img
           src={completionImage}
           alt=""
-          width={128}
-          height={128}
-          className="mx-auto block size-32 object-cover"
+          width={140}
+          height={140}
+          className="mx-auto block size-35 object-cover"
         />
         <h1 className="typography-title-bold m-0 mt-5 text-center text-(color:--fg-neutral-strong)">
           매칭을 요청했어요
         </h1>
-        <p className="typography-body-regular m-0 mt-4 text-center">
+        <p className="typography-body-regular m-0 mt-2 text-center">
           조건에 맞는 매치가 열리면
           <br />
           알림으로 알려드릴게요
@@ -77,16 +77,16 @@ export default function MatchRequestCompletePage() {
             </div>
           ))}
         </dl>
-        <button
-          type="button"
-          className="typography-body-bold mt-[23px] inline-flex cursor-pointer appearance-none items-center gap-[19px] border-0 bg-(--bg-primary-default) px-(--spacing-padding-medium) py-(--spacing-padding-small) text-(color:--fg-neutral-default)"
+        <ActionButton
+          size="M"
+          fullWidth
+          className="mt-5"
           onClick={() =>
             void navigate(MATCH_REQUEST_RESULTS_PATH, { state: request })
           }
         >
-          목록 확인하기
-          <img src={forwardIcon} alt="" className="block shrink-0" />
-        </button>
+          열려있는 매치 확인하기
+        </ActionButton>
       </div>
     </PageLayout>
   );

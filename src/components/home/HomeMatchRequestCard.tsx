@@ -1,7 +1,7 @@
 import { Badge } from "@/components/Badge";
 import { Divider } from "@/components/Divider";
-import { matchFormats, type MatchRequest } from "@/features/match-request/form";
-import { formatRequestedNtrp } from "@/features/match-request/summary";
+import type { MatchRequest } from "@/features/match-request/form";
+import { formatRequestSummary } from "@/features/match-request/summary";
 
 type HomeMatchRequestCardProps = {
   request: MatchRequest;
@@ -27,14 +27,7 @@ export function HomeMatchRequestCard({
   hasNewMatches,
   onClick,
 }: HomeMatchRequestCardProps) {
-  const requirements = [
-    request.activityAreas.map(({ label }) => label).join(", "),
-    `NTRP ${request.ntrp.map(formatRequestedNtrp).join("-")}`,
-    matchFormats
-      .filter(({ value }) => request.matchFormats.includes(value))
-      .map(({ label }) => label)
-      .join(", "),
-  ];
+  const requirements = formatRequestSummary(request);
 
   return (
     <button
@@ -44,12 +37,9 @@ export function HomeMatchRequestCard({
     >
       {hasNewMatches && <Badge variant="blue-inverse">새 매치가 있어요</Badge>}
       <span className="typography-body-bold">{formatDates(request.dates)}</span>
-      <span className="typography-label-r-medium flex min-h-6 flex-wrap items-center gap-(--spacing-gap-small) text-(color:--fg-neutral-secondary)">
+      <span className="typography-label-r-medium flex min-h-6 flex-wrap items-center gap-1 text-(color:--fg-neutral-secondary)">
         {requirements.map((requirement, index) => (
-          <span
-            key={index}
-            className="inline-flex min-w-0 items-center gap-(--spacing-gap-small)"
-          >
+          <span key={index} className="inline-flex min-w-0 items-center gap-1">
             {index > 0 && <Divider orientation="vertical" length={16} />}
             <span className="wrap-anywhere">{requirement}</span>
           </span>

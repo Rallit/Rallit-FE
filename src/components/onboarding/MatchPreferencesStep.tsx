@@ -58,7 +58,7 @@ export function MatchPreferencesStep({
 
   return (
     <div className="mt-(--spacing-gap-extra-large) grid gap-(--spacing-gap-large) pb-(--spacing-padding-large)">
-      <PreferenceGroup label="선호 방식">
+      <PreferenceGroup label="선호 매치 유형">
         <div className="flex flex-wrap gap-(--spacing-gap-small)">
           {matchTypes.map(({ value: matchType, label }) => (
             <SelectionChip
