@@ -251,7 +251,7 @@ export function NtrpPicker({ value, onChange }: NtrpPickerProps) {
           onClick={() => setTooltipOpen((open) => !open)}
         />
         {tooltipOpen && (
-          <div className="pointer-events-none absolute right-0 bottom-full z-10 mb-(--spacing-gap-small) flex w-full justify-end">
+          <div className="pointer-events-none absolute right-(--spacing-padding-small) bottom-full left-0 z-10 mb-(--spacing-gap-small) flex justify-end">
             <Tooltip id={tooltipId} ref={tooltip}>
               {
                 "NTRP는 테니스 실력을 나타내는 등급으로,\n높은 숫자일수록 좋은 실력을 뜻합니다"
