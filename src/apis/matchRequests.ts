@@ -1,4 +1,5 @@
 import { ApiError } from "@/apis/client";
+import type { RecommendedMatchesPage } from "@/apis/matches.types";
 import type { MatchFormat } from "@/features/match-request/form";
 import { requestWithAuth } from "@/services/authSession";
 
@@ -64,4 +65,64 @@ export async function getSavedMatchRequests(
     );
   }
   return requests;
+}
+
+export type MatchRequestResults = {
+  hasResults: boolean;
+  exactMatches: RecommendedMatchesPage;
+  similarMatches: RecommendedMatchesPage;
+  relaxedConditions: ("AREA" | "TIME")[];
+};
+
+export async function getSavedMatchRequest(
+  requestId: number,
+  signal: AbortSignal,
+) {
+  const request = await requestWithAuth<SavedMatchRequest>(
+    `/api/v1/match-requests/${requestId}`,
+    { signal },
+  );
+  if (
+    request?.requestId !== requestId ||
+    !request.conditions?.dates?.length ||
+    !request.conditions?.areaCodes?.length
+  ) {
+    throw new ApiError(
+      "protocol",
+      "매칭 요청 조회 응답 형식이 올바르지 않습니다.",
+    );
+  }
+  return request;
+}
+
+export async function getMatchRequestResults(
+  requestId: number,
+  signal: AbortSignal,
+  {
+    exactPage = 0,
+    similarPage = 0,
+  }: { exactPage?: number; similarPage?: number } = {},
+): Promise<MatchRequestResults> {
+  const query = new URLSearchParams({
+    exactPage: String(exactPage),
+    similarPage: String(similarPage),
+  });
+  const result = await requestWithAuth<MatchRequestResults>(
+    `/api/v1/match-requests/${requestId}/results?${query}`,
+    { signal },
+  );
+  if (
+    !Array.isArray(result?.exactMatches?.items) ||
+    result.exactMatches.page !== exactPage ||
+    typeof result.exactMatches.hasNext !== "boolean" ||
+    !Array.isArray(result.similarMatches?.items) ||
+    result.similarMatches.page !== similarPage ||
+    typeof result.similarMatches.hasNext !== "boolean"
+  ) {
+    throw new ApiError(
+      "protocol",
+      "매칭 요청 결과 응답 형식이 올바르지 않습니다.",
+    );
+  }
+  return result;
 }

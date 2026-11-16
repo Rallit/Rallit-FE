@@ -3,7 +3,10 @@ import { useNavigate } from "react-router";
 import { getActivityAreas } from "@/apis/locations";
 import { getSavedMatchRequests } from "@/apis/matchRequests";
 import { ActionButton } from "@/components/ActionButton";
-import { MATCH_REQUEST_RESULTS_PATH } from "@/features/match-request/form";
+import {
+  MATCH_REQUEST_RESULTS_PATH,
+  savedMatchRequestResultsPath,
+} from "@/features/match-request/form";
 import { getStoredMatchRequests } from "@/features/match-request/storage.web";
 import {
   toSavedMatchRequestSummary,
@@ -15,7 +18,7 @@ import { HomeMatchRequestCard } from "./HomeMatchRequestCard";
 type RequestCard = {
   id: number | string;
   request: MatchRequestSummary;
-  onClick?: () => void;
+  onClick: () => void;
 };
 
 export function HomeMatchRequestList({ userId }: { userId: number }) {
@@ -38,6 +41,8 @@ export function HomeMatchRequestList({ userId }: { userId: number }) {
         return requests.map((request) => ({
           id: request.requestId,
           request: toSavedMatchRequestSummary(request, areas),
+          onClick: () =>
+            void navigate(savedMatchRequestResultsPath(request.requestId)),
         }));
       })
       .then(
@@ -50,7 +55,7 @@ export function HomeMatchRequestList({ userId }: { userId: number }) {
       );
 
     return () => controller.abort();
-  }, [attempt, mock]);
+  }, [attempt, mock, navigate]);
 
   const cards = mock
     ? getStoredMatchRequests(userId).map(({ id, request }) => ({

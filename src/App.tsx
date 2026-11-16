@@ -6,6 +6,7 @@ import {
   MATCH_REQUEST_COMPLETE_PATH,
   MATCH_REQUEST_RESULTS_PATH,
   MATCH_REQUEST_PATH,
+  SAVED_MATCH_REQUEST_RESULTS_PATH,
 } from "@/features/match-request/form";
 import { useAuthContext } from "@/hooks/useAuthContext";
 import AuthCompletePage from "@/pages/AuthCompletePage";
@@ -123,6 +124,10 @@ export default function App() {
           />
           <Route
             path={MATCH_REQUEST_RESULTS_PATH}
+            element={<MatchRequestResultsPage />}
+          />
+          <Route
+            path={SAVED_MATCH_REQUEST_RESULTS_PATH}
             element={<MatchRequestResultsPage />}
           />
         </Route>

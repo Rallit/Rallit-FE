@@ -8,6 +8,7 @@ import {
   MATCH_REQUEST_PATH,
   MATCH_REQUEST_RESULTS_PATH,
   matchFormats,
+  savedMatchRequestResultsPath,
 } from "@/features/match-request/form";
 import type { MatchRequestCompletion } from "@/features/match-request/submission";
 import {
@@ -80,14 +81,19 @@ export default function MatchRequestCompletePage() {
             </div>
           ))}
         </dl>
-        {saved === null && (
+        {(saved === null || saved.hasResults) && (
           <ActionButton
             size="M"
             fullWidth
             className="mt-5"
-            onClick={() =>
-              void navigate(MATCH_REQUEST_RESULTS_PATH, { state: request })
-            }
+            onClick={() => {
+              if (saved)
+                void navigate(
+                  savedMatchRequestResultsPath(saved.request.requestId),
+                );
+              else
+                void navigate(MATCH_REQUEST_RESULTS_PATH, { state: request });
+            }}
           >
             열려있는 매치 확인하기
           </ActionButton>

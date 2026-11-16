@@ -3,6 +3,12 @@ import type { ActivityArea } from "@/apis/locations";
 export const MATCH_REQUEST_PATH = "/match-requests/new";
 export const MATCH_REQUEST_COMPLETE_PATH = "/match-requests/complete";
 export const MATCH_REQUEST_RESULTS_PATH = "/match-requests/results";
+export const SAVED_MATCH_REQUEST_RESULTS_PATH =
+  "/match-requests/:requestId/results";
+
+export function savedMatchRequestResultsPath(requestId: number) {
+  return `/match-requests/${requestId}/results`;
+}
 export const MAX_REQUEST_AREAS = 3;
 export const LAST_REQUEST_HOUR = 24;
 export const MIN_NTRP = 1;
