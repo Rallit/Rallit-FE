@@ -215,7 +215,7 @@ export default function MatchRequestPage() {
         />
 
         <fieldset className="m-0 min-w-0 border-0 p-0">
-          <legend className={fieldLabel}>희망 방식</legend>
+          <legend className={fieldLabel}>희망 매치 유형</legend>
           <div className="mt-(--spacing-gap-medium) flex flex-wrap gap-(--spacing-gap-small)">
             {matchFormats.map(({ value, label }) => (
               <SelectionChip
