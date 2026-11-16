@@ -1,5 +1,4 @@
 import type { MatchType } from "@/apis/matches.types";
-import type { ExperiencePeriod } from "@/apis/onboarding.types";
 
 const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"];
 const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
@@ -10,13 +9,6 @@ const matchTypeLabels: Record<MatchType, string> = {
   MIXED_DOUBLES: "혼합복식",
   WOMENS_DOUBLES: "여자복식",
   MENS_DOUBLES: "남자복식",
-};
-
-const experienceLabels: Record<ExperiencePeriod, string> = {
-  UNDER_SIX_MONTHS: "6개월 미만",
-  SIX_MONTHS_TO_ONE_YEAR: "6개월~1년",
-  ONE_TO_THREE_YEARS: "1~3년",
-  THREE_YEARS_OR_MORE: "3년 이상",
 };
 
 function toKst(iso: string) {
@@ -59,8 +51,9 @@ export function formatPrice(fee: number) {
   return `${fee.toLocaleString("ko-KR")}원`;
 }
 
-export function formatExperience(period: ExperiencePeriod | null) {
-  return period ? experienceLabels[period] : "-";
+export function formatExperience(years: number | null) {
+  if (years === null) return "-";
+  return years === 0 ? "1년 미만" : `${years}년`;
 }
 
 function pad(value: number) {

@@ -1,7 +1,4 @@
-import type {
-  ExperiencePeriod,
-  OnboardingProfile,
-} from "@/apis/onboarding.types";
+import type { OnboardingProfile } from "@/apis/onboarding.types";
 
 export type MatchType =
   "SINGLES" | "RALLY" | "MIXED_DOUBLES" | "WOMENS_DOUBLES" | "MENS_DOUBLES";
@@ -39,7 +36,7 @@ export type MatchCourt = {
 export type MatchHost = {
   userId: number;
   nickname: string;
-  experiencePeriod: ExperiencePeriod | null;
+  experienceYears: number | null;
   profileImageUrl: string | null;
 };
 
