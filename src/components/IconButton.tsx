@@ -8,6 +8,7 @@ type IconButtonProps = Omit<
 > & {
   icon: string;
   iconClassName?: string;
+  iconColor?: string;
   size?: IconButtonSize;
   "aria-label": string;
 };
@@ -20,6 +21,7 @@ const iconBoxSize: Record<IconButtonSize, string> = {
 export function IconButton({
   icon,
   iconClassName,
+  iconColor,
   size = "default",
   type = "button",
   className,
@@ -39,11 +41,26 @@ export function IconButton({
       <span
         className={`grid place-items-center rounded-(--radius-small) group-active:bg-(--bg-state-pressed) group-disabled:bg-transparent ${iconBoxSize[size]}`}
       >
-        <img
-          src={icon}
-          alt=""
-          className={["block", iconClassName].filter(Boolean).join(" ")}
-        />
+        {iconColor ? (
+          <span
+            aria-hidden="true"
+            className={["block size-full", iconClassName]
+              .filter(Boolean)
+              .join(" ")}
+            style={{
+              backgroundColor: iconColor,
+              maskImage: `url("${icon}")`,
+              maskPosition: "center",
+              maskRepeat: "no-repeat",
+            }}
+          />
+        ) : (
+          <img
+            src={icon}
+            alt=""
+            className={["block", iconClassName].filter(Boolean).join(" ")}
+          />
+        )}
       </span>
     </button>
   );

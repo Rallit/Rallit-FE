@@ -75,8 +75,6 @@ const swipeThreshold = 24;
 const directionThreshold = 8;
 const wheelThreshold = 40;
 const wheelStepInterval = 180;
-const sideSlotWidth = 59;
-const levelSpacing = 95;
 
 export function NtrpPicker({ value, onChange }: NtrpPickerProps) {
   const labelId = useId();
@@ -97,7 +95,7 @@ export function NtrpPicker({ value, onChange }: NtrpPickerProps) {
     lastEvent: -Infinity,
     lastStep: -Infinity,
   });
-  const numberTrack = useRef<HTMLDivElement>(null);
+  const numberFrames = useRef<HTMLDivElement>(null);
   const index = levels.findIndex((level) => level.value === value);
   const previous = levels[index - 1];
   const next = levels[index + 1];
@@ -203,10 +201,14 @@ export function NtrpPicker({ value, onChange }: NtrpPickerProps) {
       event.currentTarget.setPointerCapture(event.pointerId);
     }
 
-    const adjacentLevel = distanceX < 0 ? next : previous;
-    const trackWidth = numberTrack.current?.clientWidth ?? 0;
-    const slotWidth = Math.min(levelSpacing, (trackWidth - sideSlotWidth) / 2);
-    const maxOffset = adjacentLevel ? Math.max(0, slotWidth) : 12;
+    const frames = numberFrames.current?.children;
+    const active = frames?.[index] as HTMLElement | undefined;
+    const adjacent = frames?.[index + (distanceX < 0 ? 1 : -1)] as
+      HTMLElement | undefined;
+    const maxOffset =
+      active && adjacent
+        ? Math.abs(adjacent.offsetLeft - active.offsetLeft)
+        : 12;
     setDragOffset(
       Math.sign(distanceX) * Math.min(Math.abs(distanceX), maxOffset),
     );
@@ -272,25 +274,26 @@ export function NtrpPicker({ value, onChange }: NtrpPickerProps) {
           if (!event.currentTarget.hasPointerCapture(event.pointerId))
             resetSwipe(event);
         }}
-        className="-mx-(--spacing-padding-large) mt-(--spacing-gap-medium) grid touch-pan-y touch-pinch-zoom grid-cols-[44px_minmax(0,1fr)_44px] items-center px-[6px] py-(--spacing-padding-small) select-none"
+        className="-mx-(--spacing-padding-large) mt-(--spacing-gap-medium) grid touch-pan-y touch-pinch-zoom grid-cols-[56px_minmax(0,1fr)_56px] items-center gap-x-[6px] overflow-x-clip py-(--spacing-padding-small) select-none"
       >
-        <IconButton
-          aria-label="이전 NTRP"
-          icon={backIcon}
-          disabled={!previous}
-          className="disabled:opacity-30"
-          onClick={() => previous && onChange(previous.value)}
-        />
-        <div
-          ref={numberTrack}
-          className="relative mx-auto h-14 w-full max-w-[249px] overflow-hidden text-center tabular-nums italic [container-type:inline-size]"
-        >
+        <div className="grid size-14 place-items-center">
+          <IconButton
+            aria-label="이전 NTRP"
+            icon={backIcon}
+            iconColor="var(--fg-neutral-tertiary)"
+            disabled={!previous}
+            className="disabled:opacity-30"
+            onClick={() => previous && onChange(previous.value)}
+          />
+        </div>
+        <div className="relative mx-auto h-14 w-full max-w-[262px] text-center [container-type:inline-size]">
           <output aria-live="polite" className="sr-only">
             {value}
           </output>
           <div
+            ref={numberFrames}
             aria-hidden="true"
-            className="pointer-events-none absolute inset-0 mask-[linear-gradient(to_right,transparent,black_30px,black_calc(100%_-_30px),transparent)]"
+            className="pointer-events-none absolute inset-0 [--active-slot-width:min(120px,calc((100cqw_-_2*var(--spacing-gap-medium))*120/238))] [--side-slot-width:calc((100%_-_var(--active-slot-width)_-_2*var(--spacing-gap-medium))/2)]"
           >
             {levels.map((level, position) => {
               const offset = position - index;
@@ -299,36 +302,54 @@ export function NtrpPicker({ value, onChange }: NtrpPickerProps) {
                 <span
                   key={level.value}
                   style={{
-                    left: `calc(50% + min(${levelSpacing}px, (100% - ${sideSlotWidth}px) / 2) * ${offset} + ${dragOffset}px)`,
-                    maskImage: `url("${level.graphic}")`,
-                    maskSize: "contain",
-                    maskRepeat: "no-repeat",
-                    maskPosition: "center",
+                    left: `calc(50% + (var(--active-slot-width) / 2 + var(--side-slot-width) / 2 + var(--spacing-gap-medium)) * ${offset} + ${dragOffset}px)`,
                   }}
                   className={[
-                    "absolute top-1/2 aspect-[120/56] -translate-1/2",
+                    "absolute top-0 h-full -translate-x-1/2",
                     dragOffset === 0 &&
-                      "motion-safe:transition-[left,width,background-color,opacity] motion-safe:duration-200 motion-safe:ease-out",
+                      "motion-safe:transition-[left,opacity] motion-safe:duration-200 motion-safe:ease-out",
                     Math.abs(offset) > 1 && "opacity-0",
                     active
-                      ? "w-[min(120px,52cqw)] bg-(--fg-accent-default)"
-                      : "w-[min(75px,32cqw)] bg-(--bg-neutral-weak)",
+                      ? "w-(--active-slot-width)"
+                      : "w-(--side-slot-width)",
                   ]
                     .filter(Boolean)
                     .join(" ")}
-                />
+                >
+                  <span
+                    style={{
+                      maskImage: `url("${level.graphic}")`,
+                      maskSize: "contain",
+                      maskRepeat: "no-repeat",
+                      maskPosition: "center",
+                    }}
+                    className={[
+                      "absolute top-1/2 left-1/2 aspect-[120/56] w-(--active-slot-width) -translate-1/2",
+                      dragOffset === 0 &&
+                        "motion-safe:transition-[scale,background-color] motion-safe:duration-200 motion-safe:ease-out",
+                      active
+                        ? "scale-100 bg-(--fg-accent-default)"
+                        : "scale-70 bg-(--bg-neutral-weak)",
+                    ]
+                      .filter(Boolean)
+                      .join(" ")}
+                  />
+                </span>
               );
             })}
           </div>
         </div>
-        <IconButton
-          aria-label="다음 NTRP"
-          icon={backIcon}
-          iconClassName="-scale-x-100"
-          disabled={!next}
-          className="disabled:opacity-30"
-          onClick={() => next && onChange(next.value)}
-        />
+        <div className="grid size-14 place-items-center">
+          <IconButton
+            aria-label="다음 NTRP"
+            icon={backIcon}
+            iconClassName="-scale-x-100"
+            iconColor="var(--fg-neutral-tertiary)"
+            disabled={!next}
+            className="disabled:opacity-30"
+            onClick={() => next && onChange(next.value)}
+          />
+        </div>
       </div>
       <p className="typography-label-r-regular m-0 mt-(--spacing-gap-medium) rounded-(--radius-small) bg-(--bg-neutral-weak) px-(--spacing-padding-small) py-(--spacing-padding-medium) text-center break-keep whitespace-pre-line text-(color:--fg-neutral-tertiary)">
         {levels[index].description}
