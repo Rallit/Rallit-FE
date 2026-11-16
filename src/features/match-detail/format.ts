@@ -39,6 +39,12 @@ export function formatMatchStart(iso: string) {
   return `${time.month}.${time.day} (${time.weekday}) ${formatHour(time)}`;
 }
 
+export function formatMatchTimeSlot(iso: string) {
+  const { weekday, hour } = toKst(iso);
+  const day = weekday === "토" || weekday === "일" ? "주말" : "평일";
+  return day + (hour < 12 ? " 오전" : " 오후");
+}
+
 export function formatDeadline(iso: string) {
   const time = toKst(iso);
   return `${time.month}.${time.day}(${time.weekday}) ${formatHour(time)} 모집 마감`;

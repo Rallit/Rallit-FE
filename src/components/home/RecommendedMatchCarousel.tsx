@@ -1,7 +1,7 @@
 import { useState, type UIEvent } from "react";
 import { CarouselIndicator } from "@/components/CarouselIndicator";
 import { MatchCard } from "@/components/MatchCard";
-import type { RecommendedMatch } from "./recommendedMatches.mock";
+import type { RecommendedMatch } from "@/features/home/recommendations";
 import { useDragScroll } from "@/hooks/useDragScroll";
 
 const CARD_WIDTH = 288;
