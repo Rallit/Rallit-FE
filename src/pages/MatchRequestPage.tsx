@@ -1,5 +1,7 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
+import { ApiError } from "@/apis/client";
+import { createMatchRequest } from "@/apis/matchRequests";
 import type { ActivityArea } from "@/apis/locations";
 import { ActionButton } from "@/components/ActionButton";
 import { ActivityAreaPicker } from "@/components/ActivityAreaPicker";
@@ -25,36 +27,56 @@ import {
 } from "@/features/match-request/form";
 import { storeMatchRequest } from "@/features/match-request/storage.web";
 import { formatRequestedNtrp } from "@/features/match-request/summary";
+import {
+  toMatchRequestConditions,
+  type MatchRequestCompletion,
+} from "@/features/match-request/submission";
 import { useAuthContext } from "@/hooks/useAuthContext";
+import { authMode } from "@/platform/authConfig.web";
 
 const DATE_WINDOW_DAYS = 14;
+const SEOUL_OFFSET_MS = 9 * 60 * 60 * 1000;
+const PAST_START_MESSAGE =
+  "오늘이 포함된 매칭 요청은 현재 시각보다 늦은 시작 시각을 선택해 주세요.";
 
 const monthFormat = new Intl.DateTimeFormat("ko-KR", {
   year: "numeric",
   month: "long",
+  timeZone: "UTC",
 });
-const weekdayFormat = new Intl.DateTimeFormat("ko-KR", { weekday: "short" });
+const weekdayFormat = new Intl.DateTimeFormat("ko-KR", {
+  weekday: "short",
+  timeZone: "UTC",
+});
 const dateFormat = new Intl.DateTimeFormat("ko-KR", {
   month: "long",
   day: "numeric",
   weekday: "long",
+  timeZone: "UTC",
 });
 const fieldLabel =
   "typography-label-r-medium m-0 p-0 text-(color:--fg-neutral-secondary)";
 
-function getCalendar(today: Date) {
+function getCalendar(now: Date) {
+  const today = new Date(now.getTime() + SEOUL_OFFSET_MS);
   const dates = Array.from(
     { length: DATE_WINDOW_DAYS },
     (_, offset) =>
-      new Date(today.getFullYear(), today.getMonth(), today.getDate() + offset),
+      new Date(
+        Date.UTC(
+          today.getUTCFullYear(),
+          today.getUTCMonth(),
+          today.getUTCDate() + offset,
+        ),
+      ),
   );
   const days = dates.map((date, offset) => {
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+    const day = String(date.getUTCDate()).padStart(2, "0");
 
     return {
-      id: `${date.getFullYear()}-${month}-${day}`,
-      day: date.getDate(),
+      id: `${date.getUTCFullYear()}-${month}-${day}`,
+      day: date.getUTCDate(),
       weekday: weekdayFormat.format(date),
       accessibleLabel: dateFormat.format(date),
       today: offset === 0,
@@ -76,6 +98,9 @@ function toggleSelection<T>(selected: readonly T[], value: T) {
 export default function MatchRequestPage() {
   const navigate = useNavigate();
   const { authState } = useAuthContext();
+  const inFlight = useRef<AbortController | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string>();
   const [{ days, monthLabel }, setCalendar] = useState(() =>
     getCalendar(new Date()),
   );
@@ -113,14 +138,15 @@ export default function MatchRequestPage() {
       window.clearTimeout(timer);
       const now = new Date();
       refreshCalendar(now);
-      const nextMidnight = new Date(
-        now.getFullYear(),
-        now.getMonth(),
-        now.getDate() + 1,
+      const seoulNow = new Date(now.getTime() + SEOUL_OFFSET_MS);
+      const nextMidnight = Date.UTC(
+        seoulNow.getUTCFullYear(),
+        seoulNow.getUTCMonth(),
+        seoulNow.getUTCDate() + 1,
       );
       timer = window.setTimeout(
         syncCalendar,
-        nextMidnight.getTime() - now.getTime(),
+        nextMidnight - seoulNow.getTime(),
       );
     }
 
@@ -133,6 +159,7 @@ export default function MatchRequestPage() {
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
+      inFlight.current?.abort();
       window.clearTimeout(timer);
       window.removeEventListener("focus", syncCalendar);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
@@ -148,6 +175,60 @@ export default function MatchRequestPage() {
     ntrp,
   });
 
+  async function submitRequest() {
+    if (!request || authState.status !== "authenticated" || inFlight.current)
+      return;
+    setSubmitError(undefined);
+
+    const now = new Date();
+    const availableDates = refreshCalendar(now);
+    if (request.dates.some((date) => !availableDates.has(date))) {
+      setSubmitError(
+        "선택할 수 있는 날짜가 바뀌었어요. 희망 일시를 다시 확인해 주세요.",
+      );
+      return;
+    }
+
+    const [today] = availableDates;
+    const seoulHour = new Date(now.getTime() + SEOUL_OFFSET_MS).getUTCHours();
+    if (request.dates.includes(today) && request.startHour <= seoulHour) {
+      setSubmitError(PAST_START_MESSAGE);
+      return;
+    }
+
+    if (authMode === "mock") {
+      storeMatchRequest(authState.user.id, request);
+      const state: MatchRequestCompletion = { request, saved: null };
+      void navigate(MATCH_REQUEST_COMPLETE_PATH, { state, replace: true });
+      return;
+    }
+
+    const controller = new AbortController();
+    inFlight.current = controller;
+    setSubmitting(true);
+    try {
+      const saved = await createMatchRequest(
+        toMatchRequestConditions(request),
+        controller.signal,
+      );
+      if (!controller.signal.aborted) {
+        const state: MatchRequestCompletion = { request, saved };
+        void navigate(MATCH_REQUEST_COMPLETE_PATH, { state, replace: true });
+      }
+    } catch (error) {
+      if (!controller.signal.aborted) {
+        setSubmitError(
+          error instanceof ApiError && error.kind === "api"
+            ? error.message
+            : "매칭 요청을 저장하지 못했어요. 다시 시도해 주세요.",
+        );
+      }
+    } finally {
+      inFlight.current = null;
+      if (!controller.signal.aborted) setSubmitting(false);
+    }
+  }
+
   return (
     <PageLayout
       header={
@@ -159,25 +240,22 @@ export default function MatchRequestPage() {
       }
       footer={
         <div className="px-(--spacing-padding-large) py-(--spacing-padding-medium)">
+          {submitError && (
+            <p
+              role="alert"
+              className="typography-label-r-medium mx-0 mt-0 mb-2 text-(color:--fg-neutral-default)"
+            >
+              {submitError}
+            </p>
+          )}
           <ActionButton
             size="M"
             fullWidth
-            disabled={request === null}
-            onClick={() => {
-              if (!request || authState.status !== "authenticated") return;
-
-              const availableDates = refreshCalendar(new Date());
-              if (request.dates.some((date) => !availableDates.has(date)))
-                return;
-
-              storeMatchRequest(authState.user.id, request);
-              void navigate(MATCH_REQUEST_COMPLETE_PATH, {
-                state: request,
-                replace: true,
-              });
-            }}
+            disabled={request === null || submitting}
+            aria-busy={submitting}
+            onClick={() => void submitRequest()}
           >
-            매칭 신청하기
+            {submitting ? "저장 중" : "매칭 신청하기"}
           </ActionButton>
         </div>
       }

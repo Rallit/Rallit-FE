@@ -4,6 +4,7 @@ export const MATCH_REQUEST_PATH = "/match-requests/new";
 export const MATCH_REQUEST_COMPLETE_PATH = "/match-requests/complete";
 export const MATCH_REQUEST_RESULTS_PATH = "/match-requests/results";
 export const MAX_REQUEST_AREAS = 3;
+export const LAST_REQUEST_HOUR = 24;
 export const MIN_NTRP = 1;
 export const MAX_NTRP = 4;
 export const NTRP_STEP = 0.5;
@@ -58,7 +59,7 @@ export function getMatchRequest(draft: MatchRequestDraft): MatchRequest | null {
     !Number.isInteger(startHour) ||
     !Number.isInteger(endHour) ||
     startHour < 0 ||
-    endHour > 23 ||
+    endHour > LAST_REQUEST_HOUR ||
     startHour >= endHour ||
     activityAreas.length === 0 ||
     activityAreas.length > MAX_REQUEST_AREAS ||

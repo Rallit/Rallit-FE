@@ -11,7 +11,7 @@ export function formatRequestedNtrp(value: number) {
   return value.toFixed(1) + (value === MAX_NTRP ? "+" : "");
 }
 
-function formatHour(hour: number) {
+export function formatHour(hour: number) {
   return String(hour).padStart(2, "0") + ":00";
 }
 

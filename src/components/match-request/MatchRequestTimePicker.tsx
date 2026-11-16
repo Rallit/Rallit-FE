@@ -4,7 +4,7 @@ import { BottomSheet } from "@/components/BottomSheet";
 import { NumberWheel } from "@/components/NumberWheel";
 import { Select } from "@/components/Select";
 
-const LAST_HOUR = 23;
+import { LAST_REQUEST_HOUR } from "@/features/match-request/form";
 const fields = [
   {
     key: "startHour",
@@ -37,8 +37,8 @@ export function MatchRequestTimePicker({ value, onChange }: TimePickerProps) {
   const [draft, setDraft] = useState<Draft | null>(null);
 
   const limits = {
-    startHour: { first: 0, last: (value.endHour ?? LAST_HOUR) - 1 },
-    endHour: { first: (value.startHour ?? 0) + 1, last: LAST_HOUR },
+    startHour: { first: 0, last: (value.endHour ?? LAST_REQUEST_HOUR) - 1 },
+    endHour: { first: (value.startHour ?? 0) + 1, last: LAST_REQUEST_HOUR },
   };
   const close = () => setDraft(null);
 
