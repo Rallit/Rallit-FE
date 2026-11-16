@@ -13,53 +13,54 @@ import {
   useId,
   useRef,
   useState,
-  type PointerEvent,
+  type PointerEvent as ReactPointerEvent,
 } from "react";
 import type { OnboardingProfile } from "@/apis/onboarding.types";
 import { IconButton } from "@/components/IconButton";
+import { Tooltip } from "@/components/Tooltip";
 
 const levels = [
   {
     value: "1.0",
     graphic: ntrp10,
     description:
-      "테니스를 처음 시작한 단계로, 라켓 잡는 법과 기본 자세를 배우며 공을 맞히는 연습을 해요.",
+      "테니스를 처음 시작한 단계로, \n라켓 잡는 법과 기본 자세를 배우며 공을 맞히는 연습을 해요.",
   },
   {
     value: "1.5",
     graphic: ntrp15,
     description:
-      "기본적인 포핸드와 백핸드를 배우고 있지만, 공을 정확히 맞히거나 랠리를 이어가기 어려워요.",
+      "기본적인 포핸드와 백핸드를 배우고 있지만, \n공을 정확히 맞히거나 랠리를 이어가기 어려워요.",
   },
   {
     value: "2.0",
     graphic: ntrp20,
     description:
-      "기본 스트로크로 공을 넘길 수 있지만, 방향 조절이 어렵고 서브와 발리 성공률이 낮아요.",
+      "기본 스트로크로 공을 넘길 수 있지만, \n방향 조절이 어렵고 서브와 발리 성공률이 낮아요.",
   },
   {
     value: "2.5",
     graphic: ntrp25,
     description:
-      "느린 공으로 랠리를 이어가고 기본 서브와 발리가 가능하지만, 방향과 깊이 조절은 어려워요.",
+      "느린 공으로 랠리를 이어가고 기본 서브와 발리가 가능하지만, \n방향과 깊이 조절은 어려워요.",
   },
   {
     value: "3.0",
     graphic: ntrp30,
     description:
-      "안정적인 랠리와 기본 발리, 세컨드 서브가 가능하지만 빠른 공이나 공격적인 샷에는 약해요.",
+      "안정적인 랠리와 기본 발리, 세컨드 서브가 가능하지만, \n빠른 공이나 공격적인 샷에는 약해요.",
   },
   {
     value: "3.5",
     graphic: ntrp35,
     description:
-      "스핀과 방향 조절이 가능하고, 공격적인 스트로크와 발리, 스핀 서브를 구사할 수 있어요.",
+      "스핀과 방향 조절이 가능하고, \n공격적인 스트로크와 발리, 스핀 서브를 구사할 수 있어요.",
   },
   {
     value: "4.0+",
     graphic: ntrp40Plus,
     description:
-      "강한 공에도 안정적으로 대응하며, 정교한 코스 조절과 다양한 샷으로 경기를 주도할 수 있어요.",
+      "강한 공에도 안정적으로 대응하며, \n정교한 코스 조절과 다양한 샷으로 경기를 주도할 수 있어요.",
   },
 ] as const;
 
@@ -74,11 +75,13 @@ const swipeThreshold = 24;
 const directionThreshold = 8;
 const wheelThreshold = 40;
 const wheelStepInterval = 180;
-const sideSlotWidth = 59;
-const levelSpacing = 95;
 
 export function NtrpPicker({ value, onChange }: NtrpPickerProps) {
   const labelId = useId();
+  const tooltipId = useId();
+  const [tooltipOpen, setTooltipOpen] = useState(false);
+  const tooltipTrigger = useRef<HTMLButtonElement>(null);
+  const tooltip = useRef<HTMLDivElement>(null);
   const [dragOffset, setDragOffset] = useState(0);
   const swipeStart = useRef<{
     id: number;
@@ -92,7 +95,7 @@ export function NtrpPicker({ value, onChange }: NtrpPickerProps) {
     lastEvent: -Infinity,
     lastStep: -Infinity,
   });
-  const numberTrack = useRef<HTMLDivElement>(null);
+  const numberFrames = useRef<HTMLDivElement>(null);
   const index = levels.findIndex((level) => level.value === value);
   const previous = levels[index - 1];
   const next = levels[index + 1];
@@ -141,7 +144,37 @@ export function NtrpPicker({ value, onChange }: NtrpPickerProps) {
     return () => row.removeEventListener("wheel", listener);
   }, []);
 
-  function startSwipe(event: PointerEvent<HTMLDivElement>) {
+  useEffect(() => {
+    if (!tooltipOpen) return;
+
+    function dismissOnOutsidePointer(event: PointerEvent) {
+      const target = event.target;
+      if (
+        target instanceof Node &&
+        !tooltipTrigger.current?.contains(target) &&
+        !tooltip.current?.contains(target)
+      ) {
+        setTooltipOpen(false);
+      }
+    }
+
+    function dismissOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") setTooltipOpen(false);
+    }
+
+    document.addEventListener("pointerdown", dismissOnOutsidePointer, true);
+    document.addEventListener("keydown", dismissOnEscape);
+    return () => {
+      document.removeEventListener(
+        "pointerdown",
+        dismissOnOutsidePointer,
+        true,
+      );
+      document.removeEventListener("keydown", dismissOnEscape);
+    };
+  }, [tooltipOpen]);
+
+  function startSwipe(event: ReactPointerEvent<HTMLDivElement>) {
     if (!event.isPrimary || event.button !== 0) return;
 
     swipeStart.current = {
@@ -152,7 +185,7 @@ export function NtrpPicker({ value, onChange }: NtrpPickerProps) {
     };
   }
 
-  function moveSwipe(event: PointerEvent<HTMLDivElement>) {
+  function moveSwipe(event: ReactPointerEvent<HTMLDivElement>) {
     const start = swipeStart.current;
     if (!start || start.id !== event.pointerId) return;
 
@@ -168,16 +201,20 @@ export function NtrpPicker({ value, onChange }: NtrpPickerProps) {
       event.currentTarget.setPointerCapture(event.pointerId);
     }
 
-    const adjacentLevel = distanceX < 0 ? next : previous;
-    const trackWidth = numberTrack.current?.clientWidth ?? 0;
-    const slotWidth = Math.min(levelSpacing, (trackWidth - sideSlotWidth) / 2);
-    const maxOffset = adjacentLevel ? Math.max(0, slotWidth) : 12;
+    const frames = numberFrames.current?.children;
+    const active = frames?.[index] as HTMLElement | undefined;
+    const adjacent = frames?.[index + (distanceX < 0 ? 1 : -1)] as
+      HTMLElement | undefined;
+    const maxOffset =
+      active && adjacent
+        ? Math.abs(adjacent.offsetLeft - active.offsetLeft)
+        : 12;
     setDragOffset(
       Math.sign(distanceX) * Math.min(Math.abs(distanceX), maxOffset),
     );
   }
 
-  function finishSwipe(event: PointerEvent<HTMLDivElement>) {
+  function finishSwipe(event: ReactPointerEvent<HTMLDivElement>) {
     const start = swipeStart.current;
     if (!start || start.id !== event.pointerId) return;
 
@@ -189,7 +226,7 @@ export function NtrpPicker({ value, onChange }: NtrpPickerProps) {
     if (level) onChange(level.value);
   }
 
-  function resetSwipe(event: PointerEvent<HTMLDivElement>) {
+  function resetSwipe(event: ReactPointerEvent<HTMLDivElement>) {
     if (swipeStart.current?.id !== event.pointerId) return;
     swipeStart.current = null;
     setDragOffset(0);
@@ -204,11 +241,24 @@ export function NtrpPicker({ value, onChange }: NtrpPickerProps) {
         >
           NTRP
         </h2>
-        <img
-          src={infoIcon}
-          alt=""
-          className="absolute top-1/2 right-0 block -translate-y-1/2"
+        <IconButton
+          ref={tooltipTrigger}
+          aria-label="NTRP 설명"
+          aria-expanded={tooltipOpen}
+          aria-describedby={tooltipOpen ? tooltipId : undefined}
+          icon={infoIcon}
+          className="absolute top-1/2 -right-2.5 -translate-y-1/2"
+          onClick={() => setTooltipOpen((open) => !open)}
         />
+        {tooltipOpen && (
+          <div className="pointer-events-none absolute right-(--spacing-padding-small) bottom-full left-0 z-10 mb-(--spacing-gap-small) flex justify-end">
+            <Tooltip id={tooltipId} ref={tooltip}>
+              {
+                "NTRP는 테니스 실력을 나타내는 등급으로,\n높은 숫자일수록 좋은 실력을 뜻합니다"
+              }
+            </Tooltip>
+          </div>
+        )}
       </div>
 
       <div
@@ -224,25 +274,26 @@ export function NtrpPicker({ value, onChange }: NtrpPickerProps) {
           if (!event.currentTarget.hasPointerCapture(event.pointerId))
             resetSwipe(event);
         }}
-        className="-mx-(--spacing-padding-large) mt-(--spacing-gap-medium) grid touch-pan-y touch-pinch-zoom grid-cols-[44px_minmax(0,1fr)_44px] items-center px-[6px] py-(--spacing-padding-small) select-none"
+        className="-mx-(--spacing-padding-large) mt-(--spacing-gap-medium) grid touch-pan-y touch-pinch-zoom grid-cols-[56px_minmax(0,1fr)_56px] items-center gap-x-[6px] overflow-x-clip py-(--spacing-padding-small) select-none"
       >
-        <IconButton
-          aria-label="이전 NTRP"
-          icon={backIcon}
-          disabled={!previous}
-          className="disabled:opacity-30"
-          onClick={() => previous && onChange(previous.value)}
-        />
-        <div
-          ref={numberTrack}
-          className="relative mx-auto h-14 w-full max-w-[249px] overflow-hidden text-center tabular-nums italic [container-type:inline-size]"
-        >
+        <div className="grid size-14 place-items-center">
+          <IconButton
+            aria-label="이전 NTRP"
+            icon={backIcon}
+            iconColor="var(--fg-neutral-tertiary)"
+            disabled={!previous}
+            className="disabled:opacity-30"
+            onClick={() => previous && onChange(previous.value)}
+          />
+        </div>
+        <div className="relative mx-auto h-14 w-full max-w-[262px] text-center [container-type:inline-size]">
           <output aria-live="polite" className="sr-only">
             {value}
           </output>
           <div
+            ref={numberFrames}
             aria-hidden="true"
-            className="pointer-events-none absolute inset-0 mask-[linear-gradient(to_right,transparent,black_30px,black_calc(100%_-_30px),transparent)]"
+            className="pointer-events-none absolute inset-0 [--active-slot-width:min(120px,calc((100cqw_-_2*var(--spacing-gap-medium))*120/238))] [--side-slot-width:calc((100%_-_var(--active-slot-width)_-_2*var(--spacing-gap-medium))/2)]"
           >
             {levels.map((level, position) => {
               const offset = position - index;
@@ -251,38 +302,56 @@ export function NtrpPicker({ value, onChange }: NtrpPickerProps) {
                 <span
                   key={level.value}
                   style={{
-                    left: `calc(50% + min(${levelSpacing}px, (100% - ${sideSlotWidth}px) / 2) * ${offset} + ${dragOffset}px)`,
-                    maskImage: `url("${level.graphic}")`,
-                    maskSize: "contain",
-                    maskRepeat: "no-repeat",
-                    maskPosition: "center",
+                    left: `calc(50% + (var(--active-slot-width) / 2 + var(--side-slot-width) / 2 + var(--spacing-gap-medium)) * ${offset} + ${dragOffset}px)`,
                   }}
                   className={[
-                    "absolute top-1/2 aspect-[120/56] -translate-1/2",
+                    "absolute top-0 h-full -translate-x-1/2",
                     dragOffset === 0 &&
-                      "motion-safe:transition-[left,width,background-color,opacity] motion-safe:duration-200 motion-safe:ease-out",
+                      "motion-safe:transition-[left,opacity] motion-safe:duration-200 motion-safe:ease-out",
                     Math.abs(offset) > 1 && "opacity-0",
                     active
-                      ? "w-[min(120px,52cqw)] bg-(--fg-accent-default)"
-                      : "w-[min(75px,32cqw)] bg-(--bg-neutral-weak)",
+                      ? "w-(--active-slot-width)"
+                      : "w-(--side-slot-width)",
                   ]
                     .filter(Boolean)
                     .join(" ")}
-                />
+                >
+                  <span
+                    style={{
+                      maskImage: `url("${level.graphic}")`,
+                      maskSize: "contain",
+                      maskRepeat: "no-repeat",
+                      maskPosition: "center",
+                    }}
+                    className={[
+                      "absolute top-1/2 left-1/2 aspect-[120/56] w-(--active-slot-width) -translate-1/2",
+                      dragOffset === 0 &&
+                        "motion-safe:transition-[scale,background-color] motion-safe:duration-200 motion-safe:ease-out",
+                      active
+                        ? "scale-100 bg-(--fg-accent-default)"
+                        : "scale-70 bg-(--bg-neutral-weak)",
+                    ]
+                      .filter(Boolean)
+                      .join(" ")}
+                  />
+                </span>
               );
             })}
           </div>
         </div>
-        <IconButton
-          aria-label="다음 NTRP"
-          icon={backIcon}
-          iconClassName="-scale-x-100"
-          disabled={!next}
-          className="disabled:opacity-30"
-          onClick={() => next && onChange(next.value)}
-        />
+        <div className="grid size-14 place-items-center">
+          <IconButton
+            aria-label="다음 NTRP"
+            icon={backIcon}
+            iconClassName="-scale-x-100"
+            iconColor="var(--fg-neutral-tertiary)"
+            disabled={!next}
+            className="disabled:opacity-30"
+            onClick={() => next && onChange(next.value)}
+          />
+        </div>
       </div>
-      <p className="typography-label-r-regular m-0 mt-(--spacing-gap-medium) rounded-(--radius-small) bg-(--bg-neutral-weak) px-(--spacing-padding-small) py-(--spacing-padding-medium) text-center break-keep text-(color:--fg-neutral-tertiary)">
+      <p className="typography-label-r-regular m-0 mt-(--spacing-gap-medium) rounded-(--radius-small) bg-(--bg-neutral-weak) px-(--spacing-padding-small) py-(--spacing-padding-medium) text-center break-keep whitespace-pre-line text-(color:--fg-neutral-tertiary)">
         {levels[index].description}
       </p>
     </section>

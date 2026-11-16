@@ -55,7 +55,7 @@ export function MatchCard(props: MatchCardProps) {
   return (
     <Container
       href={href}
-      className={`box-border grid w-full min-w-0 overflow-hidden rounded-(--radius-large) bg-(--bg-neutral-default) text-(color:--fg-neutral-default) no-underline ${vertical ? "max-w-72 shadow-[0_2px_30px_var(--gray-alpha-100)]" : "grid-cols-[min(148px,48%)_minmax(0,1fr)] gap-(--spacing-gap-medium) p-(--spacing-padding-large)"}`}
+      className={`box-border grid w-full min-w-0 overflow-hidden rounded-(--radius-large) bg-(--bg-neutral-default) text-(color:--fg-neutral-default) no-underline ${vertical ? "max-w-72 shadow-[0_2px_30px_var(--gray-alpha-200)]" : "grid-cols-[min(148px,48%)_minmax(0,1fr)] gap-(--spacing-gap-medium) p-(--spacing-padding-large)"}`}
     >
       {vertical ? (
         <>

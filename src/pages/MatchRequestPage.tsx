@@ -24,6 +24,7 @@ import {
   type MatchFormat,
 } from "@/features/match-request/form";
 import { storeMatchRequest } from "@/features/match-request/storage.web";
+import { formatRequestedNtrp } from "@/features/match-request/summary";
 import { useAuthContext } from "@/hooks/useAuthContext";
 
 const DATE_WINDOW_DAYS = 14;
@@ -253,9 +254,7 @@ export default function MatchRequestPage() {
               onChange={setNtrp}
               minLabel="최소 NTRP"
               maxLabel="최대 NTRP"
-              formatValue={(value) =>
-                value === MAX_NTRP ? "4.5+" : value.toFixed(1)
-              }
+              formatValue={formatRequestedNtrp}
             />
           </div>
         </fieldset>
