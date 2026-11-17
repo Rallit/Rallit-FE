@@ -221,14 +221,26 @@ export default function MatchDetailPage() {
               </h2>
               <ul className="m-0 mt-3 flex list-none flex-col gap-(--spacing-gap-small) p-0">
                 {match.court.hasParking && (
-                  <li className="typography-label-l-medium flex items-center gap-(--spacing-gap-medium) text-(color:--fg-neutral-default)">
-                    <img src={parkingIcon} alt="" width={24} height={24} />
+                  <li className="typography-label-l-medium grid grid-cols-[24px_minmax(0,1fr)] items-center gap-(--spacing-gap-medium) text-(color:--fg-neutral-default)">
+                    <img
+                      className="place-self-center"
+                      src={parkingIcon}
+                      alt=""
+                      width={24}
+                      height={24}
+                    />
                     주차장
                   </li>
                 )}
                 {match.court.hasShower && (
-                  <li className="typography-label-l-medium flex items-center gap-(--spacing-gap-medium) text-(color:--fg-neutral-default)">
-                    <img src={showerIcon} alt="" width={24} height={24} />
+                  <li className="typography-label-l-medium grid grid-cols-[24px_minmax(0,1fr)] items-center gap-(--spacing-gap-medium) text-(color:--fg-neutral-default)">
+                    <img
+                      className="place-self-center"
+                      src={showerIcon}
+                      alt=""
+                      width={24}
+                      height={24}
+                    />
                     샤워실
                   </li>
                 )}
