@@ -52,6 +52,7 @@ export function useOnboardingProfilePhoto(
       if (controller.signal.aborted) return;
       setUploadedUrl(URL.createObjectURL(file));
       onUploaded(photoPath);
+      stored.refresh();
     } catch (error) {
       if (!controller.signal.aborted) setUploadError(uploadErrorMessage(error));
     } finally {
