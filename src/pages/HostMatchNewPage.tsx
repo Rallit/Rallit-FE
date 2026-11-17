@@ -5,7 +5,11 @@ import { Header } from "@/components/Header";
 import { CourtStep } from "@/components/host-match/CourtStep";
 import { MatchInfoStep } from "@/components/host-match/MatchInfoStep";
 import { PageLayout } from "@/components/layout/PageLayout";
-import { initialCourtDraft, type CourtDraft } from "@/features/host-match/form";
+import {
+  initialCourtDraft,
+  isCourtDraftReady,
+  type CourtDraft,
+} from "@/features/host-match/form";
 
 const steps = [
   {
@@ -22,6 +26,7 @@ export default function HostMatchNewPage() {
   const navigate = useNavigate();
   const [stepIndex, setStepIndex] = useState(0);
   const [court, setCourt] = useState<CourtDraft>(initialCourtDraft);
+  const [evidence, setEvidence] = useState<File | null>(null);
   const step = steps[stepIndex];
   const isCourtStep = stepIndex === 0;
 
@@ -40,6 +45,7 @@ export default function HostMatchNewPage() {
             <BottomCTA
               primaryAction={{
                 children: "코트 등록하기",
+                disabled: !isCourtDraftReady(court),
                 onClick: () => setStepIndex(1),
               }}
             />
@@ -64,7 +70,12 @@ export default function HostMatchNewPage() {
         </p>
       </section>
       {isCourtStep ? (
-        <CourtStep value={court} onChange={setCourt} />
+        <CourtStep
+          value={court}
+          onChange={setCourt}
+          evidence={evidence}
+          onEvidenceChange={setEvidence}
+        />
       ) : (
         <MatchInfoStep />
       )}

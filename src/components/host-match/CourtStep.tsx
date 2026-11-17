@@ -1,9 +1,13 @@
-import { useId, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
+import closeIcon from "../../../assets/icons/close.svg";
 import { BottomCTA } from "@/components/BottomCTA";
 import { BottomSheet } from "@/components/BottomSheet";
 import { Calendar } from "@/components/Calendar";
+import { IconButton } from "@/components/IconButton";
+import { MatchRequestTimePicker } from "@/components/match-request/MatchRequestTimePicker";
 import { Select } from "@/components/Select";
 import { TextInputField } from "@/components/TextInputField";
+import { UploadZone } from "@/components/UploadZone";
 import {
   formatFee,
   getReservableDateRange,
@@ -13,23 +17,41 @@ import {
 import { formatMatchDate } from "@/features/match-request/summary";
 import { COURTS_MOCK } from "@/mocks/courts";
 import { CourtSearchSheet } from "./CourtSearchSheet";
-import { MatchRequestTimePicker } from "@/components/match-request/MatchRequestTimePicker";
 
 type CourtStepProps = {
   value: CourtDraft;
   onChange: (value: CourtDraft) => void;
+  evidence: File | null;
+  onEvidenceChange: (file: File | null) => void;
 };
 
 const labelStyle =
   "typography-label-r-medium text-(color:--fg-neutral-secondary)";
 
-export function CourtStep({ value, onChange }: CourtStepProps) {
+export function CourtStep({
+  value,
+  onChange,
+  evidence,
+  onEvidenceChange,
+}: CourtStepProps) {
   const courtSheetId = useId();
   const [courtSheetOpen, setCourtSheetOpen] = useState(false);
   const dateSheetId = useId();
   const [dateSheetOpen, setDateSheetOpen] = useState(false);
   const [dateDraft, setDateDraft] = useState<string | null>(null);
   const dateRange = getReservableDateRange();
+  const evidenceInputRef = useRef<HTMLInputElement>(null);
+  const evidenceUrl = useMemo(
+    () => (evidence ? URL.createObjectURL(evidence) : null),
+    [evidence],
+  );
+
+  useEffect(
+    () => () => {
+      if (evidenceUrl) URL.revokeObjectURL(evidenceUrl);
+    },
+    [evidenceUrl],
+  );
 
   return (
     <div className="mt-(--spacing-gap-extra-large) grid gap-(--spacing-gap-extra-large) pb-(--spacing-padding-large)">
@@ -133,6 +155,51 @@ export function CourtStep({ value, onChange }: CourtStepProps) {
           onChange={(event) =>
             onChange({ ...value, fee: toFeeDigits(event.currentTarget.value) })
           }
+        />
+      </div>
+
+      <div className="grid gap-(--spacing-gap-medium)">
+        <div className="flex items-center justify-between">
+          <p className={`m-0 ${labelStyle}`}>예약 증빙 자료</p>
+          <span className="typography-caption-r-medium text-(color:--fg-neutral-subtle)">
+            {evidence ? 1 : 0}/1
+          </span>
+        </div>
+        {evidenceUrl ? (
+          <div className="relative size-[98px]">
+            <img
+              src={evidenceUrl}
+              alt="예약 증빙 자료 미리보기"
+              className="box-border block size-full rounded-(--radius-small) border border-solid border-(--border-neutral-default) object-cover"
+            />
+            <span className="absolute top-[-9px] left-[76px] grid rounded-(--radius-full) border border-solid border-(--border-neutral-default) bg-(--bg-neutral-default) p-(--spacing-padding-micro)">
+              <IconButton
+                size="small"
+                icon={closeIcon}
+                iconColor="var(--fg-neutral-secondary)"
+                aria-label="예약 증빙 자료 삭제"
+                onClick={() => onEvidenceChange(null)}
+                className="-m-3"
+              />
+            </span>
+          </div>
+        ) : (
+          <UploadZone
+            caption="예약 내역 또는 예약 확인 화면을 올려주세요"
+            aria-label="예약 증빙 자료 올리기"
+            onClick={() => evidenceInputRef.current?.click()}
+          />
+        )}
+        <input
+          ref={evidenceInputRef}
+          type="file"
+          accept="image/jpeg,image/png,.jpg,.jpeg,.png"
+          hidden
+          onChange={(event) => {
+            const file = event.currentTarget.files?.[0] ?? null;
+            event.currentTarget.value = "";
+            if (file) onEvidenceChange(file);
+          }}
         />
       </div>
     </div>
