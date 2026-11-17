@@ -16,11 +16,43 @@ function getImageContentType(file: File) {
   return /\.png$/i.test(file.name) ? "image/png" : "image/jpeg";
 }
 
-// 발급 → S3 POST → 완료 순서로 프로필 사진을 올리고, 사진 상대 경로를 돌려줍니다.
-export async function uploadProfileImage(
-  file: File,
-  signal: AbortSignal,
-): Promise<string> {
+function waitForRetry(delay: number, signal: AbortSignal) {
+  signal.throwIfAborted();
+  return new Promise<void>((resolve, reject) => {
+    const timer = setTimeout(() => {
+      signal.removeEventListener("abort", abort);
+      resolve();
+    }, delay);
+    function abort() {
+      clearTimeout(timer);
+      reject(signal.reason);
+    }
+    signal.addEventListener("abort", abort, { once: true });
+  });
+}
+
+async function completeUpload(uploadId: string, signal: AbortSignal) {
+  for (let attempt = 0; ; attempt++) {
+    signal.throwIfAborted();
+    try {
+      return await requestWithAuth<{ profileImageUrl: string }>(
+        `/api/v1/users/me/profile-image/uploads/${encodeURIComponent(uploadId)}/complete`,
+        { method: "POST", signal },
+      );
+    } catch (error) {
+      if (
+        !(error instanceof ApiError) ||
+        error.status !== 409 ||
+        attempt >= 2
+      ) {
+        throw error;
+      }
+      await waitForRetry(500 * (attempt + 1), signal);
+    }
+  }
+}
+
+async function uploadOnce(file: File, signal: AbortSignal): Promise<string> {
   const ticket = await requestWithAuth<ImageUploadTicket>(
     "/api/v1/users/me/profile-image/uploads",
     {
@@ -64,10 +96,7 @@ export async function uploadProfileImage(
     });
   }
 
-  const result = await requestWithAuth<{ profileImageUrl: string }>(
-    `/api/v1/users/me/profile-image/uploads/${encodeURIComponent(ticket.uploadId)}/complete`,
-    { method: "POST", signal },
-  );
+  const result = await completeUpload(ticket.uploadId, signal);
 
   if (
     typeof result?.profileImageUrl !== "string" ||
@@ -80,4 +109,22 @@ export async function uploadProfileImage(
   }
 
   return result.profileImageUrl;
+}
+
+// 409는 같은 업로드의 완료 단계만, 410은 새 발급부터 한 번만 재시도합니다.
+export async function uploadProfileImage(file: File, signal: AbortSignal) {
+  for (let attempt = 0; ; attempt++) {
+    signal.throwIfAborted();
+    try {
+      return await uploadOnce(file, signal);
+    } catch (error) {
+      if (
+        !(error instanceof ApiError) ||
+        error.status !== 410 ||
+        attempt >= 1
+      ) {
+        throw error;
+      }
+    }
+  }
 }

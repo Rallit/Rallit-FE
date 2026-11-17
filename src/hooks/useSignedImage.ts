@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { getSignedImage } from "@/apis/images";
 
 // 만료 30초 전에 미리 다시 발급받습니다.
@@ -14,34 +14,65 @@ type SignedImageState = {
 export function useSignedImage(path: string | null | undefined) {
   const [state, setState] = useState<SignedImageState | null>(null);
   const [attempt, setAttempt] = useState(0);
+  const refresh = useCallback(() => setAttempt((count) => count + 1), []);
 
   useEffect(() => {
     if (!path) return;
 
+    const imagePath = path;
     const controller = new AbortController();
-    getSignedImage(path, controller.signal).then(
-      (image) => {
-        if (controller.signal.aborted) return;
-        setState({
-          path,
-          url: image?.url ?? null,
-          expiresAt: image ? Date.parse(image.expiresAt) : Infinity,
-        });
-      },
-      () => {
-        if (!controller.signal.aborted)
-          setState({ path, url: null, expiresAt: Infinity });
-      },
-    );
+    let refreshTimer: ReturnType<typeof setTimeout>;
+    let failures = 0;
 
-    return () => controller.abort();
+    async function load() {
+      try {
+        const image = await getSignedImage(imagePath, controller.signal);
+        if (controller.signal.aborted) return;
+        const expiresAt = image ? Date.parse(image.expiresAt) : Infinity;
+        if (image && (!Number.isFinite(expiresAt) || expiresAt <= Date.now())) {
+          throw new Error("이미지 주소가 만료되었습니다.");
+        }
+        setState({ path: imagePath, url: image?.url ?? null, expiresAt });
+        failures = 0;
+        if (!image) return;
+
+        refreshTimer = setTimeout(
+          () => void load(),
+          Math.max(1_000, expiresAt - Date.now() - REFRESH_MARGIN_MS),
+        );
+      } catch {
+        if (controller.signal.aborted) return;
+        setState((current) =>
+          current &&
+          current.path === imagePath &&
+          current.expiresAt > Date.now()
+            ? current
+            : { path: imagePath, url: null, expiresAt: Infinity },
+        );
+        // 장애가 길어져도 만료 후 복구를 시도하되 요청 간격은 최대 30초입니다.
+        const delay = Math.min(30_000, 1_000 * 2 ** Math.min(failures++, 5));
+        refreshTimer = setTimeout(() => void load(), delay);
+      }
+    }
+
+    void load();
+
+    return () => {
+      controller.abort();
+      clearTimeout(refreshTimer);
+    };
   }, [path, attempt]);
 
   useEffect(() => {
     if (!state?.url || !Number.isFinite(state.expiresAt)) return;
-
-    const delay = Math.max(0, state.expiresAt - Date.now() - REFRESH_MARGIN_MS);
-    const timer = setTimeout(() => setAttempt((count) => count + 1), delay);
+    const timer = setTimeout(
+      () => {
+        setState((current) =>
+          current === state ? { ...current, url: null } : current,
+        );
+      },
+      Math.max(0, state.expiresAt - Date.now()),
+    );
     return () => clearTimeout(timer);
   }, [state]);
 
@@ -53,5 +84,5 @@ export function useSignedImage(path: string | null | undefined) {
       current && current.path === path ? { ...current, url: null } : current,
     );
 
-  return { url, handleError };
+  return { url, handleError, refresh };
 }
