@@ -126,3 +126,11 @@ export async function getMatchRequestResults(
   }
   return result;
 }
+
+export function deleteMatchRequest(requestId: number, signal: AbortSignal) {
+  return requestWithAuth(`/api/v1/match-requests/${requestId}`, {
+    method: "DELETE",
+    expectResult: false,
+    signal,
+  });
+}

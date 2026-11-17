@@ -1,10 +1,17 @@
-import { useEffect, useRef, useState, type ComponentProps } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type ComponentProps,
+  type ReactNode,
+} from "react";
 import { Navigate, useLocation, useNavigate, useParams } from "react-router";
 import trashIcon from "../../assets/icons/trash.svg";
 import courtPlaceholder from "../../assets/images/match-request-placeholder.png";
 import { ApiError } from "@/apis/client";
 import { getActivityAreas } from "@/apis/locations";
 import {
+  deleteMatchRequest,
   getMatchRequestResults,
   getSavedMatchRequest,
   type MatchRequestResults,
@@ -18,6 +25,7 @@ import { Divider } from "@/components/Divider";
 import { Header } from "@/components/Header";
 import { MatchCard } from "@/components/MatchCard";
 import { PageLayout } from "@/components/layout/PageLayout";
+import { MatchRequestDeleteDialog } from "@/components/match-request/MatchRequestDeleteDialog";
 import {
   formatMatchStart,
   formatMatchTypes,
@@ -187,9 +195,55 @@ function ResultSection({
   );
 }
 
-function SavedResultsContent({ requestId }: { requestId: number }) {
+function ResultsLayout({
+  children,
+  onDelete,
+  deleting,
+}: {
+  children: ReactNode;
+  onDelete?: () => void;
+  deleting?: boolean;
+}) {
+  const navigate = useNavigate();
+
+  function goBack() {
+    const historyIndex = (window.history.state as { idx?: number } | null)?.idx;
+    if (historyIndex) void navigate(-1);
+    else void navigate("/");
+  }
+
+  return (
+    <PageLayout
+      background="weak"
+      header={
+        <Header
+          variant="subpage"
+          title="열린 매치"
+          onBack={goBack}
+          action={
+            onDelete && {
+              icon: trashIcon,
+              label: "매칭 요청 삭제",
+              disabled: deleting,
+              onClick: onDelete,
+            }
+          }
+        />
+      }
+    >
+      <div className="grid gap-12 pt-[23px] pb-6">{children}</div>
+    </PageLayout>
+  );
+}
+
+function SavedResultsPage({ requestId }: { requestId: number }) {
   const navigate = useNavigate();
   const [attempt, setAttempt] = useState(0);
+  const [deleting, setDeleting] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [deleteError, setDeleteError] = useState<string>();
+  const pendingDelete = useRef<AbortController | null>(null);
+  useEffect(() => () => pendingDelete.current?.abort(), []);
   const [response, setResponse] = useState<{
     attempt: number;
     data?: SavedResults;
@@ -225,53 +279,108 @@ function SavedResultsContent({ requestId }: { requestId: number }) {
     return () => controller.abort();
   }, [requestId, attempt]);
 
+  async function removeRequest() {
+    if (pendingDelete.current) return;
+    setConfirmingDelete(false);
+
+    const controller = new AbortController();
+    const { signal } = controller;
+    pendingDelete.current = controller;
+    setDeleting(true);
+    setDeleteError(undefined);
+    try {
+      await deleteMatchRequest(requestId, signal);
+      if (!signal.aborted) void navigate("/", { replace: true });
+    } catch (error) {
+      if (signal.aborted) return;
+      if (error instanceof ApiError && error.status === 404) {
+        setResponse({ attempt, notFound: true });
+      } else {
+        setDeleteError("매칭 요청을 삭제하지 못했어요. 다시 시도해 주세요.");
+      }
+    } finally {
+      pendingDelete.current = null;
+      if (!signal.aborted) setDeleting(false);
+    }
+  }
+
   const current = response?.attempt === attempt ? response : undefined;
-  if (!current) return <p role="status">매치를 불러오는 중이에요.</p>;
+  if (!current) {
+    return (
+      <ResultsLayout>
+        <p role="status">매치를 불러오는 중이에요.</p>
+      </ResultsLayout>
+    );
+  }
   if (!current.data) {
     return (
-      <div className="grid justify-items-start gap-3">
-        <p role="alert" className="m-0">
-          {current.notFound
-            ? "매칭 요청을 찾을 수 없어요."
-            : "매칭 결과를 불러오지 못했어요."}
-        </p>
-        <ActionButton
-          variant="tertiary"
-          size="S"
-          onClick={() =>
-            current.notFound
-              ? void navigate("/", { replace: true })
-              : setAttempt((count) => count + 1)
-          }
-        >
-          {current.notFound ? "홈으로 가기" : "다시 시도"}
-        </ActionButton>
-      </div>
+      <ResultsLayout>
+        <div className="grid justify-items-start gap-3">
+          <p role="alert" className="m-0">
+            {current.notFound
+              ? "매칭 요청을 찾을 수 없어요."
+              : "매칭 결과를 불러오지 못했어요."}
+          </p>
+          <ActionButton
+            variant="tertiary"
+            size="S"
+            onClick={() =>
+              current.notFound
+                ? void navigate("/", { replace: true })
+                : setAttempt((count) => count + 1)
+            }
+          >
+            {current.notFound ? "홈으로 가기" : "다시 시도"}
+          </ActionButton>
+        </div>
+      </ResultsLayout>
     );
   }
 
   const { request, matches } = current.data;
-  return sectionLabels.map(({ key, title, query }, index) => (
-    <ResultSection
-      key={key}
-      title={title}
-      summary={index === 0 ? formatRequestSummary(request) : undefined}
-      firstPage={matches[key]}
-      initialCards={matches[key].items.map((match) =>
-        toResultCard(match, request),
+  return (
+    <ResultsLayout
+      onDelete={() => setConfirmingDelete(true)}
+      deleting={deleting}
+    >
+      {confirmingDelete && (
+        <MatchRequestDeleteDialog
+          onCancel={() => setConfirmingDelete(false)}
+          onConfirm={() => void removeRequest()}
+        />
       )}
-      request={request}
-      loadPage={async (page, signal) =>
-        (await getMatchRequestResults(requestId, signal, { [query]: page }))[
-          key
-        ]
-      }
-    />
-  ));
+      {deleting && (
+        <p role="status" className="m-0">
+          매칭 요청을 삭제하는 중이에요.
+        </p>
+      )}
+      {deleteError && (
+        <p role="alert" className="m-0">
+          {deleteError}
+        </p>
+      )}
+      {sectionLabels.map(({ key, title, query }, index) => (
+        <ResultSection
+          key={key}
+          title={title}
+          summary={index === 0 ? formatRequestSummary(request) : undefined}
+          firstPage={matches[key]}
+          initialCards={matches[key].items.map((match) =>
+            toResultCard(match, request),
+          )}
+          request={request}
+          loadPage={async (page, signal) =>
+            (
+              await getMatchRequestResults(requestId, signal, { [query]: page })
+            )[key]
+          }
+        />
+      ))}
+    </ResultsLayout>
+  );
 }
 
 export default function MatchRequestResultsPage() {
-  const navigate = useNavigate();
   const { state } = useLocation();
   const { requestId } = useParams();
   const mock = authMode === "mock";
@@ -286,42 +395,18 @@ export default function MatchRequestResultsPage() {
     return <Navigate to={MATCH_REQUEST_PATH} replace />;
   }
 
-  function goBack() {
-    const historyIndex = (window.history.state as { idx?: number } | null)?.idx;
-    if (historyIndex) void navigate(-1);
-    else void navigate("/");
-  }
+  if (!draft) return <SavedResultsPage key={id} requestId={id} />;
 
   return (
-    <PageLayout
-      background="weak"
-      header={
-        <Header
-          variant="subpage"
-          title="열린 매치"
-          onBack={goBack}
-          action={
-            draft
-              ? { icon: trashIcon, label: "매칭 요청 삭제", onClick: () => {} }
-              : undefined
-          }
+    <ResultsLayout>
+      {getMockMatchRequestResults(draft).map(({ title, matches }, index) => (
+        <ResultSection
+          key={title}
+          title={title}
+          summary={index === 0 ? formatRequestSummary(draft) : undefined}
+          initialCards={matches}
         />
-      }
-    >
-      <div className="grid gap-12 pt-[23px] pb-6">
-        {draft ? (
-          getMockMatchRequestResults(draft).map(({ title, matches }, index) => (
-            <ResultSection
-              key={title}
-              title={title}
-              summary={index === 0 ? formatRequestSummary(draft) : undefined}
-              initialCards={matches}
-            />
-          ))
-        ) : (
-          <SavedResultsContent key={id} requestId={id} />
-        )}
-      </div>
-    </PageLayout>
+      ))}
+    </ResultsLayout>
   );
 }
