@@ -10,12 +10,14 @@ const fields = [
     key: "startHour",
     label: "시작 시간",
     placeholder: "부터",
+    suffix: "부터",
     title: "몇 시부터",
   },
   {
     key: "endHour",
     label: "종료 시간",
     placeholder: "까지",
+    suffix: "까지",
     title: "몇 시까지",
   },
 ] as const;
@@ -51,13 +53,15 @@ export function MatchRequestTimePicker({ value, onChange }: TimePickerProps) {
             <Select
               key={field.key}
               aria-label={
-                hour === null ? field.label : `${field.label} ${hour}시`
+                hour === null
+                  ? field.label
+                  : `${field.label} ${hour}시${field.suffix}`
               }
               aria-haspopup="dialog"
               aria-controls={dialogId}
               aria-expanded={draft?.field.key === field.key}
               placeholder={field.placeholder}
-              value={hour === null ? undefined : `${hour}시`}
+              value={hour === null ? undefined : `${hour}시${field.suffix}`}
               onClick={(event) => {
                 event.currentTarget.focus();
                 setDraft({ field, hour: hour ?? limits[field.key].first });
