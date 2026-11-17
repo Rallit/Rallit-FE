@@ -15,6 +15,7 @@ import {
 import { useAuthContext } from "@/hooks/useAuthContext";
 import AuthCompletePage from "@/pages/AuthCompletePage";
 import HomePage from "@/pages/HomePage";
+import MatchSchedulePage from "@/pages/MatchSchedulePage";
 import LoginPage from "@/pages/LoginPage";
 import MatchRequestCompletePage from "@/pages/MatchRequestCompletePage";
 import MatchRequestPage from "@/pages/MatchRequestPage";
@@ -123,10 +124,7 @@ export default function App() {
                 )
               }
             />
-            <Route
-              path="schedule"
-              element={<MainTabPlaceholder title="매치 현황" />}
-            />
+            <Route path="schedule" element={<MatchSchedulePage />} />
             <Route path="my" element={<MainTabPlaceholder title="마이" />} />
           </Route>
           <Route path="/matches/:matchId" element={<MatchDetailPage />} />
