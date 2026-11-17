@@ -63,7 +63,12 @@ export function ActivityAreaPicker({
     setList({ status: "loading" });
     try {
       const areas = await getActivityAreas(controller.signal);
-      if (!controller.signal.aborted) setList({ status: "ready", areas });
+      if (!controller.signal.aborted) {
+        setList({
+          status: "ready",
+          areas: areas.toSorted((a, b) => a.label.localeCompare(b.label, "ko")),
+        });
+      }
     } catch {
       if (!controller.signal.aborted) setList({ status: "error" });
     } finally {
