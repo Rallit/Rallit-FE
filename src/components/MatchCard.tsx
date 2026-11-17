@@ -3,6 +3,7 @@ import participantIcon from "../../assets/icons/match-participant.svg";
 import { Badge } from "./Badge";
 import { Divider } from "./Divider";
 import { Profile } from "./Profile";
+import { useSignedImage } from "@/hooks/useSignedImage";
 
 type MatchCardProps = {
   dateLabel: string;
@@ -13,6 +14,7 @@ type MatchCardProps = {
   participantCount: number;
   capacity: number;
   courtImage?: string;
+  courtImagePath?: string | null;
 } & (
   | {
       variant: "vertical";
@@ -34,6 +36,11 @@ const priceFormat = new Intl.NumberFormat("ko-KR");
 export function MatchCard(props: MatchCardProps) {
   const { variant, href, dateLabel, courtName, matchType, skillLevel } = props;
   const vertical = variant === "vertical";
+  const signedImage = useSignedImage(props.courtImagePath);
+  const courtImage = signedImage.url ?? props.courtImage;
+  const handleImageError = signedImage.url
+    ? signedImage.handleError
+    : undefined;
   const participantCount = `${props.participantCount}/${props.capacity}`;
   const price = (
     <span
@@ -79,10 +86,11 @@ export function MatchCard(props: MatchCardProps) {
             </div>
           </div>
           <div className="relative box-border flex h-52 items-end justify-between gap-(--spacing-gap-small) bg-(--bg-neutral-weak) p-(--spacing-padding-extra-large)">
-            {props.courtImage && (
+            {courtImage && (
               <img
-                src={props.courtImage}
+                src={courtImage}
                 alt=""
+                onError={handleImageError}
                 className="absolute inset-0 size-full object-cover"
               />
             )}
@@ -97,10 +105,11 @@ export function MatchCard(props: MatchCardProps) {
       ) : (
         <>
           <div className="relative box-border flex h-32 items-end justify-end overflow-hidden rounded-(--radius-medium) bg-(--bg-neutral-weak) p-(--spacing-padding-small)">
-            {props.courtImage && (
+            {courtImage && (
               <img
-                src={props.courtImage}
+                src={courtImage}
                 alt=""
+                onError={handleImageError}
                 className="absolute inset-0 size-full object-cover"
               />
             )}

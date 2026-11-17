@@ -90,6 +90,7 @@ function toResultCard(
     participantCount: match.currentParticipantCount,
     capacity: match.capacity,
     courtImage: courtPlaceholder,
+    courtImagePath: match.courtThumbnailUrl,
     recruitmentLabel:
       match.matchStatus === "RECRUITING" ? "모집중" : "모집 마감",
     region: areaName,

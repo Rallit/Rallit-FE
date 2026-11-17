@@ -31,6 +31,7 @@ export type MatchCourt = {
   hasParking: boolean;
   hasShower: boolean;
   facilityNotes: string | null;
+  thumbnailUrl: string | null;
 };
 
 export type MatchHost = {
@@ -75,7 +76,7 @@ export type RecommendedMatchItem = {
     | "maxNtrp"
     | "currentParticipantCount"
     | "capacity"
-  > & { courtName: string };
+  > & { courtName: string; courtThumbnailUrl: string | null };
   areaCode: string;
   areaName: string;
 };

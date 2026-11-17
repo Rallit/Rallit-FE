@@ -1,14 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { ApiError } from "@/apis/client";
-import { getProfileImage, uploadProfileImage } from "@/apis/profileImage";
+import { uploadProfileImage } from "@/apis/profileImage";
+import { useSignedImage } from "@/hooks/useSignedImage";
 import { authMode } from "@/platform/authConfig.web";
-
-type UploadedPhoto = { url: string };
-type LoadedPhoto = {
-  path: string;
-  upload: UploadedPhoto | null;
-  url: string | null;
-};
 
 function uploadErrorMessage(error: unknown) {
   if (error instanceof ApiError) {
@@ -30,50 +24,22 @@ export function useOnboardingProfilePhoto(
   path: string | null,
   onUploaded: (path: string) => void,
 ) {
-  const [uploaded, setUploaded] = useState<UploadedPhoto | null>(null);
-  const [loaded, setLoaded] = useState<LoadedPhoto | null>(null);
+  const [uploadedUrl, setUploadedUrl] = useState<string | null>(null);
   const [pendingUrl, setPendingUrl] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState("");
   const request = useRef<AbortController | null>(null);
+  const stored = useSignedImage(authMode === "mock" ? null : path);
 
-  useObjectUrlCleanup(uploaded?.url ?? null);
-  useObjectUrlCleanup(loaded?.url ?? null);
+  useObjectUrlCleanup(uploadedUrl);
   useObjectUrlCleanup(pendingUrl);
   useEffect(() => () => request.current?.abort(), []);
-
-  useEffect(() => {
-    if (!path || authMode === "mock") return;
-
-    const controller = new AbortController();
-    getProfileImage(path, controller.signal).then(
-      (blob) => {
-        if (!controller.signal.aborted) {
-          setLoaded({
-            path,
-            upload: uploaded,
-            url: blob ? URL.createObjectURL(blob) : null,
-          });
-        }
-      },
-      () => {
-        // Keep the successful upload preview if its follow-up request fails.
-      },
-    );
-
-    return () => controller.abort();
-  }, [path, uploaded]);
-
-  const storedUrl =
-    loaded && loaded.path === path && loaded.upload === uploaded
-      ? loaded.url
-      : (uploaded?.url ?? null);
 
   async function selectPhoto(file: File) {
     if (request.current) return;
     setUploadError("");
 
     if (authMode === "mock") {
-      setUploaded({ url: URL.createObjectURL(file) });
+      setUploadedUrl(URL.createObjectURL(file));
       return;
     }
 
@@ -84,7 +50,7 @@ export function useOnboardingProfilePhoto(
     try {
       const photoPath = await uploadProfileImage(file, controller.signal);
       if (controller.signal.aborted) return;
-      setUploaded({ url: URL.createObjectURL(file) });
+      setUploadedUrl(URL.createObjectURL(file));
       onUploaded(photoPath);
     } catch (error) {
       if (!controller.signal.aborted) setUploadError(uploadErrorMessage(error));
@@ -95,7 +61,7 @@ export function useOnboardingProfilePhoto(
   }
 
   return {
-    photoUrl: pendingUrl ?? storedUrl,
+    photoUrl: pendingUrl ?? uploadedUrl ?? stored.url,
     isUploading: pendingUrl !== null,
     uploadError,
     selectPhoto,
