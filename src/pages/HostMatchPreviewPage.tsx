@@ -138,9 +138,9 @@ export default function HostMatchPreviewPage() {
           className="flex items-start justify-between gap-(--spacing-gap-small) rounded-(--radius-small) bg-(--bg-neutral-weak) px-(--spacing-padding-extra-large) py-(--spacing-padding-large)"
         >
           <div className="grid gap-(--spacing-gap-micro)">
-            <h2 className="typography-label-r-bold m-0">OO테니스장 3번 코트</h2>
+            <h2 className="typography-label-r-bold m-0">{summary.courtName}</h2>
             <p className="typography-caption-r-medium m-0 text-(color:--fg-neutral-tertiary)">
-              11/14(토) 14:00–16:00
+              {summary.dateTimeLabel}
             </p>
           </div>
           <Badge fitContent>검수 대기</Badge>
