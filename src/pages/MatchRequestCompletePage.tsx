@@ -8,8 +8,9 @@ import {
   MATCH_REQUEST_PATH,
   MATCH_REQUEST_RESULTS_PATH,
   matchFormats,
-  type MatchRequest,
+  savedMatchRequestResultsPath,
 } from "@/features/match-request/form";
+import type { MatchRequestCompletion } from "@/features/match-request/submission";
 import {
   formatMatchDate,
   formatMatchTimeRange,
@@ -18,9 +19,11 @@ import {
 export default function MatchRequestCompletePage() {
   const navigate = useNavigate();
   const { state } = useLocation();
-  const request = state as MatchRequest | null;
+  const completion = state as MatchRequestCompletion | null;
 
-  if (!request) return <Navigate to={MATCH_REQUEST_PATH} replace />;
+  if (!completion?.request) return <Navigate to={MATCH_REQUEST_PATH} replace />;
+
+  const { request, saved } = completion;
 
   const summary = [
     ["날짜", request.dates.map((date) => formatMatchDate(date)).join(", ")],
@@ -34,6 +37,7 @@ export default function MatchRequestCompletePage() {
         .join(", "),
     ],
   ];
+  if (saved) summary.push(["딱 맞는 매치", `${saved.exactMatchCount}개`]);
 
   return (
     <PageLayout
@@ -77,16 +81,23 @@ export default function MatchRequestCompletePage() {
             </div>
           ))}
         </dl>
-        <ActionButton
-          size="M"
-          fullWidth
-          className="mt-5"
-          onClick={() =>
-            void navigate(MATCH_REQUEST_RESULTS_PATH, { state: request })
-          }
-        >
-          열려있는 매치 확인하기
-        </ActionButton>
+        {(saved === null || saved.hasResults) && (
+          <ActionButton
+            size="M"
+            fullWidth
+            className="mt-5"
+            onClick={() => {
+              if (saved)
+                void navigate(
+                  savedMatchRequestResultsPath(saved.request.requestId),
+                );
+              else
+                void navigate(MATCH_REQUEST_RESULTS_PATH, { state: request });
+            }}
+          >
+            열려있는 매치 확인하기
+          </ActionButton>
+        )}
       </div>
     </PageLayout>
   );

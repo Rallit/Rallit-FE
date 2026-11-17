@@ -1,11 +1,13 @@
 import { Badge } from "@/components/Badge";
 import { Divider } from "@/components/Divider";
-import type { MatchRequest } from "@/features/match-request/form";
-import { formatRequestPreferences } from "@/features/match-request/summary";
+import {
+  formatRequestPreferences,
+  type MatchRequestSummary,
+} from "@/features/match-request/summary";
 
 type HomeMatchRequestCardProps = {
-  request: MatchRequest;
-  hasNewMatches: boolean;
+  request: MatchRequestSummary;
+  hasNewMatches?: boolean;
   onClick: () => void;
 };
 

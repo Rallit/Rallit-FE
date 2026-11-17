@@ -1,3 +1,4 @@
+import { Link } from "react-router";
 import participantIcon from "../../assets/icons/match-participant.svg";
 import { Badge } from "./Badge";
 import { Divider } from "./Divider";
@@ -33,7 +34,6 @@ const priceFormat = new Intl.NumberFormat("ko-KR");
 export function MatchCard(props: MatchCardProps) {
   const { variant, href, dateLabel, courtName, matchType, skillLevel } = props;
   const vertical = variant === "vertical";
-  const Container = href ? "a" : "article";
   const participantCount = `${props.participantCount}/${props.capacity}`;
   const price = (
     <span
@@ -52,11 +52,9 @@ export function MatchCard(props: MatchCardProps) {
     </div>
   );
 
-  return (
-    <Container
-      href={href}
-      className={`box-border grid w-full min-w-0 overflow-hidden rounded-(--radius-large) bg-(--bg-neutral-default) text-(color:--fg-neutral-default) no-underline ${vertical ? "max-w-72 shadow-[0_2px_30px_var(--gray-alpha-200)]" : "grid-cols-[min(148px,48%)_minmax(0,1fr)] gap-(--spacing-gap-medium) p-(--spacing-padding-large)"}`}
-    >
+  const className = `box-border grid w-full min-w-0 overflow-hidden rounded-(--radius-large) bg-(--bg-neutral-default) text-(color:--fg-neutral-default) no-underline ${vertical ? "max-w-72 shadow-[0_2px_30px_var(--gray-alpha-200)]" : "grid-cols-[min(148px,48%)_minmax(0,1fr)] gap-(--spacing-gap-medium) p-(--spacing-padding-large)"}`;
+  const content = (
+    <>
       {vertical ? (
         <>
           <div className="box-border grid min-h-[172px] content-start gap-(--spacing-gap-medium) px-(--spacing-padding-extra-large) pt-(--spacing-padding-extra-large) pb-(--spacing-padding-large)">
@@ -127,6 +125,14 @@ export function MatchCard(props: MatchCardProps) {
           </div>
         </>
       )}
-    </Container>
+    </>
+  );
+
+  return href ? (
+    <Link to={href} className={className}>
+      {content}
+    </Link>
+  ) : (
+    <article className={className}>{content}</article>
   );
 }

@@ -20,6 +20,7 @@ type HeaderProps =
       action?: {
         icon: string;
         label: string;
+        disabled?: boolean;
         onClick: MouseEventHandler<HTMLButtonElement>;
       };
     }
@@ -100,6 +101,7 @@ export function Header(props: HeaderProps) {
         <IconButton
           aria-label={props.action.label}
           icon={props.action.icon}
+          disabled={props.action.disabled}
           onClick={props.action.onClick}
           className="col-start-3 -ml-2.5"
         />
