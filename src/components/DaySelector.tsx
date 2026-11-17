@@ -13,6 +13,7 @@ type DayOption = {
 
 type DaySelectorProps = {
   monthLabel: string;
+  className?: string;
   days: readonly DayOption[];
   selectedId?: string;
   selectedIds?: readonly string[];
@@ -21,6 +22,7 @@ type DaySelectorProps = {
 
 export function DaySelector({
   monthLabel,
+  className,
   days,
   selectedId,
   selectedIds,
@@ -32,7 +34,12 @@ export function DaySelector({
     <div
       role="group"
       aria-labelledby={monthId}
-      className="box-border flex w-full min-w-0 flex-col gap-(--spacing-gap-medium) rounded-(--radius-large) border border-solid border-(--border-neutral-weak) bg-(--bg-neutral-default) p-(--spacing-padding-medium)"
+      className={[
+        "box-border flex w-full min-w-0 flex-col gap-(--spacing-gap-medium) rounded-(--radius-large) border border-solid border-(--border-neutral-weak) bg-(--bg-neutral-default) p-(--spacing-padding-medium)",
+        className,
+      ]
+        .filter(Boolean)
+        .join(" ")}
     >
       <p
         id={monthId}

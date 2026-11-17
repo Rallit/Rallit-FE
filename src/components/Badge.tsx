@@ -10,12 +10,19 @@ const styles = {
     "rounded-(--radius-small) bg-(--bg-neutral-weak) text-(color:--fg-brand-strong)",
 };
 
-type BadgeProps = PropsWithChildren<{ variant?: keyof typeof styles }>;
+type BadgeProps = PropsWithChildren<{
+  variant?: keyof typeof styles;
+  fitContent?: boolean;
+}>;
 
-export function Badge({ children, variant = "brand" }: BadgeProps) {
+export function Badge({
+  children,
+  variant = "brand",
+  fitContent = false,
+}: BadgeProps) {
   return (
     <span
-      className={`typography-caption-r-bold box-border inline-flex h-(--unit-24) w-fit shrink-0 items-center justify-center px-(--spacing-padding-small) py-(--spacing-padding-micro) whitespace-nowrap text-center ${styles[variant]}`}
+      className={`typography-caption-r-bold box-border inline-flex w-fit shrink-0 items-center justify-center px-(--spacing-padding-small) py-(--spacing-padding-micro) whitespace-nowrap text-center ${fitContent ? "" : "h-(--unit-24)"} ${styles[variant]}`}
     >
       {children}
     </span>

@@ -8,6 +8,7 @@ import { PageLayout } from "./PageLayout";
 export function MainTabsLayout() {
   const navigate = useNavigate();
   const isHome = Boolean(useMatch({ path: "/", end: true }));
+  const isSchedule = Boolean(useMatch({ path: "/schedule", end: true }));
 
   return (
     <PageLayout
@@ -15,6 +16,8 @@ export function MainTabsLayout() {
       header={
         isHome ? (
           <Header variant="logo" onNotifications={() => {}} />
+        ) : isSchedule ? (
+          <Header variant="main" title="매치 현황" />
         ) : undefined
       }
       footer={

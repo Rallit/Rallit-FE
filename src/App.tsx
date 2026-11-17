@@ -15,14 +15,19 @@ import {
 import { useAuthContext } from "@/hooks/useAuthContext";
 import AuthCompletePage from "@/pages/AuthCompletePage";
 import HomePage from "@/pages/HomePage";
+import MatchSchedulePage from "@/pages/MatchSchedulePage";
 import LoginPage from "@/pages/LoginPage";
 import MatchRequestCompletePage from "@/pages/MatchRequestCompletePage";
 import MatchRequestPage from "@/pages/MatchRequestPage";
 import MatchRequestResultsPage from "@/pages/MatchRequestResultsPage";
 import OnboardingPage from "@/pages/OnboardingPage";
 import MatchDetailPage from "@/pages/MatchDetailPage";
-import { HOST_MATCH_NEW_PATH } from "@/features/host-match/form";
+import {
+  HOST_MATCH_NEW_PATH,
+  HOST_MATCH_PREVIEW_PATH,
+} from "@/features/host-match/form";
 import HostMatchNewPage from "@/pages/HostMatchNewPage";
+import HostMatchPreviewPage from "@/pages/HostMatchPreviewPage";
 
 function AuthStatusGate() {
   const { authState, retry } = useAuthContext();
@@ -123,14 +128,15 @@ export default function App() {
                 )
               }
             />
-            <Route
-              path="schedule"
-              element={<MainTabPlaceholder title="매치 현황" />}
-            />
+            <Route path="schedule" element={<MatchSchedulePage />} />
             <Route path="my" element={<MainTabPlaceholder title="마이" />} />
           </Route>
           <Route path="/matches/:matchId" element={<MatchDetailPage />} />
           <Route path={HOST_MATCH_NEW_PATH} element={<HostMatchNewPage />} />
+          <Route
+            path={HOST_MATCH_PREVIEW_PATH}
+            element={<HostMatchPreviewPage />}
+          />
           <Route path={MATCH_REQUEST_PATH} element={<MatchRequestPage />} />
           <Route
             path={MATCH_REQUEST_COMPLETE_PATH}
