@@ -40,7 +40,7 @@ export default function HostMatchNewPage() {
     femaleRecruitCount: 0,
     ntrp: [1, 2],
     preferredAgeGroups: [],
-    anyAgeGroup: true,
+    anyAgeGroup: false,
     fee: "",
   });
   const [court, setCourt] = useState<CourtDraft>(initialCourtDraft);
