@@ -4,6 +4,14 @@ import type { MatchFormat } from "@/features/match-request/form";
 export const HOST_MATCH_NEW_PATH = "/host/matches/new";
 export const HOST_MATCH_PREVIEW_PATH = "/host/matches/preview";
 
+export type HostMatchPreviewSummary = {
+  courtName: string;
+  dateTimeLabel: string;
+  current: number;
+  capacity: number;
+  status: "recruiting" | "confirmed";
+};
+
 export type MatchInfoDraft = {
   matchFormat: MatchFormat | null;
   sameGenderOnly: boolean;

@@ -1,10 +1,11 @@
-import { useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import { Badge } from "@/components/Badge";
 import { GoalProgress } from "@/components/GoalProgress";
 import { Header } from "@/components/Header";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { Profile } from "@/components/Profile";
 import { ProfileCard } from "@/components/ProfileCard";
+import type { HostMatchPreviewSummary } from "@/features/host-match/form";
 import moreIcon from "../../assets/icons/meatball.svg";
 import profilePlaceholder from "../../assets/images/host-applicant-placeholder.png";
 
@@ -30,8 +31,18 @@ const previewActions = {
   disabled: true,
 };
 
+const defaultSummary: HostMatchPreviewSummary = {
+  courtName: "장충 테니스장 3번 코트",
+  dateTimeLabel: "11/14(토) 14:00 - 16:00",
+  current: participants.length,
+  capacity: 4,
+  status: "recruiting",
+};
+
 export default function HostMatchPreviewPage() {
   const navigate = useNavigate();
+  const fromSchedule = useLocation().state as HostMatchPreviewSummary | null;
+  const summary = fromSchedule ?? defaultSummary;
 
   return (
     <PageLayout
@@ -39,7 +50,13 @@ export default function HostMatchPreviewPage() {
         <Header
           variant="subpage"
           title="내가 연 매치"
-          onBack={() => void navigate("/schedule", { replace: true })}
+          onBack={() => {
+            if (fromSchedule) {
+              void navigate(-1);
+            } else {
+              void navigate("/schedule", { replace: true });
+            }
+          }}
           action={{
             icon: moreIcon,
             label: "매치 관리 메뉴",
@@ -52,17 +69,19 @@ export default function HostMatchPreviewPage() {
       <div className="grid min-w-0 gap-(--spacing-gap-extra-large) pt-3.5 pb-(--spacing-gap-extra-large)">
         <section className="grid gap-(--spacing-gap-large)">
           <div className="grid justify-items-start gap-(--spacing-gap-medium)">
-            <Badge fitContent>모집중</Badge>
+            <Badge fitContent>
+              {summary.status === "confirmed" ? "매치 확정" : "모집중"}
+            </Badge>
             <div className="grid gap-(--spacing-gap-micro)">
               <h2 className="typography-heading-bold m-0">
-                장충 테니스장 3번 코트
+                {summary.courtName}
               </h2>
               <p className="typography-body-medium m-0 text-(color:--fg-neutral-secondary)">
-                11/14(토) 14:00 - 16:00
+                {summary.dateTimeLabel}
               </p>
             </div>
           </div>
-          <GoalProgress current={participants.length} goal={4} />
+          <GoalProgress current={summary.current} goal={summary.capacity} />
         </section>
 
         <section className="grid min-w-0 gap-(--spacing-gap-large)">

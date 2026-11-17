@@ -1,9 +1,14 @@
 import { useState } from "react";
+import { Link } from "react-router";
 import { Badge } from "@/components/Badge";
 import { Checkbox } from "@/components/Checkbox";
 import { DaySelector } from "@/components/DaySelector";
 import { FilterChip } from "@/components/FilterChip";
 import { Divider } from "@/components/Divider";
+import {
+  HOST_MATCH_PREVIEW_PATH,
+  type HostMatchPreviewSummary,
+} from "@/features/host-match/form";
 import participantIcon from "../../assets/icons/match-participant.svg";
 
 type ScheduleMatch = {
@@ -197,9 +202,28 @@ export default function MatchSchedulePage() {
               11월 {day}일
             </h2>
             <div className="grid gap-(--spacing-gap-small)">
-              {matches.map((match) => (
-                <ScheduleMatchCard key={match.id} match={match} />
-              ))}
+              {matches.map((match) =>
+                match.isHost ? (
+                  <Link
+                    key={match.id}
+                    to={HOST_MATCH_PREVIEW_PATH}
+                    state={
+                      {
+                        courtName: match.courtName,
+                        dateTimeLabel: `11월 ${day}일 ${match.timeLabel}`,
+                        current: match.participantCount,
+                        capacity: match.capacity,
+                        status: match.status,
+                      } satisfies HostMatchPreviewSummary
+                    }
+                    className="block rounded-(--radius-large) text-inherit no-underline"
+                  >
+                    <ScheduleMatchCard match={match} />
+                  </Link>
+                ) : (
+                  <ScheduleMatchCard key={match.id} match={match} />
+                ),
+              )}
             </div>
           </section>
         ))}
