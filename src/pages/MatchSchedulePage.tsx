@@ -1,4 +1,8 @@
+import { useState } from "react";
 import { Badge } from "@/components/Badge";
+import { Checkbox } from "@/components/Checkbox";
+import { DaySelector } from "@/components/DaySelector";
+import { FilterChip } from "@/components/FilterChip";
 import { Divider } from "@/components/Divider";
 import participantIcon from "../../assets/icons/match-participant.svg";
 
@@ -22,9 +26,21 @@ const sampleMatch = {
   matchType: "복식",
 };
 
-const mockSchedule: { date: string; matches: ScheduleMatch[] }[] = [
+const mockWeekdays = ["월", "화", "수", "목", "금", "토", "일"];
+const mockDays = mockWeekdays.map((weekday, index) => {
+  const day = 23 + index;
+  return {
+    id: String(day),
+    day,
+    weekday,
+    accessibleLabel: `11월 ${day}일 ${weekday}요일`,
+    today: index === 0,
+  };
+});
+
+const mockSchedule: { day: number; matches: ScheduleMatch[] }[] = [
   {
-    date: "11월 24일",
+    day: 24,
     matches: [
       {
         ...sampleMatch,
@@ -37,7 +53,7 @@ const mockSchedule: { date: string; matches: ScheduleMatch[] }[] = [
     ],
   },
   {
-    date: "11월 25일",
+    day: 25,
     matches: [
       { ...sampleMatch, id: 3, isHost: true, status: "confirmed" },
       {
@@ -99,8 +115,29 @@ function ScheduleMatchCard({ match }: { match: ScheduleMatch }) {
 }
 
 export default function MatchSchedulePage() {
+  const [selectedDay, setSelectedDay] = useState("24");
+  const [hostOnly, setHostOnly] = useState(false);
+  const [confirmedOnly, setConfirmedOnly] = useState(false);
+  const matchingSchedule = mockSchedule
+    .map(({ day, matches }) => ({
+      day,
+      matches: matches.filter(
+        (match) =>
+          (!hostOnly || match.isHost) &&
+          (!confirmedOnly || match.status === "confirmed"),
+      ),
+    }))
+    .filter(({ matches }) => matches.length > 0);
+  const visibleSchedule = matchingSchedule.filter(
+    ({ day }) => day >= Number(selectedDay),
+  );
+  const days = mockDays.map((option) => ({
+    ...option,
+    hasEvent: matchingSchedule.some(({ day }) => day === option.day),
+  }));
+
   return (
-    <div className="grid gap-(--spacing-gap-extra-large) pt-(--spacing-padding-medium) pb-12">
+    <div className="grid gap-(--spacing-gap-medium) pt-(--spacing-padding-medium) pb-12">
       <div
         className="flex items-center gap-(--spacing-gap-micro)"
         aria-label="매치 현황 탭"
@@ -119,11 +156,45 @@ export default function MatchSchedulePage() {
           신청현황
         </button>
       </div>
-      <div className="grid gap-(--spacing-gap-large)">
-        {mockSchedule.map(({ date, matches }) => (
-          <section key={date}>
+      <DaySelector
+        monthLabel="2026년 11월"
+        days={days}
+        selectedId={selectedDay}
+        onSelect={setSelectedDay}
+        className="shadow-[0_2px_15px_var(--gray-alpha-200)]"
+      />
+      <div className="mt-(--spacing-gap-small) flex flex-wrap items-center justify-between gap-(--spacing-gap-small)">
+        <FilterChip
+          label="내가 연 경기"
+          selected={hostOnly}
+          onClick={() => setHostOnly((selected) => !selected)}
+          className={
+            hostOnly
+              ? undefined
+              : "bg-(--bg-neutral-default)! inset-ring inset-ring-(--border-neutral-default)"
+          }
+        />
+        <label className="typography-label-r-medium flex cursor-pointer items-center gap-(--spacing-gap-micro) text-(color:--fg-neutral-secondary)">
+          <Checkbox
+            checked={confirmedOnly}
+            onChange={(event) => setConfirmedOnly(event.currentTarget.checked)}
+          />
+          모집완료만
+        </label>
+      </div>
+      <div className="mt-(--spacing-gap-small) grid gap-(--spacing-gap-large)">
+        {visibleSchedule.length === 0 && (
+          <p
+            role="status"
+            className="typography-body-medium m-0 py-6 text-center text-(color:--fg-neutral-tertiary)"
+          >
+            표시할 매치가 없어요.
+          </p>
+        )}
+        {visibleSchedule.map(({ day, matches }) => (
+          <section key={day}>
             <h2 className="typography-heading-bold m-0 py-(--spacing-padding-small) text-(color:--fg-neutral-secondary)">
-              {date}
+              11월 {day}일
             </h2>
             <div className="grid gap-(--spacing-gap-small)">
               {matches.map((match) => (
