@@ -76,7 +76,7 @@ export type RecommendedMatchItem = {
     | "maxNtrp"
     | "currentParticipantCount"
     | "capacity"
-  > & { courtName: string };
+  > & { courtName: string; courtThumbnailUrl: string | null };
   areaCode: string;
   areaName: string;
 };

@@ -49,6 +49,7 @@ function createPage(
           startsAt,
           endsAt,
           courtName: court.name,
+          courtThumbnailUrl: null,
           participationFee,
           minNtrp,
           maxNtrp,
