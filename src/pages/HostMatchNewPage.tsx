@@ -77,7 +77,10 @@ export default function HostMatchNewPage() {
             <div className="pt-(--spacing-padding-medium)">
               <BottomCTA
                 layout="horizontal"
-                primaryAction={{ children: "매칭 시작", disabled: true }}
+                primaryAction={{
+                  children: "매칭 시작",
+                  onClick: () => void navigate("/schedule"),
+                }}
                 secondaryAction={{
                   variant: "tertiary",
                   children: "이전",
