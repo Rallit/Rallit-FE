@@ -1,10 +1,12 @@
-import { Outlet, useMatch } from "react-router";
+import { Outlet, useMatch, useNavigate } from "react-router";
 import { BottomNav } from "@/components/BottomNav";
 import { FAB } from "@/components/FAB";
 import { Header } from "@/components/Header";
+import { HOST_MATCH_NEW_PATH } from "@/features/host-match/form";
 import { PageLayout } from "./PageLayout";
 
 export function MainTabsLayout() {
+  const navigate = useNavigate();
   const isHome = Boolean(useMatch({ path: "/", end: true }));
   const isSchedule = Boolean(useMatch({ path: "/schedule", end: true }));
 
@@ -24,6 +26,7 @@ export function MainTabsLayout() {
             <FAB
               label="매치 열기"
               collapsed
+              onClick={() => void navigate(HOST_MATCH_NEW_PATH)}
               className="absolute right-4 bottom-[calc(100%+16px)]"
             />
           )}

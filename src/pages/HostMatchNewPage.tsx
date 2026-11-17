@@ -9,7 +9,9 @@ import {
   initialCourtDraft,
   isCourtDraftReady,
   type CourtDraft,
+  type MatchInfoDraft,
 } from "@/features/host-match/form";
+import { useAuthContext } from "@/hooks/useAuthContext";
 
 const steps = [
   {
@@ -24,7 +26,22 @@ const steps = [
 
 export default function HostMatchNewPage() {
   const navigate = useNavigate();
+  const { authState } = useAuthContext();
+  const hostGender =
+    authState.status === "authenticated"
+      ? authState.user.profile?.gender
+      : undefined;
   const [stepIndex, setStepIndex] = useState(0);
+  const [matchInfo, setMatchInfo] = useState<MatchInfoDraft>({
+    matchFormat: null,
+    sameGenderOnly: false,
+    maleRecruitCount: 0,
+    femaleRecruitCount: 0,
+    ntrp: [1, 2],
+    preferredAgeGroups: [],
+    anyAgeGroup: true,
+    fee: "",
+  });
   const [court, setCourt] = useState<CourtDraft>(initialCourtDraft);
   const [evidence, setEvidence] = useState<{ file: File; url: string } | null>(
     null,
@@ -57,15 +74,20 @@ export default function HostMatchNewPage() {
               }}
             />
           ) : (
-            <BottomCTA
-              layout="horizontal"
-              primaryAction={{ children: "매칭 시작", disabled: true }}
-              secondaryAction={{
-                variant: "tertiary",
-                children: "이전",
-                onClick: () => setStepIndex(0),
-              }}
-            />
+            <div className="pt-(--spacing-padding-medium)">
+              <BottomCTA
+                layout="horizontal"
+                primaryAction={{
+                  children: "매칭 시작",
+                  onClick: () => void navigate("/schedule"),
+                }}
+                secondaryAction={{
+                  variant: "tertiary",
+                  children: "이전",
+                  onClick: () => setStepIndex(0),
+                }}
+              />
+            </div>
           )}
         </div>
       }
@@ -86,7 +108,13 @@ export default function HostMatchNewPage() {
           }
         />
       ) : (
-        <MatchInfoStep />
+        <div className="pb-(--spacing-gap-extra-large)">
+          <MatchInfoStep
+            value={matchInfo}
+            onChange={setMatchInfo}
+            hostGender={hostGender}
+          />
+        </div>
       )}
     </PageLayout>
   );
