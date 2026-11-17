@@ -1,4 +1,5 @@
-import { useId, useRef, type PointerEvent } from "react";
+import { useId } from "react";
+import { useHorizontalMouseDrag } from "@/hooks/useHorizontalMouseDrag";
 import { DayButton } from "./DayButton";
 
 type DayOption = {
@@ -29,49 +30,7 @@ export function DaySelector({
   onSelect,
 }: DaySelectorProps) {
   const monthId = useId();
-  const mouseDrag = useRef<{
-    pointerId: number;
-    startX: number;
-    startScrollLeft: number;
-  } | null>(null);
-  const skipPointerClick = useRef(false);
-
-  function startMouseDrag(event: PointerEvent<HTMLDivElement>) {
-    skipPointerClick.current = false;
-    const list = event.currentTarget;
-    if (
-      event.pointerType !== "mouse" ||
-      event.button !== 0 ||
-      list.scrollWidth <= list.clientWidth
-    )
-      return;
-
-    mouseDrag.current = {
-      pointerId: event.pointerId,
-      startX: event.clientX,
-      startScrollLeft: list.scrollLeft,
-    };
-  }
-
-  function moveMouseDrag(event: PointerEvent<HTMLDivElement>) {
-    const drag = mouseDrag.current;
-    if (!drag || drag.pointerId !== event.pointerId) return;
-
-    const list = event.currentTarget;
-    const distance = event.clientX - drag.startX;
-    if (!skipPointerClick.current) {
-      if (Math.abs(distance) < 5) return;
-      list.setPointerCapture(event.pointerId);
-      skipPointerClick.current = true;
-    }
-    list.scrollLeft = drag.startScrollLeft - distance;
-  }
-
-  function finishMouseDrag(event: PointerEvent<HTMLDivElement>) {
-    if (mouseDrag.current?.pointerId === event.pointerId) {
-      mouseDrag.current = null;
-    }
-  }
+  const mouseDrag = useHorizontalMouseDrag();
 
   return (
     <div
@@ -92,20 +51,7 @@ export function DaySelector({
       </p>
       <div
         className="w-full overflow-x-auto scrollbar-none select-none"
-        onPointerDown={startMouseDrag}
-        onPointerMove={moveMouseDrag}
-        onPointerUp={finishMouseDrag}
-        onPointerCancel={finishMouseDrag}
-        onLostPointerCapture={finishMouseDrag}
-        onPointerLeave={(event) => {
-          if (!event.currentTarget.hasPointerCapture(event.pointerId))
-            finishMouseDrag(event);
-        }}
-        onClickCapture={(event) => {
-          if (skipPointerClick.current && event.detail > 0)
-            event.stopPropagation();
-          skipPointerClick.current = false;
-        }}
+        {...mouseDrag}
       >
         <div className="mx-auto flex w-max gap-(--spacing-gap-micro)">
           {days.map(({ id, accessibleLabel, ...dayProps }) => (
