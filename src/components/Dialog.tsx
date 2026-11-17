@@ -42,7 +42,7 @@ export function Dialog({
         event.preventDefault();
         onCancel();
       }}
-      className="fixed inset-0 m-auto box-border h-dvh max-h-none w-full max-w-[480px] place-items-center overflow-hidden border-0 bg-transparent p-0 open:grid backdrop:bg-transparent"
+      className="fixed inset-0 m-0 box-border h-dvh max-h-none w-full max-w-none place-items-center overflow-hidden border-0 bg-transparent p-0 open:grid backdrop:bg-transparent"
     >
       <div
         aria-hidden="true"

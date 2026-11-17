@@ -25,8 +25,8 @@ export function NumberStepper({
   disabled = false,
   className,
 }: NumberStepperProps) {
-  const canDecrease = !disabled && value > min;
-  const canIncrease = !disabled && value < max;
+  const canDecrease = !disabled && value - 1 >= min;
+  const canIncrease = !disabled && value + 1 <= max;
 
   return (
     <div
