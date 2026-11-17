@@ -17,6 +17,8 @@ import MatchRequestPage from "@/pages/MatchRequestPage";
 import MatchRequestResultsPage from "@/pages/MatchRequestResultsPage";
 import OnboardingPage from "@/pages/OnboardingPage";
 import MatchDetailPage from "@/pages/MatchDetailPage";
+import { HOST_MATCH_NEW_PATH } from "@/features/host-match/form";
+import HostMatchNewPage from "@/pages/HostMatchNewPage";
 
 function AuthStatusGate() {
   const { authState, retry } = useAuthContext();
@@ -117,6 +119,7 @@ export default function App() {
             }
           />
           <Route path="/matches/:matchId" element={<MatchDetailPage />} />
+          <Route path={HOST_MATCH_NEW_PATH} element={<HostMatchNewPage />} />
           <Route path={MATCH_REQUEST_PATH} element={<MatchRequestPage />} />
           <Route
             path={MATCH_REQUEST_COMPLETE_PATH}
