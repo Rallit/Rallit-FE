@@ -9,6 +9,7 @@ import {
   HOST_MATCH_PREVIEW_PATH,
   initialCourtDraft,
   isCourtDraftReady,
+  isMatchInfoDraftReady,
   type CourtDraft,
   type MatchInfoDraft,
 } from "@/features/host-match/form";
@@ -80,6 +81,7 @@ export default function HostMatchNewPage() {
                 layout="horizontal"
                 primaryAction={{
                   children: "매칭 시작",
+                  disabled: !isMatchInfoDraftReady(matchInfo),
                   onClick: () =>
                     void navigate(HOST_MATCH_PREVIEW_PATH, { replace: true }),
                 }}
