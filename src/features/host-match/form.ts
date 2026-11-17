@@ -1,3 +1,4 @@
+import type { OnboardingProfile } from "@/apis/onboarding.types";
 import type { MatchFormat } from "@/features/match-request/form";
 
 export const HOST_MATCH_NEW_PATH = "/host/matches/new";
@@ -8,6 +9,8 @@ export type MatchInfoDraft = {
   maleRecruitCount: number;
   femaleRecruitCount: number;
   ntrp: readonly [minimum: number, maximum: number];
+  preferredAgeGroups: OnboardingProfile["ageGroup"][];
+  anyAgeGroup: boolean;
 };
 
 // 04-A 코트 등록 입력값. 코트 API 확정 전까지 courtId 형식은 임시입니다.

@@ -13,6 +13,15 @@ import {
 } from "@/features/match-request/form";
 import { formatRequestedNtrp } from "@/features/match-request/summary";
 
+const ageGroups = [
+  { value: "TEENS", label: "10대" },
+  { value: "TWENTIES", label: "20대" },
+  { value: "THIRTIES", label: "30대" },
+  { value: "FORTIES", label: "40대" },
+  { value: "FIFTIES", label: "50대" },
+  { value: "SIXTIES_OR_OLDER", label: "60대 이상" },
+] as const;
+
 type MatchInfoStepProps = {
   value: MatchInfoDraft;
   onChange: (value: MatchInfoDraft) => void;
@@ -25,6 +34,7 @@ export function MatchInfoStep({
   hostGender,
 }: MatchInfoStepProps) {
   const labelId = useId();
+  const ageGroupLabelId = useId();
   const maleDisabled = value.sameGenderOnly && hostGender !== "MALE";
   const femaleDisabled = value.sameGenderOnly && hostGender !== "FEMALE";
 
@@ -36,6 +46,16 @@ export function MatchInfoStep({
         checked && hostGender !== "MALE" ? 0 : value.maleRecruitCount,
       femaleRecruitCount:
         checked && hostGender !== "FEMALE" ? 0 : value.femaleRecruitCount,
+    });
+  }
+
+  function toggleAgeGroup(ageGroup: OnboardingProfile["ageGroup"]) {
+    const { preferredAgeGroups } = value;
+    onChange({
+      ...value,
+      preferredAgeGroups: preferredAgeGroups.includes(ageGroup)
+        ? preferredAgeGroups.filter((group) => group !== ageGroup)
+        : [...preferredAgeGroups, ageGroup],
     });
   }
 
@@ -111,6 +131,41 @@ export function MatchInfoStep({
           value={value.ntrp}
           onChange={(ntrp) => onChange({ ...value, ntrp })}
         />
+      </section>
+      <section className="grid gap-(--spacing-gap-medium)">
+        <h2
+          id={ageGroupLabelId}
+          className="typography-label-r-medium m-0 text-(color:--fg-neutral-secondary)"
+        >
+          선호 나이대
+        </h2>
+        <div
+          role="group"
+          aria-labelledby={ageGroupLabelId}
+          className="flex flex-wrap gap-(--spacing-gap-small)"
+        >
+          {ageGroups.map(({ value: ageGroup, label }) => (
+            <SelectionChip
+              key={ageGroup}
+              label={label}
+              selected={
+                !value.anyAgeGroup &&
+                value.preferredAgeGroups.includes(ageGroup)
+              }
+              disabled={value.anyAgeGroup}
+              onClick={() => toggleAgeGroup(ageGroup)}
+            />
+          ))}
+        </div>
+        <label className="typography-label-l-medium flex w-fit cursor-pointer items-center gap-(--spacing-gap-micro) text-(color:--fg-neutral-secondary)">
+          <Checkbox
+            checked={value.anyAgeGroup}
+            onChange={(event) =>
+              onChange({ ...value, anyAgeGroup: event.currentTarget.checked })
+            }
+          />
+          상관없음
+        </label>
       </section>
     </div>
   );

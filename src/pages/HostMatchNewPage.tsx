@@ -38,6 +38,8 @@ export default function HostMatchNewPage() {
     maleRecruitCount: 0,
     femaleRecruitCount: 0,
     ntrp: [1, 2],
+    preferredAgeGroups: [],
+    anyAgeGroup: true,
   });
   const [court, setCourt] = useState<CourtDraft>(initialCourtDraft);
   const [evidence, setEvidence] = useState<{ file: File; url: string } | null>(
