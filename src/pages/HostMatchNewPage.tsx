@@ -32,6 +32,7 @@ export default function HostMatchNewPage() {
     sameGenderOnly: false,
     maleRecruitCount: 0,
     femaleRecruitCount: 0,
+    ntrp: [1, 2],
   });
   const step = steps[stepIndex];
   const isCourtStep = stepIndex === 0;

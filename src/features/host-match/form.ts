@@ -7,6 +7,7 @@ export type MatchInfoDraft = {
   sameGenderOnly: boolean;
   maleRecruitCount: number;
   femaleRecruitCount: number;
+  ntrp: readonly [minimum: number, maximum: number];
 };
 
 // 04-A 코트 등록 입력값. 코트 API 확정 전까지 courtId 형식은 임시입니다.

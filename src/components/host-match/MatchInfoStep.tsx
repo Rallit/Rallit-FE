@@ -2,9 +2,16 @@ import { useId } from "react";
 import type { OnboardingProfile } from "@/apis/onboarding.types";
 import { Checkbox } from "@/components/Checkbox";
 import { NumberStepper } from "@/components/NumberStepper";
+import { RangeSlider } from "@/components/RangeSlider";
 import { SelectionChip } from "@/components/SelectionChip";
 import type { MatchInfoDraft } from "@/features/host-match/form";
-import { matchFormats } from "@/features/match-request/form";
+import {
+  MAX_NTRP,
+  MIN_NTRP,
+  NTRP_STEP,
+  matchFormats,
+} from "@/features/match-request/form";
+import { formatRequestedNtrp } from "@/features/match-request/summary";
 
 type MatchInfoStepProps = {
   value: MatchInfoDraft;
@@ -89,6 +96,21 @@ export function MatchInfoStep({
             }
           />
         </div>
+      </section>
+      <section className="grid gap-(--spacing-gap-medium)">
+        <h2 className="typography-label-r-medium m-0 text-(color:--fg-neutral-secondary)">
+          권장 NTRP
+        </h2>
+        <RangeSlider
+          min={MIN_NTRP}
+          max={MAX_NTRP}
+          step={NTRP_STEP}
+          minLabel="최소 권장 NTRP"
+          maxLabel="최대 권장 NTRP"
+          formatValue={formatRequestedNtrp}
+          value={value.ntrp}
+          onChange={(ntrp) => onChange({ ...value, ntrp })}
+        />
       </section>
     </div>
   );
