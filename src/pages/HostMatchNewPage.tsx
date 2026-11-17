@@ -6,6 +6,7 @@ import { CourtStep } from "@/components/host-match/CourtStep";
 import { MatchInfoStep } from "@/components/host-match/MatchInfoStep";
 import { PageLayout } from "@/components/layout/PageLayout";
 import {
+  HOST_MATCH_PREVIEW_PATH,
   initialCourtDraft,
   isCourtDraftReady,
   type CourtDraft,
@@ -79,7 +80,8 @@ export default function HostMatchNewPage() {
                 layout="horizontal"
                 primaryAction={{
                   children: "매칭 시작",
-                  onClick: () => void navigate("/schedule"),
+                  onClick: () =>
+                    void navigate(HOST_MATCH_PREVIEW_PATH, { replace: true }),
                 }}
                 secondaryAction={{
                   variant: "tertiary",
