@@ -74,15 +74,17 @@ export default function HostMatchNewPage() {
               }}
             />
           ) : (
-            <BottomCTA
-              layout="horizontal"
-              primaryAction={{ children: "매칭 시작", disabled: true }}
-              secondaryAction={{
-                variant: "tertiary",
-                children: "이전",
-                onClick: () => setStepIndex(0),
-              }}
-            />
+            <div className="pt-(--spacing-padding-medium)">
+              <BottomCTA
+                layout="horizontal"
+                primaryAction={{ children: "매칭 시작", disabled: true }}
+                secondaryAction={{
+                  variant: "tertiary",
+                  children: "이전",
+                  onClick: () => setStepIndex(0),
+                }}
+              />
+            </div>
           )}
         </div>
       }
@@ -103,11 +105,13 @@ export default function HostMatchNewPage() {
           }
         />
       ) : (
-        <MatchInfoStep
-          value={matchInfo}
-          onChange={setMatchInfo}
-          hostGender={hostGender}
-        />
+        <div className="pb-(--spacing-gap-extra-large)">
+          <MatchInfoStep
+            value={matchInfo}
+            onChange={setMatchInfo}
+            hostGender={hostGender}
+          />
+        </div>
       )}
     </PageLayout>
   );
