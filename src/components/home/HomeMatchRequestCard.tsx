@@ -11,8 +11,12 @@ type HomeMatchRequestCardProps = {
   onClick: () => void;
 };
 
+const MAX_VISIBLE_REQUEST_DATES = 4;
+
 function formatDates(dates: string[]) {
-  return dates
+  const visibleDates = dates.slice(0, MAX_VISIBLE_REQUEST_DATES);
+  const remaining = dates.length - visibleDates.length;
+  const label = visibleDates
     .map((date, index) => {
       const month = date.slice(0, 7);
       const day = Number(date.slice(8, 10));
@@ -22,6 +26,7 @@ function formatDates(dates: string[]) {
         : `${Number(date.slice(5, 7))}월 ${day}일`;
     })
     .join(", ");
+  return remaining > 0 ? `${label} 외 ${remaining}일` : label;
 }
 
 export function HomeMatchRequestCard({

@@ -51,7 +51,7 @@ export function HomeMatchRequestList({
         setResult({ attempt, count: requests.length });
         if (!requests.length) return [];
         const areas = await getActivityAreas(controller.signal);
-        return requests.map((request) => ({
+        return requests.toReversed().map((request) => ({
           id: request.requestId,
           request: toSavedMatchRequestSummary(request, areas),
           onClick: () =>
@@ -78,12 +78,14 @@ export function HomeMatchRequestList({
 
   const current = result?.attempt === attempt ? result : undefined;
   const cards = mock
-    ? getStoredMatchRequests(userId).map(({ id, request }) => ({
-        id,
-        request,
-        onClick: () =>
-          void navigate(MATCH_REQUEST_RESULTS_PATH, { state: request }),
-      }))
+    ? getStoredMatchRequests(userId)
+        .reverse()
+        .map(({ id, request }) => ({
+          id,
+          request,
+          onClick: () =>
+            void navigate(MATCH_REQUEST_RESULTS_PATH, { state: request }),
+        }))
     : current?.cards;
   const requestCount = mock ? (cards?.length ?? 0) : (result?.count ?? 0);
 
