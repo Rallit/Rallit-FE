@@ -36,11 +36,9 @@ export function Toast({
   return (
     <div role="status" className={className}>
       {message && (
-        <div
-          className={`box-border inline-flex w-fit max-w-full items-center gap-(--spacing-gap-small) rounded-(--radius-full) bg-(--bg-neutral-default) pr-(--spacing-padding-large) pl-(--spacing-padding-medium) shadow-[0_2px_30px_var(--gray-alpha-200)] ${action ? "py-(--spacing-padding-medium)" : "h-12"}`}
-        >
+        <div className="box-border inline-flex h-12 w-fit max-w-full items-center gap-(--spacing-gap-small) rounded-(--radius-full) bg-(--bg-neutral-default) pr-(--spacing-padding-large) pl-(--spacing-padding-medium) shadow-[0_2px_30px_var(--gray-alpha-200)]">
           <img src={icon} alt="" className="block shrink-0" />
-          <span className="typography-body-bold min-w-0 truncate text-(color:--fg-neutral-default)">
+          <span className="typography-body-medium min-w-0 truncate text-(color:--fg-neutral-default)">
             {message}
           </span>
           {action && (
