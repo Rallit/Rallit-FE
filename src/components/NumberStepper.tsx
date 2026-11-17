@@ -33,7 +33,7 @@ export function NumberStepper({
       role="group"
       aria-label={label}
       className={[
-        "box-border flex w-full flex-col items-center rounded-(--radius-medium) border border-solid border-(--border-neutral-default) bg-(--bg-neutral-default) pt-(--spacing-padding-small)",
+        "box-border flex h-[70px] w-full flex-col items-center rounded-(--radius-medium) border border-solid border-(--border-neutral-default) bg-(--bg-neutral-default) pt-(--spacing-padding-small)",
         className,
       ]
         .filter(Boolean)
@@ -44,7 +44,7 @@ export function NumberStepper({
       >
         {label}
       </span>
-      <div className="box-border flex w-full items-center justify-center gap-(--spacing-gap-medium) px-(--spacing-padding-medium) py-(--spacing-padding-small)">
+      <div className="box-border flex w-full flex-1 items-center justify-center gap-(--spacing-gap-medium)">
         <IconButton
           size="small"
           icon={minusIcon}

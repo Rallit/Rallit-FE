@@ -6,6 +6,7 @@ import { CourtStep } from "@/components/host-match/CourtStep";
 import { MatchInfoStep } from "@/components/host-match/MatchInfoStep";
 import { PageLayout } from "@/components/layout/PageLayout";
 import type { MatchInfoDraft } from "@/features/host-match/form";
+import { useAuthContext } from "@/hooks/useAuthContext";
 
 const steps = [
   {
@@ -20,10 +21,17 @@ const steps = [
 
 export default function HostMatchNewPage() {
   const navigate = useNavigate();
+  const { authState } = useAuthContext();
+  const hostGender =
+    authState.status === "authenticated"
+      ? authState.user.profile?.gender
+      : undefined;
   const [stepIndex, setStepIndex] = useState(0);
   const [matchInfo, setMatchInfo] = useState<MatchInfoDraft>({
     matchFormat: null,
     sameGenderOnly: false,
+    maleRecruitCount: 0,
+    femaleRecruitCount: 0,
   });
   const step = steps[stepIndex];
   const isCourtStep = stepIndex === 0;
@@ -69,7 +77,11 @@ export default function HostMatchNewPage() {
       {isCourtStep ? (
         <CourtStep />
       ) : (
-        <MatchInfoStep value={matchInfo} onChange={setMatchInfo} />
+        <MatchInfoStep
+          value={matchInfo}
+          onChange={setMatchInfo}
+          hostGender={hostGender}
+        />
       )}
     </PageLayout>
   );
