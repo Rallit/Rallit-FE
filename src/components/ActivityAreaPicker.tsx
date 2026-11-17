@@ -66,7 +66,9 @@ export function ActivityAreaPicker({
       if (!controller.signal.aborted) {
         setList({
           status: "ready",
-          areas: areas.toSorted((a, b) => a.label.localeCompare(b.label, "ko")),
+          areas: [...areas].sort((a, b) =>
+            a.label.localeCompare(b.label, "ko"),
+          ),
         });
       }
     } catch {

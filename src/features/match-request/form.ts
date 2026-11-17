@@ -78,5 +78,5 @@ export function getMatchRequest(draft: MatchRequestDraft): MatchRequest | null {
     return null;
   }
 
-  return { ...draft, startHour, endHour, dates: dates.toSorted() };
+  return { ...draft, startHour, endHour, dates: [...dates].sort() };
 }
