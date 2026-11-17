@@ -124,6 +124,7 @@
   --fg-neutral-subtle: var(--gray-300);
   --fg-neutral-inverse: var(--gray-00);
   --fg-accent-default: var(--blue-500);
+  --fg-accent-assistive: var(--red-500);
   --fg-system-error: var(--red-500);
 
   --bg-primary-default: var(--lime-500);

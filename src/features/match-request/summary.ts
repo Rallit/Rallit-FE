@@ -1,6 +1,6 @@
 import type { ActivityArea } from "@/apis/locations";
 import type { SavedMatchRequest } from "@/apis/matchRequests";
-import { MAX_NTRP, type MatchRequest } from "./form";
+import { MAX_NTRP, matchFormats, type MatchRequest } from "./form";
 
 const weekdayFormat = new Intl.DateTimeFormat("ko-KR", { weekday: "short" });
 
@@ -26,7 +26,7 @@ export function formatMatchTimeRange({
 
 export type MatchRequestSummary = Pick<
   MatchRequest,
-  "dates" | "activityAreas"
+  "dates" | "activityAreas" | "matchFormats"
 > &
   (
     | Pick<MatchRequest, "startHour" | "endHour">
@@ -40,7 +40,8 @@ export function toSavedMatchRequestSummary(
   { conditions }: SavedMatchRequest,
   areas: readonly ActivityArea[],
 ): MatchRequestSummary {
-  const { dates, areaCodes, startTimeFrom, startTimeTo } = conditions;
+  const { dates, areaCodes, startTimeFrom, startTimeTo, matchTypes } =
+    conditions;
   const areaNames = new Map(areas.map(({ id, label }) => [id, label]));
   return {
     dates,
@@ -50,7 +51,14 @@ export function toSavedMatchRequestSummary(
     })),
     startTimeFrom,
     startTimeTo,
+    matchFormats: matchTypes,
   };
+}
+
+function formatSummaryTime(request: MatchRequestSummary) {
+  return "startTimeFrom" in request
+    ? `${request.startTimeFrom} - ${request.startTimeTo}`
+    : formatMatchTimeRange(request);
 }
 
 export function formatRequestSummary(request: MatchRequestSummary) {
@@ -60,9 +68,20 @@ export function formatRequestSummary(request: MatchRequestSummary) {
   return [
     formatMatchDate(firstDate) +
       (otherDates.length ? ` 외 ${otherDates.length}` : ""),
-    "startTimeFrom" in request
-      ? `${request.startTimeFrom} - ${request.startTimeTo}`
-      : formatMatchTimeRange(request),
+    formatSummaryTime(request),
     firstArea.label + (otherAreas.length ? ` 외 ${otherAreas.length}` : ""),
+  ];
+}
+
+export function formatRequestPreferences(request: MatchRequestSummary) {
+  const [firstArea, ...otherAreas] = request.activityAreas;
+  const [firstFormat, ...otherFormats] = request.matchFormats;
+  const formatLabel =
+    matchFormats.find(({ value }) => value === firstFormat)?.label ?? "";
+
+  return [
+    formatSummaryTime(request),
+    firstArea.label + (otherAreas.length ? ` 외 ${otherAreas.length}` : ""),
+    formatLabel + (otherFormats.length ? ` 외 ${otherFormats.length}` : ""),
   ];
 }

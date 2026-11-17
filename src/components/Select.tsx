@@ -68,7 +68,7 @@ export function Select({
       data-select-trigger
       type="button"
       disabled={disabled}
-      className={`flex cursor-pointer appearance-none disabled:cursor-default ${triggerStyle}`}
+      className={`group flex cursor-pointer appearance-none disabled:cursor-default ${triggerStyle}`}
     >
       {!hasChips && (
         <span className="min-w-0 truncate">{value || placeholder}</span>
@@ -76,7 +76,7 @@ export function Select({
       <img
         src={hasChips && !chipsWithDropdown ? addIcon : downIcon}
         alt={hasChips && !chipsWithDropdown ? "선택 항목 추가" : ""}
-        className="block shrink-0"
+        className={`block shrink-0 ${hasChips && !chipsWithDropdown ? "" : "group-aria-expanded:rotate-180"}`}
       />
     </button>
   );

@@ -1,7 +1,7 @@
 import { Badge } from "@/components/Badge";
 import { Divider } from "@/components/Divider";
 import {
-  formatRequestSummary,
+  formatRequestPreferences,
   type MatchRequestSummary,
 } from "@/features/match-request/summary";
 
@@ -29,7 +29,7 @@ export function HomeMatchRequestCard({
   hasNewMatches,
   onClick,
 }: HomeMatchRequestCardProps) {
-  const requirements = formatRequestSummary(request);
+  const requirements = formatRequestPreferences(request);
   return (
     <button
       type="button"

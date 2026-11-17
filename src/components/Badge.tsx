@@ -6,6 +6,8 @@ const styles = {
   blue: "rounded-(--radius-small) bg-(--bg-secondary-inverse) text-(color:--fg-accent-default)",
   "blue-inverse":
     "rounded-(--radius-full) bg-(--bg-secondary-default) text-(color:--fg-neutral-inverse)",
+  neutral:
+    "rounded-(--radius-small) bg-(--bg-neutral-weak) text-(color:--fg-brand-strong)",
 };
 
 type BadgeProps = PropsWithChildren<{ variant?: keyof typeof styles }>;
