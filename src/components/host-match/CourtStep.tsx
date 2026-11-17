@@ -1,4 +1,4 @@
-import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { useId, useRef, useState } from "react";
 import closeIcon from "../../../assets/icons/close.svg";
 import { BottomCTA } from "@/components/BottomCTA";
 import { BottomSheet } from "@/components/BottomSheet";
@@ -21,7 +21,7 @@ import { CourtSearchSheet } from "./CourtSearchSheet";
 type CourtStepProps = {
   value: CourtDraft;
   onChange: (value: CourtDraft) => void;
-  evidence: File | null;
+  evidenceUrl: string | null;
   onEvidenceChange: (file: File | null) => void;
 };
 
@@ -31,7 +31,7 @@ const labelStyle =
 export function CourtStep({
   value,
   onChange,
-  evidence,
+  evidenceUrl,
   onEvidenceChange,
 }: CourtStepProps) {
   const courtSheetId = useId();
@@ -39,19 +39,9 @@ export function CourtStep({
   const dateSheetId = useId();
   const [dateSheetOpen, setDateSheetOpen] = useState(false);
   const [dateDraft, setDateDraft] = useState<string | null>(null);
+  const [calendarKey, setCalendarKey] = useState(0);
   const dateRange = getReservableDateRange();
   const evidenceInputRef = useRef<HTMLInputElement>(null);
-  const evidenceUrl = useMemo(
-    () => (evidence ? URL.createObjectURL(evidence) : null),
-    [evidence],
-  );
-
-  useEffect(
-    () => () => {
-      if (evidenceUrl) URL.revokeObjectURL(evidenceUrl);
-    },
-    [evidenceUrl],
-  );
 
   return (
     <div className="mt-(--spacing-gap-extra-large) grid gap-(--spacing-gap-extra-large) pb-(--spacing-padding-large)">
@@ -103,6 +93,7 @@ export function CourtStep({
             value={value.date ? formatMatchDate(value.date) : undefined}
             onClick={() => {
               setDateDraft(value.date);
+              setCalendarKey((key) => key + 1);
               setDateSheetOpen(true);
             }}
           />
@@ -116,6 +107,7 @@ export function CourtStep({
             {(dismiss) => (
               <>
                 <Calendar
+                  key={calendarKey}
                   value={dateDraft}
                   onChange={setDateDraft}
                   min={dateRange.min}
@@ -138,6 +130,7 @@ export function CourtStep({
       <div className="grid gap-(--spacing-gap-medium)">
         <p className={`m-0 ${labelStyle}`}>이용 시간</p>
         <MatchRequestTimePicker
+          gap="small"
           value={{ startHour: value.startHour, endHour: value.endHour }}
           onChange={(time) => onChange({ ...value, ...time })}
         />
@@ -162,7 +155,7 @@ export function CourtStep({
         <div className="flex items-center justify-between">
           <p className={`m-0 ${labelStyle}`}>예약 증빙 자료</p>
           <span className="typography-caption-r-medium text-(color:--fg-neutral-subtle)">
-            {evidence ? 1 : 0}/1
+            {evidenceUrl ? 1 : 0}/1
           </span>
         </div>
         {evidenceUrl ? (

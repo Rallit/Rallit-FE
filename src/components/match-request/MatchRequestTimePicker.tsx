@@ -27,14 +27,24 @@ export type MatchRequestTimeRange = {
   endHour: number | null;
 };
 
+const gapStyles = {
+  small: "gap-(--spacing-gap-small)",
+  medium: "gap-(--spacing-gap-medium)",
+};
+
 type TimePickerProps = {
   value: MatchRequestTimeRange;
   onChange: (value: MatchRequestTimeRange) => void;
+  gap?: keyof typeof gapStyles;
 };
 
 type Draft = { field: (typeof fields)[number]; hour: number };
 
-export function MatchRequestTimePicker({ value, onChange }: TimePickerProps) {
+export function MatchRequestTimePicker({
+  value,
+  onChange,
+  gap = "medium",
+}: TimePickerProps) {
   const dialogId = useId();
   const [draft, setDraft] = useState<Draft | null>(null);
 
@@ -46,7 +56,7 @@ export function MatchRequestTimePicker({ value, onChange }: TimePickerProps) {
 
   return (
     <>
-      <div className="grid grid-cols-2 gap-(--spacing-gap-medium)">
+      <div className={`grid grid-cols-2 ${gapStyles[gap]}`}>
         {fields.map((field) => {
           const hour = value[field.key];
           return (

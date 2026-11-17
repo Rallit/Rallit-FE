@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { BottomCTA } from "@/components/BottomCTA";
 import { Header } from "@/components/Header";
@@ -26,9 +26,16 @@ export default function HostMatchNewPage() {
   const navigate = useNavigate();
   const [stepIndex, setStepIndex] = useState(0);
   const [court, setCourt] = useState<CourtDraft>(initialCourtDraft);
-  const [evidence, setEvidence] = useState<File | null>(null);
+  const [evidence, setEvidence] = useState<{ file: File; url: string } | null>(
+    null,
+  );
+  const evidenceUrl = evidence?.url ?? null;
   const step = steps[stepIndex];
   const isCourtStep = stepIndex === 0;
+
+  useEffect(() => {
+    if (evidenceUrl) return () => URL.revokeObjectURL(evidenceUrl);
+  }, [evidenceUrl]);
 
   return (
     <PageLayout
@@ -73,8 +80,10 @@ export default function HostMatchNewPage() {
         <CourtStep
           value={court}
           onChange={setCourt}
-          evidence={evidence}
-          onEvidenceChange={setEvidence}
+          evidenceUrl={evidenceUrl}
+          onEvidenceChange={(file) =>
+            setEvidence(file ? { file, url: URL.createObjectURL(file) } : null)
+          }
         />
       ) : (
         <MatchInfoStep />
