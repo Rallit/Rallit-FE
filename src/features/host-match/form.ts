@@ -1,4 +1,18 @@
+import type { OnboardingProfile } from "@/apis/onboarding.types";
+import type { MatchFormat } from "@/features/match-request/form";
+
 export const HOST_MATCH_NEW_PATH = "/host/matches/new";
+
+export type MatchInfoDraft = {
+  matchFormat: MatchFormat | null;
+  sameGenderOnly: boolean;
+  maleRecruitCount: number;
+  femaleRecruitCount: number;
+  ntrp: readonly [minimum: number, maximum: number];
+  preferredAgeGroups: OnboardingProfile["ageGroup"][];
+  anyAgeGroup: boolean;
+  fee: string;
+};
 
 // 04-A 코트 등록 입력값. 코트 API 확정 전까지 courtId 형식은 임시입니다.
 export type CourtDraft = {
@@ -37,7 +51,7 @@ export function toFeeDigits(input: string) {
 }
 
 export function formatFee(fee: string) {
-  return fee ? Number(fee).toLocaleString("ko-KR") : "";
+  return fee ? BigInt(fee).toLocaleString("ko-KR") : "";
 }
 
 // 코트 목록 API 확정 전 임시 형태입니다.
@@ -48,10 +62,30 @@ export type CourtOption = {
   imageUrl: string | null;
 };
 
-// 초성 검색은 API(또는 처리 위치) 확정 후 반영합니다.
+const hangulInitials = "ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ";
+
 export function searchCourts(courts: readonly CourtOption[], keyword: string) {
   const query = keyword.trim();
-  return query ? courts.filter(({ name }) => name.includes(query)) : courts;
+  if (!query) return courts;
+
+  const compactQuery = query.replace(/\s/g, "");
+  if (
+    !Array.from(compactQuery).every((letter) => hangulInitials.includes(letter))
+  ) {
+    return courts.filter(({ name }) => name.includes(query));
+  }
+
+  return courts.filter(({ name }) => {
+    const initials = name
+      .normalize("NFC")
+      .replace(/\s/g, "")
+      .replace(/[가-힣]/g, (syllable) =>
+        hangulInitials.charAt(
+          Math.floor((syllable.charCodeAt(0) - 0xac00) / 588),
+        ),
+      );
+    return initials.includes(compactQuery);
+  });
 }
 
 export const RESERVABLE_DAYS = 14;
