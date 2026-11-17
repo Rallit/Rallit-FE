@@ -1,10 +1,15 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { BottomCTA } from "@/components/BottomCTA";
 import { Header } from "@/components/Header";
 import { CourtStep } from "@/components/host-match/CourtStep";
 import { MatchInfoStep } from "@/components/host-match/MatchInfoStep";
 import { PageLayout } from "@/components/layout/PageLayout";
+import {
+  initialCourtDraft,
+  isCourtDraftReady,
+  type CourtDraft,
+} from "@/features/host-match/form";
 
 const steps = [
   {
@@ -20,8 +25,17 @@ const steps = [
 export default function HostMatchNewPage() {
   const navigate = useNavigate();
   const [stepIndex, setStepIndex] = useState(0);
+  const [court, setCourt] = useState<CourtDraft>(initialCourtDraft);
+  const [evidence, setEvidence] = useState<{ file: File; url: string } | null>(
+    null,
+  );
+  const evidenceUrl = evidence?.url ?? null;
   const step = steps[stepIndex];
   const isCourtStep = stepIndex === 0;
+
+  useEffect(() => {
+    if (evidenceUrl) return () => URL.revokeObjectURL(evidenceUrl);
+  }, [evidenceUrl]);
 
   return (
     <PageLayout
@@ -38,6 +52,7 @@ export default function HostMatchNewPage() {
             <BottomCTA
               primaryAction={{
                 children: "코트 등록하기",
+                disabled: !isCourtDraftReady(court),
                 onClick: () => setStepIndex(1),
               }}
             />
@@ -61,7 +76,18 @@ export default function HostMatchNewPage() {
           {step.description}
         </p>
       </section>
-      {isCourtStep ? <CourtStep /> : <MatchInfoStep />}
+      {isCourtStep ? (
+        <CourtStep
+          value={court}
+          onChange={setCourt}
+          evidenceUrl={evidenceUrl}
+          onEvidenceChange={(file) =>
+            setEvidence(file ? { file, url: URL.createObjectURL(file) } : null)
+          }
+        />
+      ) : (
+        <MatchInfoStep />
+      )}
     </PageLayout>
   );
 }
