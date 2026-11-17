@@ -59,8 +59,20 @@ type SavedResults = {
 };
 
 const sectionLabels = [
-  { key: "exactMatches", title: "딱 맞는 매치", query: "exactPage" },
-  { key: "similarMatches", title: "비슷한 매치", query: "similarPage" },
+  {
+    key: "exactMatches",
+    title: "딱 맞는 매치",
+    query: "exactPage",
+    emptyMessage:
+      "아직 조건에 딱 맞는 매치가 없어요\n새 매치가 열리면 알려드릴게요",
+  },
+  {
+    key: "similarMatches",
+    title: "비슷한 매치",
+    query: "similarPage",
+    emptyMessage:
+      "아쉽게도 비슷한 조건의 매치가 없어요\n조건을 넓혀 더 많은 매치를 확인해보세요?",
+  },
 ] as const;
 
 function toResultCard(
@@ -87,6 +99,7 @@ function toResultCard(
 
 function ResultSection({
   title,
+  emptyMessage,
   summary,
   initialCards,
   firstPage,
@@ -94,6 +107,7 @@ function ResultSection({
   request,
 }: {
   title: string;
+  emptyMessage: string;
   summary?: string[];
   initialCards: ResultCard[];
   firstPage?: RecommendedMatchesPage;
@@ -170,9 +184,11 @@ function ResultSection({
           ))}
         </ul>
       ) : (
-        <p className="typography-label-r-medium mt-5 text-(color:--fg-neutral-tertiary)">
-          {title}가 없어요.
-        </p>
+        <div className="mt-(--spacing-gap-large) grid min-h-[200px] place-items-center">
+          <p className="typography-body-regular m-0 w-full max-w-[280px] text-center break-keep whitespace-pre-line text-(color:--fg-neutral-tertiary)">
+            {emptyMessage}
+          </p>
+        </div>
       )}
       {error && (
         <p role="alert" className="typography-label-r-medium mt-4">
@@ -182,13 +198,14 @@ function ResultSection({
       {page?.hasNext && (
         <ActionButton
           variant="tertiary"
-          size="S"
-          className="mt-4"
+          size="M"
+          fullWidth
+          className="mt-(--spacing-gap-small)"
           disabled={loading}
           aria-busy={loading}
           onClick={() => void loadMore()}
         >
-          {loading ? "불러오는 중" : error ? "다시 시도" : "더 보기"}
+          {loading ? "불러오는 중" : error ? "다시 시도" : "더보기"}
         </ActionButton>
       )}
     </section>
@@ -231,7 +248,9 @@ function ResultsLayout({
         />
       }
     >
-      <div className="grid gap-12 pt-[23px] pb-6">{children}</div>
+      <div className="grid gap-(--spacing-gap-extra-large) pt-(--spacing-padding-extra-large) pb-6">
+        {children}
+      </div>
     </PageLayout>
   );
 }
@@ -359,10 +378,11 @@ function SavedResultsPage({ requestId }: { requestId: number }) {
           {deleteError}
         </p>
       )}
-      {sectionLabels.map(({ key, title, query }, index) => (
+      {sectionLabels.map(({ key, title, query, emptyMessage }, index) => (
         <ResultSection
           key={key}
           title={title}
+          emptyMessage={emptyMessage}
           summary={index === 0 ? formatRequestSummary(request) : undefined}
           firstPage={matches[key]}
           initialCards={matches[key].items.map((match) =>
@@ -403,6 +423,7 @@ export default function MatchRequestResultsPage() {
         <ResultSection
           key={title}
           title={title}
+          emptyMessage={sectionLabels[index].emptyMessage}
           summary={index === 0 ? formatRequestSummary(draft) : undefined}
           initialCards={matches}
         />

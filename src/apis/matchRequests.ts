@@ -106,6 +106,7 @@ export async function getMatchRequestResults(
   const query = new URLSearchParams({
     exactPage: String(exactPage),
     similarPage: String(similarPage),
+    size: "6",
   });
   const result = await requestWithAuth<MatchRequestResults>(
     `/api/v1/match-requests/${requestId}/results?${query}`,
