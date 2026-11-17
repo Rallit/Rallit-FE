@@ -6,8 +6,8 @@ import {
   MATCH_REQUEST_COMPLETE_PATH,
   MATCH_REQUEST_RESULTS_PATH,
   MATCH_REQUEST_PATH,
+  SAVED_MATCH_REQUEST_RESULTS_PATH,
 } from "@/features/match-request/form";
-import { getStoredMatchRequests } from "@/features/match-request/storage.web";
 import { useAuthContext } from "@/hooks/useAuthContext";
 import AuthCompletePage from "@/pages/AuthCompletePage";
 import HomePage from "@/pages/HomePage";
@@ -108,17 +108,12 @@ export default function App() {
           <Route
             path="/"
             element={
-              <HomePage
-                requests={
-                  authState.status === "authenticated"
-                    ? getStoredMatchRequests(authState.user.id)
-                    : undefined
-                }
-                onOpenRequest={(request) =>
-                  void navigate(MATCH_REQUEST_RESULTS_PATH, { state: request })
-                }
-                onRequestMatch={() => void navigate(MATCH_REQUEST_PATH)}
-              />
+              authState.status === "authenticated" && (
+                <HomePage
+                  userId={authState.user.id}
+                  onRequestMatch={() => void navigate(MATCH_REQUEST_PATH)}
+                />
+              )
             }
           />
           <Route path="/matches/:matchId" element={<MatchDetailPage />} />
@@ -129,6 +124,10 @@ export default function App() {
           />
           <Route
             path={MATCH_REQUEST_RESULTS_PATH}
+            element={<MatchRequestResultsPage />}
+          />
+          <Route
+            path={SAVED_MATCH_REQUEST_RESULTS_PATH}
             element={<MatchRequestResultsPage />}
           />
         </Route>

@@ -1,6 +1,8 @@
 import type { MatchDetail } from "@/apis/matches.types";
 
 export function createMockMatchDetail(matchId: number): MatchDetail {
+  const resultFixture =
+    (matchId >= 101 && matchId <= 108) || (matchId >= 201 && matchId <= 207);
   return {
     matchId,
     matchStatus: "RECRUITING",
@@ -21,7 +23,9 @@ export function createMockMatchDetail(matchId: number): MatchDetail {
     preferredAgeGroups: [],
     court: {
       courtId: 1,
-      name: "반포종합운동장 테니스장",
+      name: resultFixture
+        ? `테스트 코트 ${matchId}`
+        : "반포종합운동장 테니스장",
       address: "서울시 동대문구 어쩌구 주소",
       courtNumber: "1",
       latitude: 37.5,

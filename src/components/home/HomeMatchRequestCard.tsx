@@ -1,11 +1,13 @@
 import { Badge } from "@/components/Badge";
 import { Divider } from "@/components/Divider";
-import type { MatchRequest } from "@/features/match-request/form";
-import { formatRequestSummary } from "@/features/match-request/summary";
+import {
+  formatRequestSummary,
+  type MatchRequestSummary,
+} from "@/features/match-request/summary";
 
 type HomeMatchRequestCardProps = {
-  request: MatchRequest;
-  hasNewMatches: boolean;
+  request: MatchRequestSummary;
+  hasNewMatches?: boolean;
   onClick: () => void;
 };
 
@@ -28,7 +30,6 @@ export function HomeMatchRequestCard({
   onClick,
 }: HomeMatchRequestCardProps) {
   const requirements = formatRequestSummary(request);
-
   return (
     <button
       type="button"
