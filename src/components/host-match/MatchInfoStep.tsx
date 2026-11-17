@@ -4,7 +4,12 @@ import { Checkbox } from "@/components/Checkbox";
 import { NumberStepper } from "@/components/NumberStepper";
 import { RangeSlider } from "@/components/RangeSlider";
 import { SelectionChip } from "@/components/SelectionChip";
-import type { MatchInfoDraft } from "@/features/host-match/form";
+import { TextInputField } from "@/components/TextInputField";
+import {
+  formatFee,
+  toFeeDigits,
+  type MatchInfoDraft,
+} from "@/features/host-match/form";
 import {
   MAX_NTRP,
   MIN_NTRP,
@@ -35,6 +40,7 @@ export function MatchInfoStep({
 }: MatchInfoStepProps) {
   const labelId = useId();
   const ageGroupLabelId = useId();
+  const feeInputId = useId();
   const maleDisabled = value.sameGenderOnly && hostGender !== "MALE";
   const femaleDisabled = value.sameGenderOnly && hostGender !== "FEMALE";
 
@@ -167,6 +173,23 @@ export function MatchInfoStep({
           상관없음
         </label>
       </section>
+      <div className="grid gap-(--spacing-gap-medium)">
+        <label
+          htmlFor={feeInputId}
+          className="typography-label-r-medium text-(color:--fg-neutral-secondary)"
+        >
+          참가비
+        </label>
+        <TextInputField
+          id={feeInputId}
+          inputMode="numeric"
+          placeholder="참가비를 입력해주세요"
+          value={formatFee(value.fee)}
+          onChange={(event) =>
+            onChange({ ...value, fee: toFeeDigits(event.currentTarget.value) })
+          }
+        />
+      </div>
     </div>
   );
 }

@@ -11,6 +11,7 @@ export type MatchInfoDraft = {
   ntrp: readonly [minimum: number, maximum: number];
   preferredAgeGroups: OnboardingProfile["ageGroup"][];
   anyAgeGroup: boolean;
+  fee: string;
 };
 
 // 04-A 코트 등록 입력값. 코트 API 확정 전까지 courtId 형식은 임시입니다.
@@ -50,7 +51,7 @@ export function toFeeDigits(input: string) {
 }
 
 export function formatFee(fee: string) {
-  return fee ? Number(fee).toLocaleString("ko-KR") : "";
+  return fee ? BigInt(fee).toLocaleString("ko-KR") : "";
 }
 
 // 코트 목록 API 확정 전 임시 형태입니다.

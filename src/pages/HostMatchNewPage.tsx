@@ -40,6 +40,7 @@ export default function HostMatchNewPage() {
     ntrp: [1, 2],
     preferredAgeGroups: [],
     anyAgeGroup: true,
+    fee: "",
   });
   const [court, setCourt] = useState<CourtDraft>(initialCourtDraft);
   const [evidence, setEvidence] = useState<{ file: File; url: string } | null>(
