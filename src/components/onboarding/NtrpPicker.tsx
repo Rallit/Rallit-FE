@@ -274,7 +274,7 @@ export function NtrpPicker({ value, onChange }: NtrpPickerProps) {
           if (!event.currentTarget.hasPointerCapture(event.pointerId))
             resetSwipe(event);
         }}
-        className="-mx-(--spacing-padding-large) mt-(--spacing-gap-medium) grid touch-pan-y touch-pinch-zoom grid-cols-[56px_minmax(0,1fr)_56px] items-center gap-x-[6px] overflow-x-clip py-(--spacing-padding-small) select-none"
+        className="-mx-(--spacing-padding-large) mt-(--spacing-gap-medium) grid touch-pan-y grid-cols-[56px_minmax(0,1fr)_56px] items-center gap-x-[6px] overflow-x-clip py-(--spacing-padding-small) select-none"
       >
         <div className="grid size-14 place-items-center">
           <IconButton
