@@ -1,8 +1,5 @@
 import type { ActivityArea } from "@/apis/locations";
-import type {
-  ExperiencePeriod,
-  OnboardingRequest,
-} from "@/apis/onboarding.types";
+import type { OnboardingRequest } from "@/apis/onboarding.types";
 
 export type BasicProfileDraft = {
   nickname: string;
@@ -31,7 +28,7 @@ export type OnboardingFieldError = { step: number; message: string };
 
 const fieldsByStep = [
   ["nickname", "gender", "ageGroup"],
-  ["experiencePeriod", "ntrp"],
+  ["tennisStartedOn", "ntrp"],
   [
     "preferredMatchTypes",
     "sameGenderOnly",
@@ -53,18 +50,8 @@ export function isMatchPreferencesReady(preferences: MatchPreferencesDraft) {
   );
 }
 
-function getExperiencePeriod(start: TennisStartMonth): ExperiencePeriod {
-  const today = new Date();
-  const months =
-    (today.getFullYear() - start.year) * 12 +
-    today.getMonth() +
-    1 -
-    start.month;
-
-  if (months < 6) return "UNDER_SIX_MONTHS";
-  if (months < 12) return "SIX_MONTHS_TO_ONE_YEAR";
-  if (months < 36) return "ONE_TO_THREE_YEARS";
-  return "THREE_YEARS_OR_MORE";
+function formatTennisStartedOn({ year, month }: TennisStartMonth) {
+  return `${year}-${String(month).padStart(2, "0")}`;
 }
 
 export function buildOnboardingRequest(
@@ -84,7 +71,7 @@ export function buildOnboardingRequest(
     nickname,
     gender,
     ageGroup,
-    experiencePeriod: getExperiencePeriod(tennisStart),
+    tennisStartedOn: formatTennisStartedOn(tennisStart),
     ntrp,
     sameGenderOnly: preferences.sameGenderOnly,
     preferredMatchTypes: preferences.preferredMatchTypes,
