@@ -1,11 +1,16 @@
 import { useId, useState } from "react";
+import { BottomCTA } from "@/components/BottomCTA";
+import { BottomSheet } from "@/components/BottomSheet";
+import { Calendar } from "@/components/Calendar";
 import { Select } from "@/components/Select";
 import { TextInputField } from "@/components/TextInputField";
 import {
   formatFee,
+  getReservableDateRange,
   toFeeDigits,
   type CourtDraft,
 } from "@/features/host-match/form";
+import { formatMatchDate } from "@/features/match-request/summary";
 import { COURTS_MOCK } from "@/mocks/courts";
 import { CourtSearchSheet } from "./CourtSearchSheet";
 
@@ -20,6 +25,10 @@ const labelStyle =
 export function CourtStep({ value, onChange }: CourtStepProps) {
   const courtSheetId = useId();
   const [courtSheetOpen, setCourtSheetOpen] = useState(false);
+  const dateSheetId = useId();
+  const [dateSheetOpen, setDateSheetOpen] = useState(false);
+  const [dateDraft, setDateDraft] = useState<string | null>(null);
+  const dateRange = getReservableDateRange();
 
   return (
     <div className="mt-(--spacing-gap-extra-large) grid gap-(--spacing-gap-extra-large) pb-(--spacing-padding-large)">
@@ -58,6 +67,48 @@ export function CourtStep({ value, onChange }: CourtStepProps) {
               onChange({ ...value, courtNumber: event.currentTarget.value })
             }
           />
+        </div>
+
+        <div className="grid min-w-0 flex-1 gap-(--spacing-gap-medium)">
+          <p className={`m-0 ${labelStyle}`}>날짜</p>
+          <Select
+            aria-label="예약 일자 선택"
+            aria-haspopup="dialog"
+            aria-controls={dateSheetId}
+            aria-expanded={dateSheetOpen}
+            placeholder="예약일자"
+            value={value.date ? formatMatchDate(value.date) : undefined}
+            onClick={() => {
+              setDateDraft(value.date);
+              setDateSheetOpen(true);
+            }}
+          />
+          <BottomSheet
+            id={dateSheetId}
+            title="예약 일자"
+            open={dateSheetOpen}
+            onDismiss={() => setDateSheetOpen(false)}
+            backdrop="overlay"
+          >
+            {(dismiss) => (
+              <>
+                <Calendar
+                  value={dateDraft}
+                  onChange={setDateDraft}
+                  min={dateRange.min}
+                  max={dateRange.max}
+                />
+                <BottomCTA
+                  primaryAction={{
+                    children: "확인",
+                    disabled: dateDraft === null,
+                    onClick: () =>
+                      dismiss(() => onChange({ ...value, date: dateDraft })),
+                  }}
+                />
+              </>
+            )}
+          </BottomSheet>
         </div>
       </div>
 

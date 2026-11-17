@@ -53,3 +53,19 @@ export function searchCourts(courts: readonly CourtOption[], keyword: string) {
   const query = keyword.trim();
   return query ? courts.filter(({ name }) => name.includes(query)) : courts;
 }
+
+export const RESERVABLE_DAYS = 14;
+
+function toDateKey(date: Date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+}
+
+// 오늘부터 2주(오늘 + 14일)까지 예약 일자로 선택할 수 있습니다.
+export function getReservableDateRange(today = new Date()) {
+  const last = new Date(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate() + RESERVABLE_DAYS,
+  );
+  return { min: toDateKey(today), max: toDateKey(last) };
+}
