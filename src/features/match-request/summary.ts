@@ -1,4 +1,4 @@
-import { MAX_NTRP, type MatchRequest } from "./form";
+import { MAX_NTRP, matchFormats, type MatchRequest } from "./form";
 
 const weekdayFormat = new Intl.DateTimeFormat("ko-KR", { weekday: "short" });
 
@@ -28,5 +28,18 @@ export function formatRequestSummary(request: MatchRequest) {
       (otherDates.length ? ` 외 ${otherDates.length}` : ""),
     formatMatchTimeRange(request),
     firstArea.label + (otherAreas.length ? ` 외 ${otherAreas.length}` : ""),
+  ];
+}
+
+export function formatRequestPreferences(request: MatchRequest) {
+  const [firstArea, ...otherAreas] = request.activityAreas;
+  const [firstFormat, ...otherFormats] = request.matchFormats;
+  const formatLabel =
+    matchFormats.find(({ value }) => value === firstFormat)?.label ?? "";
+
+  return [
+    formatMatchTimeRange(request),
+    firstArea.label + (otherAreas.length ? ` 외 ${otherAreas.length}` : ""),
+    formatLabel + (otherFormats.length ? ` 외 ${otherFormats.length}` : ""),
   ];
 }
