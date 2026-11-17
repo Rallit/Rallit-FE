@@ -16,6 +16,7 @@ import {
 import { RangeSlider, type RangeSliderValue } from "@/components/RangeSlider";
 import { SelectionChip } from "@/components/SelectionChip";
 import {
+  LAST_REQUEST_HOUR,
   MATCH_REQUEST_COMPLETE_PATH,
   MAX_NTRP,
   MAX_REQUEST_AREAS,
@@ -35,7 +36,8 @@ import { useAuthContext } from "@/hooks/useAuthContext";
 import { authMode } from "@/platform/authConfig.web";
 
 const DATE_WINDOW_DAYS = 14;
-const SEOUL_OFFSET_MS = 9 * 60 * 60 * 1000;
+const HOUR_MS = 60 * 60 * 1000;
+const SEOUL_OFFSET_MS = 9 * HOUR_MS;
 const PAST_START_MESSAGE =
   "오늘이 포함된 매칭 요청은 현재 시각보다 늦은 시작 시각을 선택해 주세요.";
 
@@ -56,6 +58,10 @@ const dateFormat = new Intl.DateTimeFormat("ko-KR", {
 });
 const fieldLabel =
   "typography-label-r-medium m-0 p-0 text-(color:--fg-neutral-secondary)";
+
+function getSeoulHour(now: Date) {
+  return new Date(now.getTime() + SEOUL_OFFSET_MS).getUTCHours();
+}
 
 function getCalendar(now: Date) {
   const today = new Date(now.getTime() + SEOUL_OFFSET_MS);
@@ -100,6 +106,7 @@ export default function MatchRequestPage() {
   const { authState } = useAuthContext();
   const inFlight = useRef<AbortController | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [seoulHour, setSeoulHour] = useState(() => getSeoulHour(new Date()));
   const [submitError, setSubmitError] = useState<string>();
   const [{ days, monthLabel }, setCalendar] = useState(() =>
     getCalendar(new Date()),
@@ -138,15 +145,10 @@ export default function MatchRequestPage() {
       window.clearTimeout(timer);
       const now = new Date();
       refreshCalendar(now);
-      const seoulNow = new Date(now.getTime() + SEOUL_OFFSET_MS);
-      const nextMidnight = Date.UTC(
-        seoulNow.getUTCFullYear(),
-        seoulNow.getUTCMonth(),
-        seoulNow.getUTCDate() + 1,
-      );
+      setSeoulHour(getSeoulHour(now));
       timer = window.setTimeout(
         syncCalendar,
-        nextMidnight - seoulNow.getTime(),
+        HOUR_MS - (now.getTime() % HOUR_MS),
       );
     }
 
@@ -166,9 +168,23 @@ export default function MatchRequestPage() {
     };
   }, [refreshCalendar]);
 
+  const todayOnly =
+    selectedDates.length === 1 && selectedDates[0] === days[0].id;
+  const minStartHour = todayOnly ? seoulHour + 1 : 0;
+  const hasTimeLeft = minStartHour < LAST_REQUEST_HOUR;
+  const availableTimeRange = {
+    startHour:
+      timeRange.startHour !== null && timeRange.startHour >= minStartHour
+        ? timeRange.startHour
+        : null,
+    endHour:
+      timeRange.endHour !== null && timeRange.endHour > minStartHour
+        ? timeRange.endHour
+        : null,
+  };
   const request = getMatchRequest({
     dates: selectedDates,
-    ...timeRange,
+    ...availableTimeRange,
     activityAreas,
     matchFormats: selectedFormats,
     sameGenderOnly,
@@ -190,8 +206,11 @@ export default function MatchRequestPage() {
     }
 
     const [today] = availableDates;
-    const seoulHour = new Date(now.getTime() + SEOUL_OFFSET_MS).getUTCHours();
-    if (request.dates.includes(today) && request.startHour <= seoulHour) {
+    if (
+      request.dates.includes(today) &&
+      request.startHour <= getSeoulHour(now)
+    ) {
+      setSeoulHour(getSeoulHour(now));
       setSubmitError(PAST_START_MESSAGE);
       return;
     }
@@ -279,7 +298,18 @@ export default function MatchRequestPage() {
                 setSelectedDates((selected) => toggleSelection(selected, date))
               }
             />
-            <MatchRequestTimePicker value={timeRange} onChange={setTimeRange} />
+            <div className="grid gap-(--spacing-gap-small)">
+              <MatchRequestTimePicker
+                value={availableTimeRange}
+                onChange={setTimeRange}
+                minStartHour={minStartHour}
+              />
+              {!hasTimeLeft && (
+                <p className="typography-label-r-medium m-0 text-(color:--fg-neutral-tertiary)">
+                  오늘 선택할 수 있는 시간이 없어요. 다른 날짜를 선택해 주세요.
+                </p>
+              )}
+            </div>
           </div>
         </fieldset>
 
