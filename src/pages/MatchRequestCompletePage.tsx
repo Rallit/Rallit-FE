@@ -1,8 +1,10 @@
 import { Navigate, useLocation, useNavigate } from "react-router";
 import closeIcon from "../../assets/icons/close.svg";
+import alertIcon from "../../assets/icons/toast-alert-round.svg";
 import { ActionButton } from "@/components/ActionButton";
 import completionImage from "../../assets/images/match-request-placeholder.png";
 import { IconButton } from "@/components/IconButton";
+import { Toast } from "@/components/Toast";
 import { PageLayout } from "@/components/layout/PageLayout";
 import {
   MATCH_REQUEST_PATH,
@@ -51,6 +53,14 @@ export default function MatchRequestCompletePage() {
           />
         </header>
       }
+      footer={
+        <Toast
+          message="알림이 꺼져있어요"
+          icon={alertIcon}
+          action={{ label: "설정" }}
+          className="flex justify-center px-(--unit-16) pt-4 pb-4"
+        />
+      }
     >
       <div className="pt-[54px] pb-(--spacing-padding-large)">
         <img
@@ -81,23 +91,20 @@ export default function MatchRequestCompletePage() {
             </div>
           ))}
         </dl>
-        {(saved === null || saved.hasResults) && (
-          <ActionButton
-            size="M"
-            fullWidth
-            className="mt-5"
-            onClick={() => {
-              if (saved)
-                void navigate(
-                  savedMatchRequestResultsPath(saved.request.requestId),
-                );
-              else
-                void navigate(MATCH_REQUEST_RESULTS_PATH, { state: request });
-            }}
-          >
-            열려있는 매치 확인하기
-          </ActionButton>
-        )}
+        <ActionButton
+          size="M"
+          fullWidth
+          className="mt-5"
+          onClick={() => {
+            if (saved)
+              void navigate(
+                savedMatchRequestResultsPath(saved.request.requestId),
+              );
+            else void navigate(MATCH_REQUEST_RESULTS_PATH, { state: request });
+          }}
+        >
+          열려있는 매치 확인하기
+        </ActionButton>
       </div>
     </PageLayout>
   );

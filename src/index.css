@@ -25,6 +25,15 @@ body {
   margin: 0;
 }
 
+@media (any-pointer: coarse) {
+  :root,
+  .page-layout,
+  .overflow-x-auto,
+  .overflow-y-auto {
+    touch-action: pan-x pan-y;
+  }
+}
+
 :root:has(.page-layout) {
   overscroll-behavior-y: none;
 }

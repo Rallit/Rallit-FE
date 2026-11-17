@@ -1,14 +1,10 @@
 import { useEffect, useState } from "react";
 import { getRecommendedMatches } from "@/apis/matches";
 import { ActionButton } from "@/components/ActionButton";
-import { BottomNav } from "@/components/BottomNav";
-import { FAB } from "@/components/FAB";
-import { Header } from "@/components/Header";
 import { TextButton } from "@/components/TextButton";
 import { HomeMatchRequestList } from "@/components/home/HomeMatchRequestList";
 import { RecommendedMatchCarousel } from "@/components/home/RecommendedMatchCarousel";
 import { RECOMMENDED_MATCHES_MOCK } from "@/components/home/recommendedMatches.mock";
-import { PageLayout } from "@/components/layout/PageLayout";
 import {
   toRecommendedMatch,
   type RecommendedMatch,
@@ -17,7 +13,6 @@ import { authMode } from "@/platform/authConfig.web";
 
 const EMPTY_MESSAGE =
   "조건에 맞는 매치가 없어요\n유사한 매치가 나오면 알려드릴게요";
-const NAV_HREFS = { home: "/", schedule: "/schedule", my: "/my" } as const;
 
 type HomePageProps = {
   matches?: readonly RecommendedMatch[];
@@ -69,80 +64,52 @@ export default function HomePage({
     </div>
   );
 
-  const requestPrompt = (
-    <div className="flex items-center justify-between gap-(--spacing-gap-medium) rounded-(--radius-large) bg-(--bg-neutral-default) p-(--spacing-padding-medium)">
-      <p className="typography-body-bold m-0 text-(color:--fg-neutral-default)">
-        내 일정에 딱 맞는 매치
-      </p>
-      <ActionButton
-        variant="tertiary"
-        size="S"
-        onClick={onRequestMatch}
-        className="shrink-0 whitespace-nowrap"
-      >
-        요청하기
-      </ActionButton>
-    </div>
-  );
-
   return (
-    <PageLayout
-      background="weak"
-      header={<Header variant="logo" onNotifications={() => {}} />}
-      footer={
-        <div className="relative">
-          <FAB
-            label="매치 열기"
-            collapsed
-            className="absolute right-4 bottom-[calc(100%+16px)]"
-          />
-          <BottomNav activeTab="home" hrefs={NAV_HREFS} />
-        </div>
-      }
-    >
-      <div className="flex flex-col gap-(--spacing-gap-medium) pt-4 pb-6">
-        {!showEmpty ? (
-          <div className="flex flex-col gap-4">
-            {heading}
-            {matches === undefined ? (
-              <p
-                role="status"
-                className="typography-body-regular m-0 py-6 text-center text-(color:--fg-neutral-tertiary)"
-              >
-                추천 매치를 불러오는 중이에요.
-              </p>
-            ) : matches === null ? (
-              <div className="flex flex-col items-center gap-(--spacing-gap-small) py-6">
-                <p
-                  role="alert"
-                  className="typography-body-regular m-0 text-center text-(color:--fg-neutral-tertiary)"
-                >
-                  추천 매치를 불러오지 못했어요.
-                </p>
-                <ActionButton
-                  variant="tertiary"
-                  size="S"
-                  onClick={() => setAttempt((count) => count + 1)}
-                >
-                  다시 시도
-                </ActionButton>
-              </div>
-            ) : (
-              <RecommendedMatchCarousel matches={matches} />
-            )}
-            <div className="mt-(--spacing-gap-small)">{requestPrompt}</div>
-          </div>
-        ) : (
-          <div className="flex flex-col">
-            {heading}
-            <p className="typography-body-regular m-0 mt-5 flex h-[236px] items-center justify-center text-center whitespace-pre-line text-(color:--fg-neutral-tertiary)">
-              {EMPTY_MESSAGE}
+    <div className="flex flex-col gap-(--spacing-gap-medium) pt-4 pb-6">
+      {!showEmpty ? (
+        <div className="flex flex-col gap-4">
+          {heading}
+          {matches === undefined ? (
+            <p
+              role="status"
+              className="typography-body-regular m-0 py-6 text-center text-(color:--fg-neutral-tertiary)"
+            >
+              추천 매치를 불러오는 중이에요.
             </p>
-            <div className="mt-4">{requestPrompt}</div>
-          </div>
-        )}
-        <HomeMatchRequestList key={userId} userId={userId} />
-      </div>
-    </PageLayout>
+          ) : matches === null ? (
+            <div className="flex flex-col items-center gap-(--spacing-gap-small) py-6">
+              <p
+                role="alert"
+                className="typography-body-regular m-0 text-center text-(color:--fg-neutral-tertiary)"
+              >
+                추천 매치를 불러오지 못했어요.
+              </p>
+              <ActionButton
+                variant="tertiary"
+                size="S"
+                onClick={() => setAttempt((count) => count + 1)}
+              >
+                다시 시도
+              </ActionButton>
+            </div>
+          ) : (
+            <RecommendedMatchCarousel matches={matches} />
+          )}
+        </div>
+      ) : (
+        <div className="flex flex-col">
+          {heading}
+          <p className="typography-body-regular m-0 mt-5 flex h-[236px] items-center justify-center text-center whitespace-pre-line text-(color:--fg-neutral-tertiary)">
+            {EMPTY_MESSAGE}
+          </p>
+        </div>
+      )}
+      <HomeMatchRequestList
+        key={userId}
+        userId={userId}
+        onRequestMatch={onRequestMatch}
+        promptSpacing={showEmpty ? "mt-1" : "mt-3"}
+      />
+    </div>
   );
 }

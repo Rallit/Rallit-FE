@@ -67,7 +67,7 @@ export function useOnboardingNickname(
     error:
       (touched ? formatError : undefined) ??
       (duplicate
-        ? "이미 있는 닉네임이에요."
+        ? "이미 있는 닉네임이에요"
         : status === "error"
           ? "닉네임을 확인하지 못했어요. 다시 시도해 주세요."
           : undefined),
