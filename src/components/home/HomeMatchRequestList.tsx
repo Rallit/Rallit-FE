@@ -36,7 +36,7 @@ export function HomeMatchRequestList({
   const [attempt, setAttempt] = useState(0);
   const [result, setResult] = useState<{
     attempt: number;
-    count: number;
+    count: number | undefined;
     cards?: RequestCard[] | null;
   }>();
   const mock = authMode === "mock";
@@ -67,7 +67,7 @@ export function HomeMatchRequestList({
           if (!controller.signal.aborted)
             setResult((previous) => ({
               attempt,
-              count: previous?.count ?? 0,
+              count: previous?.count,
               cards: null,
             }));
         },
@@ -87,7 +87,7 @@ export function HomeMatchRequestList({
             void navigate(MATCH_REQUEST_RESULTS_PATH, { state: request }),
         }))
     : current?.cards;
-  const requestCount = mock ? (cards?.length ?? 0) : (result?.count ?? 0);
+  const requestCount = mock ? cards?.length : result?.count;
 
   return (
     <>
@@ -101,7 +101,10 @@ export function HomeMatchRequestList({
           variant="tertiary"
           size="S"
           onClick={onRequestMatch}
-          disabled={requestCount >= MAX_ACTIVE_MATCH_REQUESTS}
+          disabled={
+            requestCount === undefined ||
+            requestCount >= MAX_ACTIVE_MATCH_REQUESTS
+          }
           className="shrink-0 whitespace-nowrap"
         >
           요청하기
@@ -137,11 +140,7 @@ export function HomeMatchRequestList({
         >
           {cards.map(({ id, request, onClick }) => (
             <li key={id}>
-              <HomeMatchRequestCard
-                request={request}
-                hasNewMatches={mock}
-                onClick={onClick}
-              />
+              <HomeMatchRequestCard request={request} onClick={onClick} />
             </li>
           ))}
         </ul>
