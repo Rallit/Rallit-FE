@@ -39,3 +39,17 @@ export function toFeeDigits(input: string) {
 export function formatFee(fee: string) {
   return fee ? Number(fee).toLocaleString("ko-KR") : "";
 }
+
+// 코트 목록 API 확정 전 임시 형태입니다.
+export type CourtOption = {
+  id: number;
+  name: string;
+  address: string;
+  imageUrl: string | null;
+};
+
+// 초성 검색은 API(또는 처리 위치) 확정 후 반영합니다.
+export function searchCourts(courts: readonly CourtOption[], keyword: string) {
+  const query = keyword.trim();
+  return query ? courts.filter(({ name }) => name.includes(query)) : courts;
+}
