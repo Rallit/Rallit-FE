@@ -13,6 +13,7 @@ import {
 import { formatMatchDate } from "@/features/match-request/summary";
 import { COURTS_MOCK } from "@/mocks/courts";
 import { CourtSearchSheet } from "./CourtSearchSheet";
+import { MatchRequestTimePicker } from "@/components/match-request/MatchRequestTimePicker";
 
 type CourtStepProps = {
   value: CourtDraft;
@@ -110,6 +111,14 @@ export function CourtStep({ value, onChange }: CourtStepProps) {
             )}
           </BottomSheet>
         </div>
+      </div>
+
+      <div className="grid gap-(--spacing-gap-medium)">
+        <p className={`m-0 ${labelStyle}`}>이용 시간</p>
+        <MatchRequestTimePicker
+          value={{ startHour: value.startHour, endHour: value.endHour }}
+          onChange={(time) => onChange({ ...value, ...time })}
+        />
       </div>
 
       <div className="grid gap-(--spacing-gap-medium)">
