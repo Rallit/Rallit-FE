@@ -3,6 +3,10 @@ import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { ServiceIntro } from "@/components/intro/ServiceIntro";
 import { PageLayout } from "@/components/layout/PageLayout";
 import {
+  MainTabPlaceholder,
+  MainTabsLayout,
+} from "@/components/layout/MainTabsLayout";
+import {
   MATCH_REQUEST_COMPLETE_PATH,
   MATCH_REQUEST_RESULTS_PATH,
   MATCH_REQUEST_PATH,
@@ -105,17 +109,24 @@ export default function App() {
         </Route>
 
         <Route element={<ProtectedRoute onboarding="completed" />}>
-          <Route
-            path="/"
-            element={
-              authState.status === "authenticated" && (
-                <HomePage
-                  userId={authState.user.id}
-                  onRequestMatch={() => void navigate(MATCH_REQUEST_PATH)}
-                />
-              )
-            }
-          />
+          <Route element={<MainTabsLayout />}>
+            <Route
+              index
+              element={
+                authState.status === "authenticated" && (
+                  <HomePage
+                    userId={authState.user.id}
+                    onRequestMatch={() => void navigate(MATCH_REQUEST_PATH)}
+                  />
+                )
+              }
+            />
+            <Route
+              path="schedule"
+              element={<MainTabPlaceholder title="매치 현황" />}
+            />
+            <Route path="my" element={<MainTabPlaceholder title="마이" />} />
+          </Route>
           <Route path="/matches/:matchId" element={<MatchDetailPage />} />
           <Route path={MATCH_REQUEST_PATH} element={<MatchRequestPage />} />
           <Route

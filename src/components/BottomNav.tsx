@@ -7,36 +7,29 @@ import tennisIcon from "../../assets/icons/tennis.svg";
 import { BottomNavItem } from "./BottomNavItem";
 
 const items = [
-  { id: "home", label: "홈", icon: homeIcon, activeIcon: homeActiveIcon },
+  { href: "/", label: "홈", icon: homeIcon, activeIcon: homeActiveIcon },
   {
-    id: "schedule",
+    href: "/schedule",
     label: "매치 현황",
     icon: tennisIcon,
     activeIcon: tennisActiveIcon,
   },
-  { id: "my", label: "마이", icon: myIcon, activeIcon: myActiveIcon },
+  { href: "/my", label: "마이", icon: myIcon, activeIcon: myActiveIcon },
 ] as const;
 
-type BottomNavTab = (typeof items)[number]["id"];
-
-type BottomNavProps = {
-  activeTab: BottomNavTab;
-  hrefs: Record<BottomNavTab, string>;
-};
-
-export function BottomNav({ activeTab, hrefs }: BottomNavProps) {
+export function BottomNav() {
   return (
     <nav
       aria-label="하단 메뉴"
       className="box-border flex h-[69px] w-full justify-between border-t border-(--border-neutral-weak) bg-(--bg-neutral-default) px-(--spacing-padding-extra-large)"
     >
-      {items.map(({ id, label, icon, activeIcon }) => (
+      {items.map(({ href, label, icon, activeIcon }) => (
         <BottomNavItem
-          key={id}
-          href={hrefs[id]}
+          key={href}
+          href={href}
           label={label}
-          icon={id === activeTab ? activeIcon : icon}
-          active={id === activeTab}
+          icon={icon}
+          activeIcon={activeIcon}
         />
       ))}
     </nav>
