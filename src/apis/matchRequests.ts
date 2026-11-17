@@ -67,6 +67,8 @@ export async function getSavedMatchRequests(
   return requests;
 }
 
+export const MATCH_REQUEST_RESULT_PAGE_SIZE = 6;
+
 export type MatchRequestResults = {
   hasResults: boolean;
   exactMatches: RecommendedMatchesPage;
@@ -106,7 +108,7 @@ export async function getMatchRequestResults(
   const query = new URLSearchParams({
     exactPage: String(exactPage),
     similarPage: String(similarPage),
-    size: "6",
+    size: String(MATCH_REQUEST_RESULT_PAGE_SIZE),
   });
   const result = await requestWithAuth<MatchRequestResults>(
     `/api/v1/match-requests/${requestId}/results?${query}`,

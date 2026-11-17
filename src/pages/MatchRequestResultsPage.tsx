@@ -378,26 +378,46 @@ function SavedResultsPage({ requestId }: { requestId: number }) {
           {deleteError}
         </p>
       )}
-      {sectionLabels.map(({ key, title, query, emptyMessage }, index) => (
-        <ResultSection
-          key={key}
-          title={title}
-          emptyMessage={emptyMessage}
-          summary={index === 0 ? formatRequestSummary(request) : undefined}
-          firstPage={matches[key]}
-          initialCards={matches[key].items.map((match) =>
-            toResultCard(match, request),
-          )}
-          request={request}
-          loadPage={async (page, signal) =>
-            (
-              await getMatchRequestResults(requestId, signal, { [query]: page })
-            )[key]
-          }
-        />
-      ))}
+      <ResultSections
+        request={request}
+        matches={matches}
+        loadPage={(query, page, signal) =>
+          getMatchRequestResults(requestId, signal, { [query]: page })
+        }
+      />
     </ResultsLayout>
   );
+}
+
+function ResultSections({
+  request,
+  matches,
+  loadPage,
+}: {
+  request: MatchRequestSummary;
+  matches: MatchRequestResults;
+  loadPage: (
+    query: "exactPage" | "similarPage",
+    page: number,
+    signal: AbortSignal,
+  ) => Promise<MatchRequestResults>;
+}) {
+  return sectionLabels.map(({ key, title, query, emptyMessage }, index) => (
+    <ResultSection
+      key={key}
+      title={title}
+      emptyMessage={emptyMessage}
+      summary={index === 0 ? formatRequestSummary(request) : undefined}
+      firstPage={matches[key]}
+      initialCards={matches[key].items.map((match) =>
+        toResultCard(match, request),
+      )}
+      request={request}
+      loadPage={async (page, signal) =>
+        (await loadPage(query, page, signal))[key]
+      }
+    />
+  ));
 }
 
 export default function MatchRequestResultsPage() {
@@ -419,15 +439,16 @@ export default function MatchRequestResultsPage() {
 
   return (
     <ResultsLayout>
-      {getMockMatchRequestResults(draft).map(({ title, matches }, index) => (
-        <ResultSection
-          key={title}
-          title={title}
-          emptyMessage={sectionLabels[index].emptyMessage}
-          summary={index === 0 ? formatRequestSummary(draft) : undefined}
-          initialCards={matches}
-        />
-      ))}
+      <ResultSections
+        request={draft}
+        matches={getMockMatchRequestResults(draft)}
+        loadPage={(query, page, signal) => {
+          signal.throwIfAborted();
+          return Promise.resolve(
+            getMockMatchRequestResults(draft, { [query]: page }),
+          );
+        }}
+      />
     </ResultsLayout>
   );
 }

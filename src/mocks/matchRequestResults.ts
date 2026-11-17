@@ -1,66 +1,87 @@
-import requestPlaceholder from "../../assets/images/match-request-placeholder.png";
-import { matchFormats, type MatchRequest } from "@/features/match-request/form";
-import { formatRequestedNtrp } from "@/features/match-request/summary";
-import { formatMatchDate } from "@/features/match-request/summary";
+import type { ActivityArea } from "@/apis/locations";
+import {
+  MATCH_REQUEST_RESULT_PAGE_SIZE,
+  type MatchRequestResults,
+} from "@/apis/matchRequests";
+import type {
+  RecommendedMatchItem,
+  RecommendedMatchesPage,
+} from "@/apis/matches.types";
+import type { MatchRequest } from "@/features/match-request/form";
+import { createMockMatchDetail } from "./matchDetail";
 
-const nearbyDistricts = ["용산구", "서초구", "강남구", "성동구"];
+const nearbyAreas = [
+  { id: "11170", label: "용산구" },
+  { id: "11650", label: "서초구" },
+  { id: "11680", label: "강남구" },
+  { id: "11200", label: "성동구" },
+];
 
-export function getMockMatchRequestResults(request: MatchRequest) {
-  const requestedDistricts = request.activityAreas.map(({ label }) => label);
-  const [district] = requestedDistricts;
-  const similarDistrict =
-    nearbyDistricts.find((name) => !requestedDistricts.includes(name)) ??
-    nearbyDistricts[0];
-  const format = matchFormats.find(
-    ({ value }) => value === request.matchFormats[0],
+function createPage(
+  page: number,
+  area: ActivityArea,
+  firstId: number,
+  count: number,
+): RecommendedMatchesPage {
+  const size = MATCH_REQUEST_RESULT_PAGE_SIZE;
+  const offset = page * size;
+  const items = Array.from(
+    { length: Math.min(size, Math.max(0, count - offset)) },
+    (_, index): RecommendedMatchItem => {
+      const {
+        court,
+        matchId,
+        matchStatus,
+        matchTypes,
+        startsAt,
+        endsAt,
+        participationFee,
+        minNtrp,
+        maxNtrp,
+        currentParticipantCount,
+        capacity,
+      } = createMockMatchDetail(firstId + offset + index);
+      return {
+        match: {
+          matchId,
+          matchStatus,
+          matchTypes,
+          startsAt,
+          endsAt,
+          courtName: court.name,
+          participationFee,
+          minNtrp,
+          maxNtrp,
+          currentParticipantCount,
+          capacity,
+        },
+        areaCode: area.id,
+        areaName: area.label,
+      };
+    },
   );
-  const minimumNtrp = request.ntrp[0];
-  const [firstDate, secondDate = firstDate] = request.dates;
-  const dateLabel = (date: string) =>
-    `${formatMatchDate(date, " ")} ${request.startHour}시`;
-  const card = {
-    dateLabel: dateLabel(firstDate),
-    matchType: format?.label ?? "테니스",
-    skillLevel: `NTRP ${formatRequestedNtrp(minimumNtrp)} 이상`,
-    price: 20000,
-    participantCount: 2,
-    capacity: 4,
-    courtImage: requestPlaceholder,
-    recruitmentLabel: "모집중",
+  return {
+    items,
+    page,
+    size,
+    hasNext: offset + items.length < count,
+    totalElements: count,
   };
+}
 
-  return [
-    {
-      title: "딱 맞는 매치",
-      matches: [
-        {
-          ...card,
-          id: "mock-match-1",
-          courtName: `${district} 테니스장 1코트`,
-          region: district,
-          regionMatches: true,
-        },
-        {
-          ...card,
-          id: "mock-match-2",
-          dateLabel: dateLabel(secondDate),
-          courtName: `${district} 테니스장 2코트`,
-          region: district,
-          regionMatches: true,
-        },
-      ],
-    },
-    {
-      title: "비슷한 매치",
-      matches: [
-        {
-          ...card,
-          id: "mock-match-3",
-          courtName: `${similarDistrict} 테니스장`,
-          region: similarDistrict,
-          regionMatches: false,
-        },
-      ],
-    },
-  ];
+export function getMockMatchRequestResults(
+  request: MatchRequest,
+  { exactPage = 0, similarPage = 0 } = {},
+): MatchRequestResults {
+  const [exactArea] = request.activityAreas;
+  const similarArea =
+    nearbyAreas.find(({ id }) =>
+      request.activityAreas.every((area) => area.id !== id),
+    ) ?? nearbyAreas[0];
+  return {
+    hasResults: true,
+    exactMatches: createPage(exactPage, exactArea, 101, 8),
+    similarMatches: createPage(similarPage, similarArea, 201, 7),
+    relaxedConditions: ["AREA"],
+  };
 }
