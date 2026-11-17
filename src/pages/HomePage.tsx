@@ -69,22 +69,6 @@ export default function HomePage({
     </div>
   );
 
-  const requestPrompt = (
-    <div className="flex items-center justify-between gap-(--spacing-gap-medium) rounded-(--radius-large) bg-(--bg-neutral-default) p-(--spacing-padding-medium)">
-      <p className="typography-body-bold m-0 text-(color:--fg-neutral-default)">
-        내 일정에 딱 맞는 매치
-      </p>
-      <ActionButton
-        variant="tertiary"
-        size="S"
-        onClick={onRequestMatch}
-        className="shrink-0 whitespace-nowrap"
-      >
-        요청하기
-      </ActionButton>
-    </div>
-  );
-
   return (
     <PageLayout
       background="weak"
@@ -130,7 +114,6 @@ export default function HomePage({
             ) : (
               <RecommendedMatchCarousel matches={matches} />
             )}
-            <div className="mt-(--spacing-gap-small)">{requestPrompt}</div>
           </div>
         ) : (
           <div className="flex flex-col">
@@ -138,10 +121,14 @@ export default function HomePage({
             <p className="typography-body-regular m-0 mt-5 flex h-[236px] items-center justify-center text-center whitespace-pre-line text-(color:--fg-neutral-tertiary)">
               {EMPTY_MESSAGE}
             </p>
-            <div className="mt-4">{requestPrompt}</div>
           </div>
         )}
-        <HomeMatchRequestList key={userId} userId={userId} />
+        <HomeMatchRequestList
+          key={userId}
+          userId={userId}
+          onRequestMatch={onRequestMatch}
+          promptSpacing={showEmpty ? "mt-1" : "mt-3"}
+        />
       </div>
     </PageLayout>
   );
