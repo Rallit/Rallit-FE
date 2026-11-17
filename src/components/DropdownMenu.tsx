@@ -36,10 +36,11 @@ export function DropdownMenu({
     if (!open) return;
 
     closingRef.current = false;
-    returnFocusRef.current =
-      document.activeElement instanceof HTMLElement
-        ? document.activeElement
-        : null;
+    const active = document.activeElement;
+    // StrictMode가 effect를 다시 실행해도 메뉴 항목을 복원 대상으로 덮어쓰지 않습니다.
+    if (active instanceof HTMLElement && !menuRef.current?.contains(active)) {
+      returnFocusRef.current = active;
+    }
     menuRef.current
       ?.querySelector<HTMLButtonElement>(MENU_ITEM_SELECTOR)
       ?.focus();
@@ -82,7 +83,7 @@ export function DropdownMenu({
     menuItems[next]?.focus();
   }
 
-  if (!open) return null;
+  if (!open || items.length === 0) return null;
 
   return (
     <>
