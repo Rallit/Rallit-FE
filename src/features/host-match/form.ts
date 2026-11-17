@@ -62,10 +62,30 @@ export type CourtOption = {
   imageUrl: string | null;
 };
 
-// 초성 검색은 API(또는 처리 위치) 확정 후 반영합니다.
+const hangulInitials = "ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ";
+
 export function searchCourts(courts: readonly CourtOption[], keyword: string) {
   const query = keyword.trim();
-  return query ? courts.filter(({ name }) => name.includes(query)) : courts;
+  if (!query) return courts;
+
+  const compactQuery = query.replace(/\s/g, "");
+  if (
+    !Array.from(compactQuery).every((letter) => hangulInitials.includes(letter))
+  ) {
+    return courts.filter(({ name }) => name.includes(query));
+  }
+
+  return courts.filter(({ name }) => {
+    const initials = name
+      .normalize("NFC")
+      .replace(/\s/g, "")
+      .replace(/[가-힣]/g, (syllable) =>
+        hangulInitials.charAt(
+          Math.floor((syllable.charCodeAt(0) - 0xac00) / 588),
+        ),
+      );
+    return initials.includes(compactQuery);
+  });
 }
 
 export const RESERVABLE_DAYS = 14;
