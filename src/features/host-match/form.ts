@@ -31,3 +31,11 @@ export function isCourtDraftReady(draft: CourtDraft) {
     draft.fee.trim() !== ""
   );
 }
+
+export function toFeeDigits(input: string) {
+  return input.replace(/\D/g, "").replace(/^0+(?=\d)/, "");
+}
+
+export function formatFee(fee: string) {
+  return fee ? Number(fee).toLocaleString("ko-KR") : "";
+}

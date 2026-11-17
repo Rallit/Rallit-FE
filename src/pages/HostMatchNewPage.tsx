@@ -5,6 +5,7 @@ import { Header } from "@/components/Header";
 import { CourtStep } from "@/components/host-match/CourtStep";
 import { MatchInfoStep } from "@/components/host-match/MatchInfoStep";
 import { PageLayout } from "@/components/layout/PageLayout";
+import { initialCourtDraft, type CourtDraft } from "@/features/host-match/form";
 
 const steps = [
   {
@@ -20,6 +21,7 @@ const steps = [
 export default function HostMatchNewPage() {
   const navigate = useNavigate();
   const [stepIndex, setStepIndex] = useState(0);
+  const [court, setCourt] = useState<CourtDraft>(initialCourtDraft);
   const step = steps[stepIndex];
   const isCourtStep = stepIndex === 0;
 
@@ -61,7 +63,11 @@ export default function HostMatchNewPage() {
           {step.description}
         </p>
       </section>
-      {isCourtStep ? <CourtStep /> : <MatchInfoStep />}
+      {isCourtStep ? (
+        <CourtStep value={court} onChange={setCourt} />
+      ) : (
+        <MatchInfoStep />
+      )}
     </PageLayout>
   );
 }
