@@ -33,6 +33,7 @@ export function createMockMatchDetail(matchId: number): MatchDetail {
       hasParking: true,
       hasShower: true,
       facilityNotes: "지하 3층짜리 주차장 있습니다",
+      thumbnailUrl: null,
     },
     host: {
       userId: 7,

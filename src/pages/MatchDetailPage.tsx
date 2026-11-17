@@ -10,6 +10,7 @@ import { ActionButton } from "@/components/ActionButton";
 import { Badge } from "@/components/Badge";
 import { Divider } from "@/components/Divider";
 import { Header } from "@/components/Header";
+import { useSignedImage } from "@/hooks/useSignedImage";
 import { ProfileCard } from "@/components/ProfileCard";
 import { PageLayout } from "@/components/layout/PageLayout";
 import {
@@ -72,10 +73,12 @@ export default function MatchDetailPage() {
     return () => observer.disconnect();
   }, [image]);
 
-  if (!validId) return <Navigate to="/" replace />;
-
   const current = result?.key === requestKey ? result : undefined;
   const match = current?.match;
+  const courtImage = useSignedImage(match?.court.thumbnailUrl);
+  const hostImage = useSignedImage(match?.host.profileImageUrl);
+
+  if (!validId) return <Navigate to="/" replace />;
 
   const goBack = () => {
     const historyIndex = (window.history.state as { idx?: number } | null)?.idx;
@@ -118,12 +121,19 @@ export default function MatchDetailPage() {
         <Header variant="subpage" title="매치 상세" onBack={goBack} />
       </div>
 
-      {/* 임시: API에 코트 이미지가 없어 자리만 표시합니다. */}
       <div
         ref={setImage}
-        aria-hidden="true"
-        className="-mx-(--unit-16) -mt-14 h-[230px] bg-(--bg-neutral-weak)"
-      />
+        className="-mx-(--unit-16) -mt-14 h-[230px] overflow-hidden bg-(--bg-neutral-weak)"
+      >
+        {courtImage.url && (
+          <img
+            src={courtImage.url}
+            alt={match ? `${match.court.name} 사진` : ""}
+            onError={courtImage.handleError}
+            className="block size-full object-cover"
+          />
+        )}
+      </div>
 
       {!current && (
         <p className="sr-only" aria-live="polite">
@@ -190,6 +200,7 @@ export default function MatchDetailPage() {
             <div className="-mx-(--unit-16) mt-3 flex gap-(--spacing-gap-small) overflow-x-auto px-(--unit-16)">
               <ProfileCard
                 name={match.host.nickname}
+                imageSrc={hostImage.url}
                 badge="호스트"
                 details={[
                   {

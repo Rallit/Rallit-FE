@@ -31,6 +31,7 @@ export type MatchCourt = {
   hasParking: boolean;
   hasShower: boolean;
   facilityNotes: string | null;
+  thumbnailUrl: string | null;
 };
 
 export type MatchHost = {
