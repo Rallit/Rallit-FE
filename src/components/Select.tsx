@@ -9,6 +9,7 @@ type SelectProps = Omit<
   "children" | "type" | "value"
 > & {
   placeholder?: string;
+  trailingIcon?: string;
 } & (
     | { value?: string; chips?: never; onRemove?: never; chipTrigger?: never }
     | {
@@ -25,6 +26,7 @@ export function Select({
   chipTrigger = "add",
   onRemove,
   placeholder = "선택해주세요",
+  trailingIcon,
   className,
   disabled,
   ...props
@@ -74,9 +76,19 @@ export function Select({
         <span className="min-w-0 truncate">{value || placeholder}</span>
       )}
       <img
-        src={hasChips && !chipsWithDropdown ? addIcon : downIcon}
-        alt={hasChips && !chipsWithDropdown ? "선택 항목 추가" : ""}
-        className={`block shrink-0 ${hasChips && !chipsWithDropdown ? "" : "group-aria-expanded:rotate-180"}`}
+        src={
+          trailingIcon ?? (hasChips && !chipsWithDropdown ? addIcon : downIcon)
+        }
+        alt={
+          !trailingIcon && hasChips && !chipsWithDropdown
+            ? "선택 항목 추가"
+            : ""
+        }
+        className={`block shrink-0 ${
+          !trailingIcon && (!hasChips || chipsWithDropdown)
+            ? "group-aria-expanded:rotate-180"
+            : ""
+        }`}
       />
     </button>
   );

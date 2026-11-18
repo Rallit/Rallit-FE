@@ -1,5 +1,6 @@
 import { useId, useRef, useState } from "react";
 import closeIcon from "../../../assets/icons/close.svg";
+import searchIcon from "../../../assets/icons/search.svg";
 import { BottomCTA } from "@/components/BottomCTA";
 import { BottomSheet } from "@/components/BottomSheet";
 import { Calendar } from "@/components/Calendar";
@@ -54,6 +55,7 @@ export function CourtStep({
           aria-expanded={courtSheetOpen}
           placeholder="예약한 코트를 선택해주세요"
           value={value.courtName || undefined}
+          trailingIcon={searchIcon}
           onClick={() => setCourtSheetOpen(true)}
         />
         <CourtSearchSheet
