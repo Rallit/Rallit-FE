@@ -6,6 +6,7 @@ import { PageLayout } from "@/components/layout/PageLayout";
 import { Profile } from "@/components/Profile";
 import { ProfileCard } from "@/components/ProfileCard";
 import type { HostMatchPreviewSummary } from "@/features/host-match/form";
+import { useHorizontalMouseDrag } from "@/hooks/useHorizontalMouseDrag";
 import moreIcon from "../../assets/icons/meatball.svg";
 import profilePlaceholder from "../../assets/images/host-applicant-placeholder.png";
 
@@ -41,6 +42,7 @@ const defaultSummary: HostMatchPreviewSummary = {
 
 export default function HostMatchPreviewPage() {
   const navigate = useNavigate();
+  const mouseDrag = useHorizontalMouseDrag();
   const fromSchedule = useLocation().state as HostMatchPreviewSummary | null;
   const summary = fromSchedule ?? defaultSummary;
 
@@ -88,7 +90,10 @@ export default function HostMatchPreviewPage() {
           <h2 className="typography-headline-bold m-0">
             새 신청 {applicants.length}
           </h2>
-          <div className="-mx-(--unit-16) flex snap-x gap-(--spacing-gap-small) overflow-x-auto px-(--unit-16) scrollbar-none">
+          <div
+            {...mouseDrag}
+            className="-mx-(--unit-16) flex snap-x gap-(--spacing-gap-small) overflow-x-auto px-(--unit-16) scrollbar-none select-none"
+          >
             {applicants.map(({ id, name, gender }) => (
               <div
                 key={id}

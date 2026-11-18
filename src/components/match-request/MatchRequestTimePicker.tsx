@@ -36,6 +36,7 @@ type TimePickerProps = {
   value: MatchRequestTimeRange;
   onChange: (value: MatchRequestTimeRange) => void;
   gap?: keyof typeof gapStyles;
+  minStartHour?: number;
 };
 
 type Draft = { field: (typeof fields)[number]; hour: number };
@@ -44,14 +45,26 @@ export function MatchRequestTimePicker({
   value,
   onChange,
   gap = "medium",
+  minStartHour = 0,
 }: TimePickerProps) {
   const dialogId = useId();
   const [draft, setDraft] = useState<Draft | null>(null);
 
   const limits = {
-    startHour: { first: 0, last: (value.endHour ?? LAST_REQUEST_HOUR) - 1 },
-    endHour: { first: (value.startHour ?? 0) + 1, last: LAST_REQUEST_HOUR },
+    startHour: {
+      first: minStartHour,
+      last: (value.endHour ?? LAST_REQUEST_HOUR) - 1,
+    },
+    endHour: {
+      first: (value.startHour ?? minStartHour) + 1,
+      last: LAST_REQUEST_HOUR,
+    },
   };
+  const draftLimits = draft ? limits[draft.field.key] : null;
+  const selectedHour =
+    draft && draftLimits && draftLimits.first <= draftLimits.last
+      ? Math.min(draftLimits.last, Math.max(draftLimits.first, draft.hour))
+      : null;
   const close = () => setDraft(null);
 
   return (
@@ -70,6 +83,7 @@ export function MatchRequestTimePicker({
               aria-haspopup="dialog"
               aria-controls={dialogId}
               aria-expanded={draft?.field.key === field.key}
+              disabled={limits[field.key].first > limits[field.key].last}
               placeholder={field.placeholder}
               value={hour === null ? undefined : `${hour}시${field.suffix}`}
               onClick={(event) => {
@@ -90,24 +104,30 @@ export function MatchRequestTimePicker({
         {(dismiss) =>
           draft && (
             <>
-              <div className="flex px-(--spacing-padding-large) py-(--spacing-padding-small)">
-                <NumberWheel
-                  label={draft.field.label}
-                  unit="시"
-                  {...limits[draft.field.key]}
-                  value={draft.hour}
-                  onChange={(hour) =>
-                    setDraft((previous) => previous && { ...previous, hour })
-                  }
-                />
-              </div>
+              {selectedHour !== null && draftLimits && (
+                <div className="flex px-(--spacing-padding-large) py-(--spacing-padding-small)">
+                  <NumberWheel
+                    key={`${draft.field.key}-${draftLimits.first}-${draftLimits.last}`}
+                    label={draft.field.label}
+                    unit="시"
+                    {...draftLimits}
+                    value={selectedHour}
+                    onChange={(hour) =>
+                      setDraft((previous) => previous && { ...previous, hour })
+                    }
+                  />
+                </div>
+              )}
               <BottomCTA
                 primaryAction={{
                   children: "확인",
-                  onClick: () =>
+                  disabled: selectedHour === null,
+                  onClick: () => {
+                    if (selectedHour === null) return;
                     dismiss(() =>
-                      onChange({ ...value, [draft.field.key]: draft.hour }),
-                    ),
+                      onChange({ ...value, [draft.field.key]: selectedHour }),
+                    );
+                  },
                 }}
               />
             </>

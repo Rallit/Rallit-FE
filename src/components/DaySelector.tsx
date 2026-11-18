@@ -1,4 +1,5 @@
 import { useId } from "react";
+import { useHorizontalMouseDrag } from "@/hooks/useHorizontalMouseDrag";
 import { DayButton } from "./DayButton";
 
 type DayOption = {
@@ -29,6 +30,7 @@ export function DaySelector({
   onSelect,
 }: DaySelectorProps) {
   const monthId = useId();
+  const mouseDrag = useHorizontalMouseDrag();
 
   return (
     <div
@@ -47,7 +49,10 @@ export function DaySelector({
       >
         {monthLabel}
       </p>
-      <div className="w-full overflow-x-auto scrollbar-none">
+      <div
+        className="w-full overflow-x-auto scrollbar-none select-none"
+        {...mouseDrag}
+      >
         <div className="mx-auto flex w-max gap-(--spacing-gap-micro)">
           {days.map(({ id, accessibleLabel, ...dayProps }) => (
             <DayButton

@@ -51,7 +51,7 @@ export function HomeMatchRequestList({
         setResult({ attempt, count: requests.length });
         if (!requests.length) return [];
         const areas = await getActivityAreas(controller.signal);
-        return requests.toReversed().map((request) => ({
+        return [...requests].reverse().map((request) => ({
           id: request.requestId,
           request: toSavedMatchRequestSummary(request, areas),
           onClick: () =>

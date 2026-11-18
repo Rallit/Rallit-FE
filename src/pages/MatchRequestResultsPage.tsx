@@ -71,7 +71,7 @@ const sectionLabels = [
     title: "비슷한 매치",
     query: "similarPage",
     emptyMessage:
-      "아쉽게도 비슷한 조건의 매치가 없어요\n조건을 넓혀 더 많은 매치를 확인해보세요?",
+      "아쉽게도 비슷한 조건의 매치가 없어요\n조건을 넓혀 더 많은 매치를 확인해보세요",
   },
 ] as const;
 

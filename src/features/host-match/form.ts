@@ -23,6 +23,15 @@ export type MatchInfoDraft = {
   fee: string;
 };
 
+export function isMatchInfoDraftReady(draft: MatchInfoDraft) {
+  return (
+    draft.matchFormat !== null &&
+    draft.maleRecruitCount + draft.femaleRecruitCount > 0 &&
+    (draft.anyAgeGroup || draft.preferredAgeGroups.length > 0) &&
+    draft.fee.trim() !== ""
+  );
+}
+
 // 04-A 코트 등록 입력값. 코트 API 확정 전까지 courtId 형식은 임시입니다.
 export type CourtDraft = {
   courtId: number | null;
