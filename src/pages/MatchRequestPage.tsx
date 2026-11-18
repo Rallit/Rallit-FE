@@ -39,7 +39,7 @@ const DATE_WINDOW_DAYS = 14;
 const HOUR_MS = 60 * 60 * 1000;
 const SEOUL_OFFSET_MS = 9 * HOUR_MS;
 const PAST_START_MESSAGE =
-  "오늘이 포함된 매칭 요청은 현재 시각보다 늦은 시작 시각을 선택해 주세요.";
+  "오늘만 선택한 매칭 요청은 현재 시각보다 늦은 시작 시각을 선택해 주세요.";
 
 const monthFormat = new Intl.DateTimeFormat("ko-KR", {
   year: "numeric",
@@ -207,7 +207,8 @@ export default function MatchRequestPage() {
 
     const [today] = availableDates;
     if (
-      request.dates.includes(today) &&
+      request.dates.length === 1 &&
+      request.dates[0] === today &&
       request.startHour <= getSeoulHour(now)
     ) {
       setSeoulHour(getSeoulHour(now));
