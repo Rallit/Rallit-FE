@@ -21,6 +21,11 @@ export type ApplicationStatus =
   | "CANCELED"
   | "EXPIRED";
 
+export type CourtFacility = {
+  type: "PARKING" | "SHOWER";
+  note: string | null;
+};
+
 export type MatchCourt = {
   courtId: number;
   name: string;
@@ -31,6 +36,7 @@ export type MatchCourt = {
   hasParking: boolean;
   hasShower: boolean;
   facilityNotes: string | null;
+  facilities: CourtFacility[];
   thumbnailUrl: string | null;
 };
 
