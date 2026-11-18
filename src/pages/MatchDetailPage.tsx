@@ -31,6 +31,11 @@ import {
 
 const HEADER_HEIGHT = 56;
 
+const courtFacilityInfo = {
+  PARKING: { label: "주차장", icon: parkingIcon },
+  SHOWER: { label: "샤워실", icon: showerIcon },
+};
+
 type DetailResult = { key: string; match?: MatchDetail; failed?: boolean };
 
 export default function MatchDetailPage() {
@@ -212,41 +217,41 @@ export default function MatchDetailPage() {
             </div>
           </section>
 
-          {(match.court.hasParking ||
-            match.court.hasShower ||
-            match.court.facilityNotes) && (
+          {(match.court.facilities.length > 0 || match.court.facilityNotes) && (
             <section className="mt-8">
               <h2 className="typography-headline-bold m-0 text-(color:--fg-neutral-default)">
                 코트 이용 안내
               </h2>
-              <ul className="m-0 mt-3 flex list-none flex-col gap-(--spacing-gap-small) p-0">
-                {match.court.hasParking && (
-                  <li className="typography-label-l-medium grid grid-cols-[24px_minmax(0,1fr)] items-center gap-(--spacing-gap-medium) text-(color:--fg-neutral-default)">
-                    <img
-                      className="place-self-center"
-                      src={parkingIcon}
-                      alt=""
-                      width={24}
-                      height={24}
-                    />
-                    주차장
-                  </li>
-                )}
-                {match.court.hasShower && (
-                  <li className="typography-label-l-medium grid grid-cols-[24px_minmax(0,1fr)] items-center gap-(--spacing-gap-medium) text-(color:--fg-neutral-default)">
-                    <img
-                      className="place-self-center"
-                      src={showerIcon}
-                      alt=""
-                      width={24}
-                      height={24}
-                    />
-                    샤워실
-                  </li>
-                )}
-              </ul>
+              {match.court.facilities.length > 0 && (
+                <ul className="m-0 mt-3 flex list-none flex-col gap-(--spacing-gap-small) p-0">
+                  {match.court.facilities.map(({ type, note }) => (
+                    <li
+                      key={type}
+                      className="grid grid-cols-[24px_minmax(0,1fr)] items-start gap-(--spacing-gap-medium)"
+                    >
+                      <img
+                        className="block"
+                        src={courtFacilityInfo[type].icon}
+                        alt=""
+                        width={24}
+                        height={24}
+                      />
+                      <div className="min-w-0">
+                        <p className="typography-label-l-medium m-0 text-(color:--fg-neutral-default)">
+                          {courtFacilityInfo[type].label}
+                        </p>
+                        {note && (
+                          <p className="typography-label-r-regular m-0 mt-(--spacing-gap-micro) break-words whitespace-pre-line text-(color:--fg-neutral-secondary)">
+                            {note}
+                          </p>
+                        )}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
               {match.court.facilityNotes && (
-                <p className="typography-label-r-regular m-0 mt-2 text-(color:--fg-neutral-secondary)">
+                <p className="typography-label-r-regular m-0 mt-2 break-words whitespace-pre-line text-(color:--fg-neutral-secondary)">
                   {match.court.facilityNotes}
                 </p>
               )}

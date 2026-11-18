@@ -32,7 +32,11 @@ export function createMockMatchDetail(matchId: number): MatchDetail {
       longitude: 127.0,
       hasParking: true,
       hasShower: true,
-      facilityNotes: "지하 3층짜리 주차장 있습니다",
+      facilityNotes: "입장 시 예약 내역을 보여주세요.",
+      facilities: [
+        { type: "PARKING", note: "지하 3층 주차장" },
+        { type: "SHOWER", note: "남녀 샤워실 각 1개" },
+      ],
       thumbnailUrl: null,
     },
     host: {
