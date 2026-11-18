@@ -39,7 +39,7 @@ const DATE_WINDOW_DAYS = 14;
 const HOUR_MS = 60 * 60 * 1000;
 const SEOUL_OFFSET_MS = 9 * HOUR_MS;
 const PAST_START_MESSAGE =
-  "오늘이 포함된 매칭 요청은 현재 시각보다 늦은 시작 시각을 선택해 주세요.";
+  "오늘만 선택한 매칭 요청은 현재 시각보다 늦은 시작 시각을 선택해 주세요.";
 
 const monthFormat = new Intl.DateTimeFormat("ko-KR", {
   year: "numeric",
@@ -172,6 +172,11 @@ export default function MatchRequestPage() {
     selectedDates.length === 1 && selectedDates[0] === days[0].id;
   const minStartHour = todayOnly ? seoulHour + 1 : 0;
   const hasTimeLeft = minStartHour < LAST_REQUEST_HOUR;
+  const showTodayTimeCaption =
+    selectedDates.length > 1 &&
+    selectedDates.includes(days[0].id) &&
+    timeRange.startHour !== null &&
+    timeRange.startHour <= seoulHour;
   const availableTimeRange = {
     startHour:
       timeRange.startHour !== null && timeRange.startHour >= minStartHour
@@ -207,7 +212,8 @@ export default function MatchRequestPage() {
 
     const [today] = availableDates;
     if (
-      request.dates.includes(today) &&
+      request.dates.length === 1 &&
+      request.dates[0] === today &&
       request.startHour <= getSeoulHour(now)
     ) {
       setSeoulHour(getSeoulHour(now));
@@ -304,6 +310,11 @@ export default function MatchRequestPage() {
                 onChange={setTimeRange}
                 minStartHour={minStartHour}
               />
+              {showTodayTimeCaption && (
+                <p className="typography-label-r-medium m-0 text-(color:--fg-neutral-tertiary)">
+                  오늘은 지금 이후의 매치만 찾을 수 있어요
+                </p>
+              )}
               {!hasTimeLeft && (
                 <p className="typography-label-r-medium m-0 text-(color:--fg-neutral-tertiary)">
                   오늘 선택할 수 있는 시간이 없어요. 다른 날짜를 선택해 주세요.
