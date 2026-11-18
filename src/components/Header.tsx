@@ -16,6 +16,7 @@ type HeaderProps =
   | {
       variant: "subpage";
       title?: string;
+      tone?: "inverse" | "strong";
       onBack: MouseEventHandler<HTMLButtonElement>;
       action?: {
         icon: string;
@@ -84,16 +85,28 @@ export function Header(props: HeaderProps) {
     );
   }
 
+  const titleColor =
+    props.tone === "inverse"
+      ? "text-(color:--fg-neutral-inverse)"
+      : props.tone === "strong"
+        ? "text-(color:--fg-neutral-default)"
+        : "text-(color:--fg-neutral-secondary)";
+
   return (
     <header className="box-border grid h-14 w-full grid-cols-[24px_minmax(0,1fr)_24px] items-center px-(--spacing-padding-large)">
       <IconButton
         aria-label="뒤로 가기"
         icon={backIcon}
+        iconColor={
+          props.tone === "inverse" ? "var(--fg-neutral-inverse)" : undefined
+        }
         onClick={props.onBack}
         className="-ml-2.5"
       />
       {props.title && (
-        <h1 className="typography-headline-bold m-0 truncate px-(--spacing-gap-medium) text-center text-(color:--fg-neutral-secondary)">
+        <h1
+          className={`typography-headline-bold m-0 truncate px-(--spacing-gap-medium) text-center ${titleColor}`}
+        >
           {props.title}
         </h1>
       )}

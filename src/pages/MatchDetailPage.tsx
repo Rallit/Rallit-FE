@@ -29,7 +29,7 @@ import {
   applicationBlockLabels,
 } from "@/features/match-detail/copy";
 
-const HEADER_HEIGHT = 56;
+const HEADER_SCROLL_THRESHOLD = 240;
 
 type DetailResult = { key: string; match?: MatchDetail; failed?: boolean };
 
@@ -65,12 +65,20 @@ export default function MatchDetailPage() {
 
   useEffect(() => {
     if (!image) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => setHeaderFilled(!entry.isIntersecting),
-      { rootMargin: `-${HEADER_HEIGHT}px 0px 0px 0px` },
-    );
-    observer.observe(image);
-    return () => observer.disconnect();
+    const page = image.closest("main");
+    function updateHeader() {
+      const scrollTop = window.scrollY + (page?.scrollTop ?? 0);
+      setHeaderFilled(scrollTop >= HEADER_SCROLL_THRESHOLD);
+    }
+
+    updateHeader();
+    window.addEventListener("scroll", updateHeader, { passive: true });
+    page?.addEventListener("scroll", updateHeader, { passive: true });
+
+    return () => {
+      window.removeEventListener("scroll", updateHeader);
+      page?.removeEventListener("scroll", updateHeader);
+    };
   }, [image]);
 
   const current = result?.key === requestKey ? result : undefined;
@@ -118,12 +126,17 @@ export default function MatchDetailPage() {
       <div
         className={`sticky top-0 z-10 -mx-(--unit-16) transition-colors ${headerFilled ? "bg-(--bg-neutral-default)" : ""}`}
       >
-        <Header variant="subpage" title="매치 상세" onBack={goBack} />
+        <Header
+          variant="subpage"
+          title="매치 상세"
+          tone={headerFilled ? "strong" : "inverse"}
+          onBack={goBack}
+        />
       </div>
 
       <div
         ref={setImage}
-        className="-mx-(--unit-16) -mt-14 h-[230px] overflow-hidden bg-(--bg-neutral-weak)"
+        className="relative -mx-(--unit-16) -mt-14 h-[230px] overflow-hidden bg-(--bg-neutral-weak)"
       >
         {courtImage.url && (
           <img
@@ -131,6 +144,12 @@ export default function MatchDetailPage() {
             alt={match ? `${match.court.name} 사진` : ""}
             onError={courtImage.handleError}
             className="block size-full object-cover"
+          />
+        )}
+        {!headerFilled && (
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-x-0 top-0 h-[140px] bg-linear-to-b from-[rgb(27_28_38_/_32%)] to-transparent"
           />
         )}
       </div>
