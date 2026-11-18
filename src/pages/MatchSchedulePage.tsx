@@ -173,11 +173,6 @@ export default function MatchSchedulePage() {
           label="내가 연 경기"
           selected={hostOnly}
           onClick={() => setHostOnly((selected) => !selected)}
-          className={
-            hostOnly
-              ? undefined
-              : "bg-(--bg-neutral-default)! inset-ring inset-ring-(--border-neutral-default)"
-          }
         />
         <label className="typography-label-r-medium flex cursor-pointer items-center gap-(--spacing-gap-micro) text-(color:--fg-neutral-secondary)">
           <Checkbox

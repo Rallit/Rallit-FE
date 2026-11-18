@@ -55,7 +55,7 @@ export function Select({
   const triggerStyle = hasChips
     ? "size-(--unit-24) shrink-0 items-center border-0 bg-transparent p-0"
     : [
-        "typography-body-medium box-border h-[52px] w-full min-w-0 items-start justify-between gap-(--spacing-gap-small) rounded-(--radius-small) border border-solid bg-(--bg-neutral-default) p-(--spacing-padding-medium) text-start",
+        "typography-body-medium box-border h-[52px] w-full min-w-0 items-start justify-between gap-(--spacing-gap-small) rounded-(--radius-medium) border border-solid bg-(--bg-neutral-default) p-(--spacing-padding-medium) text-start",
         "border-(--border-neutral-default) focus:border-(--border-brand-focus) aria-expanded:border-(--border-brand-focus)",
         value
           ? "text-(color:--fg-neutral-default)"
@@ -91,7 +91,7 @@ export function Select({
           className={[
             "box-border flex min-h-[52px] items-center justify-between gap-(--spacing-gap-small) py-(--spacing-padding-micro)",
             chipsWithDropdown &&
-              "rounded-(--radius-small) border border-solid border-(--border-neutral-default) px-(--spacing-padding-small) focus-within:border-(--border-brand-focus)",
+              "rounded-(--radius-medium) border border-solid border-(--border-neutral-default) px-(--spacing-padding-small) focus-within:border-(--border-brand-focus)",
           ]
             .filter(Boolean)
             .join(" ")}
