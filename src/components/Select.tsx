@@ -79,11 +79,7 @@ export function Select({
         src={
           trailingIcon ?? (hasChips && !chipsWithDropdown ? addIcon : downIcon)
         }
-        alt={
-          !trailingIcon && hasChips && !chipsWithDropdown
-            ? "선택 항목 추가"
-            : ""
-        }
+        alt={hasChips && !chipsWithDropdown ? "선택 항목 추가" : ""}
         className={`block shrink-0 ${
           !trailingIcon && (!hasChips || chipsWithDropdown)
             ? "group-aria-expanded:rotate-180"
