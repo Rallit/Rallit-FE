@@ -6,6 +6,7 @@ import {
   nicknameMaxLength,
   type BasicProfileDraft,
 } from "@/features/onboarding/form";
+import cameraIcon from "../../../assets/icons/camera.svg";
 
 const genders = [
   { value: "MALE", label: "남성" },
@@ -96,10 +97,16 @@ export function BasicProfileStep({
           type="button"
           aria-label="프로필 사진 선택"
           disabled={uploadingPhoto}
-          className="cursor-pointer rounded-(--radius-full) border-0 bg-transparent p-0 disabled:cursor-default"
+          className="relative grid size-24 cursor-pointer place-items-center rounded-(--radius-full) border-0 bg-transparent p-0 disabled:cursor-default"
           onClick={() => photoInputRef.current?.click()}
         >
           <Profile src={photoUrl} />
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute right-0 bottom-0 box-border grid size-8 place-items-center rounded-(--radius-full) border border-solid border-(--border-neutral-default) bg-(--bg-neutral-default)"
+          >
+            <img src={cameraIcon} alt="" className="block" />
+          </span>
         </button>
         <input
           ref={photoInputRef}

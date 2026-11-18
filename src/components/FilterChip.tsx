@@ -20,10 +20,10 @@ export function FilterChip({
       type="button"
       aria-pressed={selected}
       className={[
-        "typography-label-r-medium box-border inline-flex h-9 w-fit shrink-0 cursor-pointer appearance-none items-center justify-center rounded-(--radius-full) border-0 px-(--spacing-padding-medium) py-(--spacing-padding-small) whitespace-nowrap disabled:cursor-default",
+        "typography-label-r-medium box-border inline-flex h-9 w-fit min-w-[52px] shrink-0 cursor-pointer appearance-none items-center justify-center rounded-(--radius-full) border-0 px-(--spacing-padding-medium) py-(--spacing-padding-small) whitespace-nowrap disabled:cursor-default",
         selected
           ? "bg-(--bg-secondary-inverse) text-(color:--fg-accent-default)"
-          : "bg-(--bg-neutral-weak) text-(color:--fg-neutral-secondary)",
+          : "bg-(--bg-neutral-default) text-(color:--fg-neutral-secondary) inset-ring inset-ring-(--border-neutral-default)",
         className,
       ]
         .filter(Boolean)
