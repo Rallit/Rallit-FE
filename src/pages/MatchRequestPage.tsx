@@ -172,6 +172,11 @@ export default function MatchRequestPage() {
     selectedDates.length === 1 && selectedDates[0] === days[0].id;
   const minStartHour = todayOnly ? seoulHour + 1 : 0;
   const hasTimeLeft = minStartHour < LAST_REQUEST_HOUR;
+  const showTodayTimeCaption =
+    selectedDates.length > 1 &&
+    selectedDates.includes(days[0].id) &&
+    timeRange.startHour !== null &&
+    timeRange.startHour <= seoulHour;
   const availableTimeRange = {
     startHour:
       timeRange.startHour !== null && timeRange.startHour >= minStartHour
@@ -305,6 +310,11 @@ export default function MatchRequestPage() {
                 onChange={setTimeRange}
                 minStartHour={minStartHour}
               />
+              {showTodayTimeCaption && (
+                <p className="typography-label-r-medium m-0 text-(color:--fg-neutral-tertiary)">
+                  오늘은 지금 이후의 매치만 찾을 수 있어요
+                </p>
+              )}
               {!hasTimeLeft && (
                 <p className="typography-label-r-medium m-0 text-(color:--fg-neutral-tertiary)">
                   오늘 선택할 수 있는 시간이 없어요. 다른 날짜를 선택해 주세요.
