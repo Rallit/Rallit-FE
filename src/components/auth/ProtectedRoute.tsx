@@ -16,7 +16,7 @@ export default function ProtectedRoute({
   }
 
   if (onboarding === "completed" && !authState.user.onboardingCompleted) {
-    return <Navigate to="/onboarding" replace />;
+    return <Navigate to="/onboarding/intro" replace />;
   }
 
   if (onboarding === "pending" && authState.user.onboardingCompleted) {

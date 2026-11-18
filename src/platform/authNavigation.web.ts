@@ -22,5 +22,11 @@ export function startSocialLogin(
 
   url.pathname = `${url.pathname.replace(/\/+$/, "")}/api/v1/auth/${provider}`;
   url.searchParams.set("target", target);
+  if (target === "service") {
+    url.searchParams.set(
+      "callback",
+      new URL("/auth/callback", window.location.origin).href,
+    );
+  }
   window.location.assign(url.href);
 }

@@ -73,7 +73,7 @@ export default function AuthCompletePage() {
 
   return (
     <Navigate
-      to={authState.user.onboardingCompleted ? "/" : "/onboarding"}
+      to={authState.user.onboardingCompleted ? "/" : "/onboarding/intro"}
       replace
     />
   );
