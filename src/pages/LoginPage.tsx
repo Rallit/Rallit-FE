@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import logoWhite from "../../assets/images/rallit-logo-white.svg";
 import { mockStartLogin } from "@/apis/auth.mock";
 import type { AuthUser } from "@/apis/auth.types";
@@ -22,6 +22,20 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
   );
   const [errorMessage, setErrorMessage] = useState("");
   const isLoading = loadingProvider !== null || isLoggingOut;
+
+  useEffect(() => {
+    const handlePageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) {
+        setLoadingProvider(null);
+      }
+    };
+
+    window.addEventListener("pageshow", handlePageShow);
+
+    return () => {
+      window.removeEventListener("pageshow", handlePageShow);
+    };
+  }, []);
 
   const handleLogin = async (provider: SocialProvider) => {
     if (isLoading) return;
