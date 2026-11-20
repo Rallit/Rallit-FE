@@ -57,11 +57,17 @@ export function MatchInfoStep({
 
   function toggleAgeGroup(ageGroup: OnboardingProfile["ageGroup"]) {
     const { preferredAgeGroups } = value;
+    const nextAgeGroups = preferredAgeGroups.includes(ageGroup)
+      ? preferredAgeGroups.filter((group) => group !== ageGroup)
+      : [...preferredAgeGroups, ageGroup];
+    const anyAgeGroup = ageGroups.every(({ value: group }) =>
+      nextAgeGroups.includes(group),
+    );
+
     onChange({
       ...value,
-      preferredAgeGroups: preferredAgeGroups.includes(ageGroup)
-        ? preferredAgeGroups.filter((group) => group !== ageGroup)
-        : [...preferredAgeGroups, ageGroup],
+      preferredAgeGroups: anyAgeGroup ? [] : nextAgeGroups,
+      anyAgeGroup,
     });
   }
 
