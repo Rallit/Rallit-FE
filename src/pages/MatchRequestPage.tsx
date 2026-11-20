@@ -111,9 +111,7 @@ export default function MatchRequestPage() {
   const [{ days, monthLabel }, setCalendar] = useState(() =>
     getCalendar(new Date()),
   );
-  const [selectedDates, setSelectedDates] = useState(() =>
-    days.filter((day) => day.today).map((day) => day.id),
-  );
+  const [selectedDates, setSelectedDates] = useState<string[]>([]);
   const [timeRange, setTimeRange] = useState<MatchRequestTimeRange>({
     startHour: null,
     endHour: null,
